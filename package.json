@@ -1,7 +1,11 @@
 {
   "name": "keduije",
   "version": "1.0.0",
-  "description": "",
+  "description": "NLP for igbo language",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nnennaude/keduije.git"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,5 +15,10 @@
   "dependencies": {
     "express": "^4.14.1",
     "mongodb": "^2.2.24"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/nnennaude/keduije/issues"
+  },
+  "homepage": "https://github.com/nnennaude/keduije#readme",
+  "devDependencies": {}
 }
