@@ -68,6 +68,7 @@
 
                   lyrics[currentLyric.data("index")].text=newVersion;
                   localStorage[songID]=JSON.stringify(lyrics);
+                  storeLyrics();
                   displayLyrics();
                 });
                 var cancelBtn = $("<button>cancel</button>").click(function(){
@@ -84,6 +85,7 @@
 
                   lyrics.splice(index,1);
                   localStorage[songID]=JSON.stringify(lyrics);
+                  storeLyrics();
                   displayLyrics();
 
                 }).appendTo(this);
@@ -95,10 +97,15 @@
       });
 
       function loadLyrics(){
-        lyrics = [];
-        if (localStorage[songID]){
+        $.get("http://localhost:3000/lyrics/"+songID, _loadLyrics);
+      }
+
+      function _loadLyrics(result){
+        lyrics = result || [];
+        /*if (localStorage[songID]){
           lyrics = JSON.parse(localStorage[songID]);
-        }
+        }*/
+        
         displayLyrics();
         currentTime=0;
         currentLine = $('#lyricsDisplay p')[0];
@@ -214,12 +221,17 @@
         });
 
         localStorage[songID]=JSON.stringify(lyrics);
+        storeLyrics();
 
         displayLyrics();
 
       }
 
       $('#addLyricBtn').click(addLyric);
+
+      function storeLyrics(){
+        $.post("http://localhost:3000/", {videoID: songID, lyrics: lyrics});
+      }
 
       /*
 Feb 22-
