@@ -67,7 +67,6 @@
                   var newVersion = lyricEditor.val();
 
                   lyrics[currentLyric.data("index")].text=newVersion;
-                  localStorage[songID]=JSON.stringify(lyrics);
                   storeLyrics();
                   displayLyrics();
                 });
@@ -84,7 +83,6 @@
                   var index = $(this).parent().data("index");
 
                   lyrics.splice(index,1);
-                  localStorage[songID]=JSON.stringify(lyrics);
                   storeLyrics();
                   displayLyrics();
 
@@ -102,10 +100,7 @@
 
       function _loadLyrics(result){
         lyrics = result || [];
-        /*if (localStorage[songID]){
-          lyrics = JSON.parse(localStorage[songID]);
-        }*/
-        
+
         displayLyrics();
         currentTime=0;
         currentLine = $('#lyricsDisplay p')[0];
@@ -220,7 +215,6 @@
           return a.time-b.time;
         });
 
-        localStorage[songID]=JSON.stringify(lyrics);
         storeLyrics();
 
         displayLyrics();
