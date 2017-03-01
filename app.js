@@ -16,11 +16,12 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(bodyParser.json());
+app.use(express.static('public'));
 
 app.get('/', function (req, res) {
 
-  //res.sendFile("player.html");
-  res.sendFile(path.join(__dirname+'/player.html'));
+  res.sendFile(path.join(__dirname+'/public/player.html'));
+
 });
 
 app.get('/all', function (req, res) {
