@@ -4,19 +4,26 @@ var express = require('express');
 var app = express();
 const bodyParser= require('body-parser');
 var cors = require('cors')
+var path = require('path');
 
 // Connection URL
 var url = 'mongodb://localhost:27017/igbo';
 var url = 'mongodb://igbo:igbo@ds111940.mlab.com:11940/igbo';
 var database;
 
-app.use(cors());
+app.use(cors()); //may no longer be used
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(bodyParser.json());
 
 app.get('/', function (req, res) {
+
+  //res.sendFile("player.html");
+  res.sendFile(path.join(__dirname+'/player.html'));
+});
+
+app.get('/all', function (req, res) {
   //res.send('Hello World!');
   database.collection('lyrics').find().toArray(function(err, results) {
     console.log(results)

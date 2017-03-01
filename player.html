@@ -54,6 +54,10 @@
       var currentLyric;
       var lyricEditor;
 
+      var host = "http://localhost:3000/"; //when connecting to local backend, but on separate server
+      var host = "https://keduije.herokuapp.com/"; //when connecting to remote backend instance
+      var host = "/"; //when backend on same host as front end
+
       jQuery.fn.extend({
         addControls: function() {
           return this.hover(
@@ -95,7 +99,7 @@
       });
 
       function loadLyrics(){
-        $.get("http://localhost:3000/lyrics/"+songID, _loadLyrics);
+        $.get(host + "lyrics/"+songID, _loadLyrics);
       }
 
       function _loadLyrics(result){
@@ -224,7 +228,7 @@
       $('#addLyricBtn').click(addLyric);
 
       function storeLyrics(){
-        $.post("http://localhost:3000/", {videoID: songID, lyrics: lyrics});
+        $.post(host, {videoID: songID, lyrics: lyrics});
       }
 
       /*
