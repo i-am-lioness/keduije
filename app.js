@@ -7,6 +7,7 @@ var cors = require('cors')
 
 // Connection URL
 var url = 'mongodb://localhost:27017/igbo';
+var url = 'mongodb://igbo:igbo@ds111940.mlab.com:11940/igbo';
 var database;
 
 app.use(cors());
@@ -28,10 +29,11 @@ app.get('/lyrics/:videoID', function (req, res) {
 
   database.collection('lyrics')
     .find({ videoID: req.params.videoID } )
-    .nextObject(function(err, result) {
-    console.log(result)
-    // send HTML file populated with quotes here
-    res.send(result.lyrics);
+    .nextObject(function(err, obj) {
+    console.log(obj)
+
+    var result = (obj) ? obj.lyrics : [];
+    res.send(result);
   })
 });
 

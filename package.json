@@ -8,11 +8,14 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
   },
   "author": "Udegbunam, Nnenna",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.16.1",
+    "cors": "^2.8.1",
     "express": "^4.14.1",
     "mongodb": "^2.2.24"
   },
