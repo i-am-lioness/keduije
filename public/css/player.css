@@ -1,0 +1,20 @@
+
+  #lyricsDisplay p {
+    cursor: pointer;
+  }
+  #lyricsDisplay p:hover {
+    background: grey;
+  }
+  .current {
+    color: blue;
+  }
+  #lyricInput{
+    display: none;
+  }
+
+  #buttons button{
+    height: 90px;
+    width: 120px;
+    color: White;
+    weight: bold;
+  }
