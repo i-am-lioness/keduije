@@ -12,6 +12,10 @@
     display: none;
   }
 
+  #lyric {
+    width: 80%;
+  }
+
   #buttons button{
     height: 90px;
     width: 120px;
