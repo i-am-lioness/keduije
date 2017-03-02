@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <!--link rel="icon" href="../../favicon.ico"-->
 
-    <title>Narrow Jumbotron Template for Bootstrap</title>
+    <title>Kedu Ije?</title>
 
     <!-- Bootstrap core CSS -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
@@ -30,6 +30,36 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+
+      var videos = ["cWx8tUtfdeE", "kTWYQnbqN8I", "h01_dEXLqsk", "Uyr1c0pkpas", "9F53UQ_2L_I", "jkO8tHcda5E"];
+
+
+  $(function(){
+    /*$("#buttons button")
+      .click(function(){
+      songID = $(this).data("song");
+      window.location.href = "/music/"+songID;
+      })
+      .css("background-image", function(){
+        var thisSongID = $(this).data("song");
+        var url= "url(https://img.youtube.com/vi/"+thisSongID+"/1.jpg)";
+        $(this).css("background-image", url);
+      });*/
+
+      $.each(videos, function (index, songID){
+        var thumbnail = $('<div class="col-xs-6 col-md-3"><a href="/music/' +
+          songID + '" class="thumbnail"><img src="https://img.youtube.com/vi/'+
+          songID + '/1.jpg" alt="..."></a></div>');
+        $("#buttons").append(thumbnail);
+      });
+
+
+
+
+    });
+
+    </script>
     <link href="/css/player.css" rel="stylesheet">
   </head>
 
@@ -37,45 +67,22 @@
 
     <div class="container">
       <div class="header clearfix">
-        <nav>
-          <ul class="nav nav-pills pull-right">
-            <li role="presentation" class="active"><a href="#">Home</a></li>
-            <li role="presentation"><a href="#">Music</a></li>
-            <li role="presentation"><a href="#">Films</a></li>
-            <li role="presentation"><a href="#">Keyboard</a></li>
-          </ul>
-        </nav>
-        <h3 class="text-muted">Kedu Ije!</h3>
+        <h3 class="text-muted">Kedu Ije?</h3>
       </div>
-
 
       <div class="row">
         <div class="col-md-8">
-           <div id="player"></div>
-
-            <div id="lyricInput" class="input-group">
-              <input id="lyric" type="text" class="form-control" placeholder="Transcibe Lyrics...">
-              <span class="input-group-btn">
-                <button id="addLyricBtn" class="btn btn-default" type="button">Add Lyrics</button>
-              </span>
-            </div>
-
 
            <div id="buttons">
-             <button data-song="cWx8tUtfdeE">Olisa Doo</button>
+             <!--button data-song="cWx8tUtfdeE">Olisa Doo</button>
              <button data-song="kTWYQnbqN8I">Ogene</button>
              <button data-song="h01_dEXLqsk">Achikolo</button>
              <button data-song="Uyr1c0pkpas">Gbo Gan Gbom</button>
              <button data-song="9F53UQ_2L_I">Fada Fada</button>
-             <button data-song="jkO8tHcda5E">Eriwa</button>
+             <button data-song="jkO8tHcda5E">Eriwa</button-->
            </div>
         </div>
-        <div class="col-md-4">
-          <div id="lyricsDisplay">
-          </div>
-        </div>
       </div>
-
 
       <footer class="footer">
         <p>&copy; 2017 KeduIje, Inc.</p>
@@ -86,7 +93,5 @@
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="/js/ie10-viewport-bug-workaround.js"></script>
-    <script src="/js/player.js"></script>
-    <script src="https://www.youtube.com/iframe_api" async></script>
   </body>
 </html>

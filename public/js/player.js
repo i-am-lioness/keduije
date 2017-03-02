@@ -1,7 +1,7 @@
 var segmentStart=0;
 var segmentEnd=0;
 var player;
-var songID = 'kTWYQnbqN8I'; //ogene
+//var songID = 'kTWYQnbqN8I'; //ogene
 var lyrics = [];
 var currentTime=0;
 var currentLine; //dom object of current lyric
@@ -66,19 +66,6 @@ function _loadLyrics(result){
   currentLine = $('#lyricsDisplay p')[0];
   currentLineTime = parseInt($(currentLine).data('time'));
 }
-
-/*song chooser */
-$("#buttons button")
-  .click(function(){
-  songID = $(this).data("song");
-  player.loadVideoById(songID);
-  loadLyrics();
-  })
-  .css("background-image", function(){
-    var thisSongID = $(this).data("song");
-    var url= "url(https://img.youtube.com/vi/"+thisSongID+"/1.jpg)";
-    $(this).css("background-image", url);
-  });
 
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {

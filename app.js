@@ -11,6 +11,10 @@ var url = 'mongodb://localhost:27017/igbo';
 var url = 'mongodb://igbo:igbo@ds111940.mlab.com:11940/igbo';
 var database;
 
+// Configure view engine to render EJS templates.
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
 app.use(cors()); //may no longer be used
 app.use(bodyParser.urlencoded({
   extended: true
@@ -44,6 +48,23 @@ app.get('/lyrics/:videoID', function (req, res) {
     res.send(result);
   })
 });
+
+app.get('/music/:videoID', function (req, res) {
+
+  database.collection('lyrics')
+    .find({ videoID: req.params.videoID } )
+    .nextObject(function(err, obj) {
+      console.log(obj)
+
+      var lyrics = (obj) ? obj.lyrics : [];
+
+      res.render('player', {
+        title: "hello",
+        videoID: req.params.videoID
+      });
+  })
+});
+
 
 app.post('/', function (req, res) {
 
