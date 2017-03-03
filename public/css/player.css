@@ -36,10 +36,16 @@ h1, h2, h3, strong {
   background-color: #d9e4cd;
 }
 
-nav .navbar-brand {
+.navbar .navbar-brand {
     padding: 0px 40px;
+    font-family: 'Chewy';
+    line-height: 61px;
+    font-size: 28px;
+    color: #5D41AE;
 }
-
+.navbar .navbar-brand span {
+    color: #7ED321;
+}
 #navbar .navbar-form input{
     font-size: 15px;
     font-weight: 400;
