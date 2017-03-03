@@ -2,14 +2,78 @@
 body {
   background-color: Black;
   color: White;
+  font-family: 'Lato', sans-serif;
+
+}
+
+h1, h2, h3 {
+  font-family: 'Baloo', cursive;
 }
 
 .navbar{
     background-color: #412289;
+    background-color: White;
 }
-.navbar input{
-  background-color: #AE97E5;
-  color: white;
+
+.navbar a {
+  height: 61px;
+}
+
+.navbar a.accent {
+  color: #5D41AE;
+}
+
+.navbar-form input{
+    font-size: 15px;
+    font-weight: 400;
+    height: 60px;
+    line-height: 1.2em;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    -webkit-appearance: none;
+    margin: 0px;
+}
+
+input[type="text"], textarea {
+outline: none;
+box-shadow:none !important;
+border:0px solid #ccc !important;
+}
+
+.navbar-form input.form-control{
+  width: 400px;
+}
+.navbar-form input.form-control::-webkit-input-placeholder{
+  color: #D2D6DF;
+  letter-spacing: 2px;
+}
+
+.navbar-form {
+  padding: 0px;
+  margin: 0px;
+}
+
+.navbar-brand, .navbar-nav{
+  /*height: 61px; */
+}
+
+.navbar-nav>li>a, .navbar-form  {
+    text-transform: uppercase;
+    border-left: 1px solid #EFF2F5;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    border-radius: 0px;
+    color: #45494E;
+        line-height: 31px;
+}
+
+.glyphicon {
+  color: #D2D6DF;
+      font-size: 15px;
+      line-height: 55px;
 }
 
   #lyricsDisplay p {

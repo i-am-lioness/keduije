@@ -88,7 +88,7 @@ function onYouTubeIframeAPIReady() {
 }
 
 function onPlayerReady(event) {
-  event.target.playVideo();
+  //event.target.playVideo();
   setTimeout(activateLine, 1000);
   loadLyrics();
 }
