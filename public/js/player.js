@@ -107,6 +107,9 @@ function activateLine(){
       currentLine = nextLine;
       $(currentLine).addClass("current");
       currentLineTime = parseInt($(currentLine).data('time'));
+
+      var position = $(currentLine).offset().top;
+      $(window).scrollTop(position-50);
     }
   }
 
@@ -184,21 +187,7 @@ function storeLyrics(){
 }
 
 /*
-Feb 22-
--can play videos from youtube
--can attach lyrics to points in videos
--sorts lyrics by time
--highlights active lyrics during playback
 
-Feb 23
--can jump to point in video based on clicked lyric
--locally stores lyrics
--locally store by video
--can edit lyric
--can delete lyric
-
-feb 24
--UI: designed igbo keyboard
 
 To do:
 -allow user to manually insert/edit time markings
@@ -208,12 +197,6 @@ To do:
 -plan system architecture
 -implement editing by multiple ppl
 
-
-
-3 products to be released
-1. lyric amaosu
-2. igbo keyboard
-3. igbo dictionary
 
 -design UI
 --https://rap.genius.com/
