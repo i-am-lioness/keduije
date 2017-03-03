@@ -1,12 +1,32 @@
 
+body {
+  background-color: Black;
+  color: White;
+}
+
+.navbar{
+    background-color: #412289;
+}
+.navbar input{
+  background-color: #AE97E5;
+  color: white;
+}
+
   #lyricsDisplay p {
+    padding: .2em .6em .3em;
     cursor: pointer;
   }
   #lyricsDisplay p:hover {
-    background: grey;
-  }
+      background-color: #7ED321;
+      /*display: inline;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;*/
+      border-radius: .25em;
+    }
+
   .current {
-    color: blue;
+    color: #7ED321;
   }
   #lyricInput{
     display: none;

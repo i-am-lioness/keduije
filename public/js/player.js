@@ -18,7 +18,8 @@ jQuery.fn.extend({
   addControls: function() {
     return this.hover(
       function(){
-        $("<button>edit</button>").click(function(){
+        var btnGroup =  $('<div class="btn-group" role="group" aria-label="..."></div>');
+        $('<button  type="button" class="btn btn-default" >edit</button>').click(function(){
 
           currentLyric = $(this).parent();
           var text = currentLyric.children("span").hide().text();
@@ -37,8 +38,8 @@ jQuery.fn.extend({
           currentLyric.unbind('mouseenter');
           $(this).remove();
 
-        }).appendTo(this);
-        $("<button>delete</button>").click(function(){
+        }).appendTo(btnGroup);
+        $('<button  type="button" class="btn btn-default">delete</button>').click(function(){
 
             var index = $(this).parent().data("index");
 
@@ -46,10 +47,15 @@ jQuery.fn.extend({
             storeLyrics();
             displayLyrics();
 
-          }).appendTo(this);
+          }).appendTo(btnGroup);
+
+        $(this).append(btnGroup);
+
+        //$(this).children("span").addClass("label label-success");
       },
       function (){
-        $(this).children("button").remove();
+        $(this).children("div").remove();
+        //$(this).children("span").removeClass("label label-success");
       });
   }
 });
@@ -69,15 +75,16 @@ function _loadLyrics(result){
 
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
-    height: '390',
-    width: '640',
+    /*height: '390',
+    width: '640',*/
     videoId: songID,
-    origin: "youtube",
     events: {
       'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange
     }
   });
+    $(player.a).wrap('<div class="embed-responsive embed-responsive-4by3"/>');
+    $(player.a).addClass('embed-responsive-item');
 }
 
 function onPlayerReady(event) {
