@@ -18,8 +18,9 @@ jQuery.fn.extend({
   addControls: function() {
     return this.hover(
       function(){
-        var btnGroup =  $('<div class="btn-group" role="group" aria-label="..."></div>');
-        $('<button  type="button" class="btn btn-default" >edit</button>').click(function(){
+        /*
+        $('<a><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>')
+          .click(function(){
 
           currentLyric = $(this).parent();
           var text = currentLyric.children("span").hide().text();
@@ -38,8 +39,9 @@ jQuery.fn.extend({
           currentLyric.unbind('mouseenter');
           $(this).remove();
 
-        }).appendTo(btnGroup);
-        $('<button  type="button" class="btn btn-default">delete</button>').click(function(){
+        }).appendTo(this);
+        $('<a><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>')
+          .click(function(){
 
             var index = $(this).parent().data("index");
 
@@ -47,14 +49,14 @@ jQuery.fn.extend({
             storeLyrics();
             displayLyrics();
 
-          }).appendTo(btnGroup);
-
-        $(this).append(btnGroup);
+          }).appendTo(this);
+*/
+        //$(this).append(btnGroup);
 
         //$(this).children("span").addClass("label label-success");
       },
       function (){
-        $(this).children("div").remove();
+        $(this).children("a").remove();
         //$(this).children("span").removeClass("label label-success");
       });
   }

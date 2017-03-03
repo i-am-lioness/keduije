@@ -3,59 +3,14 @@ body {
   background-color: Black;
   color: White;
   font-family: 'Lato', sans-serif;
-
 }
 
-h1, h2, h3 {
+h1, h2, h3, strong {
   font-family: 'Baloo', cursive;
 }
 
 .navbar{
-    background-color: #412289;
     background-color: White;
-}
-
-.navbar a {
-  height: 61px;
-}
-
-.navbar a.accent {
-  color: #5D41AE;
-}
-
-.navbar-form input{
-    font-size: 15px;
-    font-weight: 400;
-    height: 60px;
-    line-height: 1.2em;
-    box-shadow: none;
-    border: none;
-    border-radius: 0;
-    -webkit-appearance: none;
-    margin: 0px;
-}
-
-input[type="text"], textarea {
-outline: none;
-box-shadow:none !important;
-border:0px solid #ccc !important;
-}
-
-.navbar-form input.form-control{
-  width: 400px;
-}
-.navbar-form input.form-control::-webkit-input-placeholder{
-  color: #D2D6DF;
-  letter-spacing: 2px;
-}
-
-.navbar-form {
-  padding: 0px;
-  margin: 0px;
-}
-
-.navbar-brand, .navbar-nav{
-  /*height: 61px; */
 }
 
 .navbar-nav>li>a, .navbar-form  {
@@ -67,25 +22,67 @@ border:0px solid #ccc !important;
     letter-spacing: 0.5px;
     border-radius: 0px;
     color: #45494E;
-        line-height: 31px;
+    line-height: 31px;
+    height: 61px;
+    margin: 0px;
+}
+
+#navbar .navbar-nav>li>a.accent {
+  color: #5D41AE;
+  font-weight: bold;
+}
+
+#navbar .navbar-nav>li>a:hover {
+  background-color: #d9e4cd;
+}
+
+nav .navbar-brand {
+    padding: 0px 40px;
+}
+
+#navbar .navbar-form input{
+    font-size: 15px;
+    font-weight: 400;
+    height: 60px;
+    line-height: 1.2em;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    -webkit-appearance: none;
+    margin: 0px;
+    width: 400px;
+}
+
+#navbar .navbar-form input::-webkit-input-placeholder{
+  color: #D2D6DF;
+  letter-spacing: 1px;
+  font-weight: 100;
+}
+
+input[type="text"], textarea {
+outline: none;
+box-shadow:none !important;
+border:0px solid #ccc !important;
 }
 
 .glyphicon {
   color: #D2D6DF;
-      font-size: 15px;
-      line-height: 55px;
+  font-size: 15px;
+  line-height: 55px;
+}
+
+#lyricsDisplay {
+  padding-top: 20px;
 }
 
   #lyricsDisplay p {
     padding: .2em .6em .3em;
     cursor: pointer;
+    white-space: nowrap;
   }
+
   #lyricsDisplay p:hover {
-      background-color: #7ED321;
-      /*display: inline;
-      font-weight: 700;
-      line-height: 1;
-      white-space: nowrap;*/
+      background-color: #5D41AE;
       border-radius: .25em;
     }
 
