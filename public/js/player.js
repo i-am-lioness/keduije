@@ -108,12 +108,23 @@ function activateLine(){
       $(currentLine).addClass("current");
       currentLineTime = parseInt($(currentLine).data('time'));
 
-      var position = $(currentLine).offset().top;
-      $(window).scrollTop(position-50);
+
+      scrollIfOutOfView(currentLine);
     }
   }
 
   setTimeout(activateLine, 1000);
+}
+
+//responsively adjusts scroll position of lyrics during playback
+function scrollIfOutOfView(element){
+  var position = $(element).offset().top;
+  var windowTop = $(window).scrollTop();
+  var height = $(window).height();
+  var windowBottom = windowTop + height * 0.7;
+
+  if ((position<windowTop) || (position > windowBottom))
+    $("html,body").animate({scrollTop: position-height*0.2}, 800);
 }
 
 function convertToTime(seconds){
