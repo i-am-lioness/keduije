@@ -90,6 +90,9 @@ border:0px solid #ccc !important;
     padding: .2em .6em .3em;
     cursor: pointer;
     white-space: nowrap;
+    font-size: 18px;
+    color: #dcd9d9;
+
   }
 
   #lyricsDisplay p:hover {
@@ -97,7 +100,7 @@ border:0px solid #ccc !important;
       border-radius: .25em;
     }
 
-  .current {
+  #lyricsDisplay .current {
     color: #7ED321;
   }
   #lyricInput{

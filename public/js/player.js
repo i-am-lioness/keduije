@@ -5,7 +5,8 @@ var player;
 var lyrics = [];
 var currentTime=0;
 var currentLine; //dom object of current lyric
-var currentLineTime; //end marker for lyric
+var currentLineStartTime;
+var currentLineEndTime;
 
 var currentLyric;
 var lyricEditor;
@@ -72,7 +73,9 @@ function _loadLyrics(result){
   displayLyrics();
   currentTime=0;
   currentLine = $('#lyricsDisplay p')[0];
-  currentLineTime = parseInt($(currentLine).data('time'));
+  currentLineStartTime = lyrics[0].startTime;
+  currentLineEndTime = lyrics[0].endTime;
+  $("p.0").addClass("current");
 }
 
 function onYouTubeIframeAPIReady() {
@@ -87,30 +90,39 @@ function onYouTubeIframeAPIReady() {
   });
     $(player.a).wrap('<div class="embed-responsive embed-responsive-4by3"/>');
     $(player.a).addClass('embed-responsive-item');
+
+    loadLyrics(); //move document.ready()
+
 }
 
 function onPlayerReady(event) {
   //event.target.playVideo();
   setTimeout(activateLine, 1000);
-  loadLyrics();
+
+}
+
+function getLineFromTime(time){
+  for (var i=0; i<lyrics.length; i++){
+    if(time<lyrics[i].endTime){
+      currentLineStartTime = lyrics[i].startTime;
+      currentLineEndTime = lyrics[i].endTime;
+      var query = "p."+lyrics[i].startTime;
+      return $(query)[0];
+    }
+  }
 }
 
 /*shows active lyric during playback */
 function activateLine(){
   currentTime = player.getCurrentTime();
 
-  if (currentTime>currentLineTime)
+  if ((currentTime<currentLineStartTime) || (currentTime>currentLineEndTime))
   {
     $(currentLine).removeClass("current");
-    var nextLine = $(currentLine).next();
-    if (nextLine.length>0) {
-      currentLine = nextLine;
-      $(currentLine).addClass("current");
-      currentLineTime = parseInt($(currentLine).data('time'));
+    currentLine = getLineFromTime(currentTime);
+    $(currentLine).addClass("current");
+    scrollIfOutOfView(currentLine);
 
-
-      scrollIfOutOfView(currentLine);
-    }
   }
 
   setTimeout(activateLine, 1000);
@@ -148,41 +160,87 @@ function onPlayerStateChange(event) {
 }
 
 function jumpTo(){
-  var time=0;
-  var prev = $(this).prev(); //todo: refactor, get start time for current line with callback
-  if(prev.length>0){
-    time = parseInt($(prev).data("time"));
-    currentLineTime = time;
-    $(currentLine).removeClass("current");
-    currentLine = $(prev);
-  }
+
+  var time = $(this).data("start-time");
   player.seekTo(time,true);
+
+  //housekeeping, may not be necessary
+  $(currentLine).removeClass("current");
+  currentLine = this;
+  $(currentLine).addClass("current");
+  currentLineStartTime = time;
+  currentLineEndTime = $(this).data("end-time");
 }
 
 function displayLyrics(){
   $('#lyricsDisplay').empty();
-  var lyricHighlighted=false;
   $.each(lyrics,function(i, val){
-    var newP = $("<p data-time='"+ val.time +"' data-index='"+i+"'><span>"+val.text+"</span></p>").click(jumpTo).addControls();
 
-    if(currentTime<val.time && !lyricHighlighted){
-      lyricHighlighted=true;
-      currentLineTime = val.time;
-      currentLine = newP;
-    }
+    var newP = $("<p></p>")
+      .addClass(val.startTime.toString())
+      .data("start-time", val.startTime)
+      .data("end-time", val.endTime)
+      .data("index",i)
+      .click(jumpTo)
+      .addControls()
+      .append("<span>"+val.text+"</span>");
+
     $('#lyricsDisplay').append(newP);
   })
 
 }
 
+/*
+
+//each line must begin with a time marker
+
+no free text editing. editing is line by line.
+can add headings or lyrics
+[chorus]
+<0:00> olisa doo olisa doo
+<0:13>* Nna dubem oo nye m ude gi oh
+<0:15> Aga m agbachazi nbo gbara aka laa
+<>Imana mu na Chi m so
+
+lyric_line {
+  id: num_of_bars
+  isHeading:
+  startTime:
+  endTime:
+  deleted: false,
+  text:
+}
+
+//id can change until annotated
+revision: {
+  user:
+  songID:
+  lineID:
+  before: {
+  startTime: x ||
+  endTime: x ||
+  content: x
+   }
+  change: {deleted: true ||
+          startTime: x ||
+          endTime: x ||
+          content: }
+}
+
+*/
 function addLyric(){
   lyrics.push({
     text: $('#lyric').val(),
-    time: segmentEnd
+    endTime: segmentEnd,
+    deleted: false,
+    isHeading: false,
+    id: lyrics.length,
+    startTime: segmentStart
   });
+
   $('#lyric').val("");
   lyrics.sort(function(a, b){
-    return a.time-b.time;
+    return a.endTime-b.endTime;
   });
 
   storeLyrics();
