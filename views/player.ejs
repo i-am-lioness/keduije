@@ -36,6 +36,7 @@
     <![endif]-->
     <script>
       var songID = "<%= videoID %>";
+      var editMode = true;
     </script>
     <link href="/css/player.css" rel="stylesheet">
     <link href="/css/lyric-editor.css" rel="stylesheet">
@@ -70,6 +71,7 @@
            <div id="player" ></div>
 
             <div id="lyricEditor">
+              <div class="originalText"></div>
               <form>
                 <input id="lyric" type="text" placeholder="Transcibe Lyrics...">
                 <div class="row">

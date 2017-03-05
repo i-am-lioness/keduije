@@ -83,6 +83,8 @@ nav .glyphicon {
 
 #lyric-column{
    background: #69b912;
+   padding-left: 0px;
+   padding-right: 0px;
 }
 
 
@@ -92,7 +94,7 @@ nav .glyphicon {
 }
 
   #lyricsDisplay p {
-    padding: .2em .6em .3em;
+    padding: .2em 0.5em .3em;
     cursor: pointer;
     white-space: nowrap;
     font-size: 18px;
@@ -102,13 +104,18 @@ nav .glyphicon {
 
   #lyricsDisplay p:hover {
       background-color: #5D41AE;
-      border-radius: .25em;
+      /*border-radius: .25em;*/
     }
 
   #lyricsDisplay .current {
     color: #7ED321;
   }
 
+  #lyricsDisplay .glyphicon-pencil{
+    opacity: 0;
+    color: white;
+    margin-right: 5px;
+  }
 
 
   #buttons button{

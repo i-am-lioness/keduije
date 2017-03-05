@@ -7,14 +7,16 @@ var lyrics = [];
 var currentTime=0;
 var currentLine; //dom object of current lyric
 var currentLineStartTime;
-var currentLineEndTime;
+var currentLineEndTime = -1;
 
 var currentLyric;
 var lyricEditor;
+var indexBeingModified = -1;
 
 var host = "http://localhost:3000/"; //when connecting to local backend, but on separate server
 var host = "https://keduije.herokuapp.com/"; //when connecting to remote backend instance
 var host = "/"; //when backend on same host as front end
+var activateLineTimer;
 
 
 function onSpinnerCreated(element, variableName){
@@ -51,62 +53,16 @@ $(function(){
 
     $("#playLyric").click(playLyric);
 
-    //$('#addLyricBtn').click(addLyric);
+    if(editMode) $("#lyricEditor").show();
 
     $("form").submit(function(e){
         //alert('submit intercepted');
         e.preventDefault(e);
-        addLyric();
+        saveLyric();
     });
 
-});
+    loadLyrics();
 
-jQuery.fn.extend({
-  addControls: function() {
-    return this.hover(
-      function(){
-        /*
-        $('<a><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>')
-          .click(function(){
-
-          currentLyric = $(this).parent();
-          var text = currentLyric.children("span").hide().text();
-          lyricEditor = $("<input>").val(text);
-          var saveBtn = $("<button>save</button>").click(function(){
-            var newVersion = lyricEditor.val();
-
-            lyrics[currentLyric.data("index")].text=newVersion;
-            storeLyrics();
-            displayLyrics();
-          });
-          var cancelBtn = $("<button>cancel</button>").click(function(){
-            displayLyrics();
-          });
-          $("<div></div>").append(lyricEditor).append(saveBtn).append(cancelBtn).appendTo(currentLyric);
-          currentLyric.unbind('mouseenter');
-          $(this).remove();
-
-        }).appendTo(this);
-        $('<a><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>')
-          .click(function(){
-
-            var index = $(this).parent().data("index");
-
-            lyrics.splice(index,1);
-            storeLyrics();
-            displayLyrics();
-
-          }).appendTo(this);
-*/
-        //$(this).append(btnGroup);
-
-        //$(this).children("span").addClass("label label-success");
-      },
-      function (){
-        $(this).children("a").remove();
-        //$(this).children("span").removeClass("label label-success");
-      });
-  }
 });
 
 function loadLyrics(){
@@ -120,8 +76,8 @@ function _loadLyrics(result){
   currentTime=0;
   currentLine = $('#lyricsDisplay p')[0];
   currentLineStartTime = lyrics[0].startTime;
-  currentLineEndTime = lyrics[0].endTime;
-  $(currentLine).addClass("current");
+  //currentLineEndTime = lyrics[0].endTime;
+  //$(currentLine).addClass("current");
 }
 
 function onYouTubeIframeAPIReady() {
@@ -137,13 +93,13 @@ function onYouTubeIframeAPIReady() {
     $(player.a).wrap('<div class="embed-responsive embed-responsive-4by3"/>');
     $(player.a).addClass('embed-responsive-item');
 
-    loadLyrics(); //move document.ready()
+
 
 }
 
 function onPlayerReady(event) {
   //event.target.playVideo();
-  setTimeout(activateLine, 1000);
+
 
 }
 
@@ -187,7 +143,7 @@ function activateLine(){
 
   }
 
-  setTimeout(activateLine, 1000);
+  activateLineTimer = setTimeout(activateLine, 1000);
 }
 
 //responsively adjusts scroll position of lyrics during playback
@@ -224,20 +180,24 @@ function parseTimeString( str ) {
 
 function onPlayerStateChange(event) {
   if (event.data == YT.PlayerState.PAUSED) {
+    if(indexBeingModified>-1) return;
+
     segmentStart = saveStartTime? segmentStart : segmentEnd;
     saveStartTime = false; //turn off switch
     segmentEnd = Math.floor(player.getCurrentTime());
-    //$('#addLyricBtn').text(convertToTime(segmentStart) +  " to " + convertToTime(segmentEnd));
+
     $( "#segment-start" ).spinner( "value", segmentStart );
     $( "#segment-end" ).spinner( "value", segmentEnd );
     updateDisplayedTime(segmentStart, "#segment-start");
     updateDisplayedTime(segmentEnd, "#segment-end");
-    //$('#lyricInput').show();
+    showNewLyricDialog();
     //pause timer
+    clearTimeout(activateLineTimer);
 
   }else if (event.data == YT.PlayerState.PLAYING) {
     //resume timer
-    //$('#lyricInput').hide();
+    if(!editMode)
+      activateLineTimer = setTimeout(activateLine, 1000);
   }
 }
 
@@ -252,6 +212,18 @@ function jumpTo(){
   $(currentLine).addClass("current");
   currentLineStartTime = time;
   currentLineEndTime = $(this).data("end-time");
+
+  if(editMode){
+    saveStartTime = true;
+    segmentStart = time; //refactor?
+    player.playVideo();
+    segmentEnd = parseInt($(this).data("end-time"));
+    setTimeout(checkForSegmentEnd,1000);
+    $( "#segment-start" ).spinner( "value", segmentStart );
+    $( "#segment-end" ).spinner( "value", segmentEnd );
+    updateDisplayedTime(segmentStart, "#segment-start");
+    updateDisplayedTime(segmentEnd, "#segment-end");
+  }
 }
 
 function displayLyrics(){
@@ -264,14 +236,59 @@ function displayLyrics(){
       .data("end-time", val.endTime)
       .data("index",i)
       .click(jumpTo)
-      .addControls()
       .append("<span>"+val.text+"</span>");
+
+    var editBtn =$('<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>')
+      .data("start-time", val.startTime)
+      .data("end-time", val.endTime)
+      .data("index",i)
+      .data("text",val.text)
+      .hover(
+        function(){
+          if(editMode)
+            $(this).css("opacity", "1");
+        },
+        function(){
+          $(this).css("opacity", "0");
+        }
+      )
+      .click(function(){
+        if ( $(this).css('opacity')=="1" && editMode ){
+          var startTime = $(this).data("start-time");
+          var endTime = $(this).data("start-end");
+          var index = $(this).data("index");
+          var text = $(this).data("text");
+          showEditDialog(i, startTime, endTime, text);
+        }
+
+      });
+
+    newP.prepend(editBtn);
 
     $('#lyricsDisplay').append(newP);
   })
 
 }
 
+function showNewLyricDialog(){
+  $("#lyricEditor .originalText").hide().text('');
+  $("#lyricEditor").show();
+  //$("#lyric").val("");
+  $("#save-lyric-btn").text("Add");
+}
+
+function showEditDialog(i, startTime, endTime, text){
+  indexBeingModified = i;
+  $("#lyricEditor .originalText").show().text('original: ' + text + '"');
+  $("#lyric").val(text);
+  segmentStart = startTime;
+  segmentEnd = endTime;
+  $( "#segment-start" ).spinner( "value", segmentStart );
+  $( "#segment-end" ).spinner( "value", segmentEnd );
+  updateDisplayedTime(segmentStart, "#segment-start");
+  updateDisplayedTime(segmentEnd, "#segment-end");
+  $("#save-lyric-btn").text("Update");
+}
 /*
 
 //each line must begin with a time marker
@@ -310,6 +327,27 @@ revision: {
 }
 
 */
+function saveLyric(){
+
+  if(indexBeingModified>-1)
+    updateLyric(indexBeingModified);
+  else {
+    addLyric()
+  }
+
+  $('#lyric').val("");
+  lyrics.sort(function(a, b){
+    return a.endTime-b.endTime;
+  });
+
+  storeLyrics();
+
+  displayLyrics();
+  indexBeingModified = -1;
+  $("#lyricEditor").hide();
+
+}
+
 function addLyric(){
   lyrics.push({
     text: $('#lyric').val(),
@@ -320,15 +358,12 @@ function addLyric(){
     startTime: segmentStart
   });
 
-  $('#lyric').val("");
-  lyrics.sort(function(a, b){
-    return a.endTime-b.endTime;
-  });
+}
 
-  storeLyrics();
-
-  displayLyrics();
-
+function updateLyric(idx){
+  lyrics[idx].text=$("#lyric").val();
+  lyrics[idx].startTime=segmentStart;
+  lyrics[idx].endTime=segmentEnd;
 }
 
 
@@ -340,14 +375,13 @@ function storeLyrics(){
 
 
 To do:
--allow user to manually insert/edit time markings
---update spinner time markers when jumping around
-- replace jquery spinners with react components
--allow user more flexibility in paragraph structure
---edit/store by line or by whole song?
+-allow user to cancel/exit edit dialoge
+-allow user to add headings
+-update spinner time markers when jumping around
+-replace jquery spinners with react components
 
--plan system architecture
 -implement editing by multiple ppl
+-decide what happens when video finishes playing
 
 
 -design UI
