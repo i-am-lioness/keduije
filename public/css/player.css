@@ -5,7 +5,7 @@ body {
   font-family: 'Lato', sans-serif;
 }
 
-h1, h2, h3, strong {
+h1, h2, h3, h4, strong {
   font-family: 'Baloo', cursive;
 }
 
@@ -82,7 +82,7 @@ nav .glyphicon {
 }
 
 #lyric-column{
-   background: #69b912;
+   background: #43a934;
    padding-left: 0px;
    padding-right: 0px;
 }
@@ -91,30 +91,53 @@ nav .glyphicon {
 #lyricsDisplay {
   padding-top: 20px;
   margin-top: 80px;
+  color: #dcd9d9;
 }
 
   #lyricsDisplay p {
-    padding: .2em 0.5em .3em;
+    padding: 1em 0.5em .1em;
     cursor: pointer;
     white-space: nowrap;
     font-size: 18px;
-    color: #dcd9d9;
-
+    margin: 0;
+    position: relative;
   }
 
   #lyricsDisplay p:hover {
       background-color: #5D41AE;
-      /*border-radius: .25em;*/
     }
 
+      #lyricsDisplay p.has-heading {
+        padding-top: 0px;
+
+      }
+
+  #lyricsDisplay h4 {
+    margin-top: 1.4em;
+    padding-left: 0.5em;
+  }
+
   #lyricsDisplay .current {
-    color: #7ED321;
+    color: black;
   }
 
   #lyricsDisplay .glyphicon-pencil{
     opacity: 0;
     color: white;
     margin-right: 5px;
+    cursor: pointer;
+  }
+
+  #lyricsDisplay .add-heading-btn{
+    position: absolute;
+    top: 2px;
+    font-size: 0.6em;
+    opacity: 0;
+    color: yellow;
+    width: 100%;
+    left: 0;
+    text-align: center;
+    text-decoration: none !important;
   }
 
 

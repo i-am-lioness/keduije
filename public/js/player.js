@@ -190,7 +190,9 @@ function onPlayerStateChange(event) {
     $( "#segment-end" ).spinner( "value", segmentEnd );
     updateDisplayedTime(segmentStart, "#segment-start");
     updateDisplayedTime(segmentEnd, "#segment-end");
-    showNewLyricDialog();
+
+    if(editMode)
+      showNewLyricDialog();
     //pause timer
     clearTimeout(activateLineTimer);
 
@@ -203,19 +205,15 @@ function onPlayerStateChange(event) {
 
 function jumpTo(){
 
-  var time = $(this).data("start-time");
-  player.seekTo(parseInt(time),true);
-
-  //housekeeping, may not be necessary
-  $(currentLine).removeClass("current");
   currentLine = this;
-  $(currentLine).addClass("current");
-  currentLineStartTime = time;
-  currentLineEndTime = $(this).data("end-time");
+  currentLineStartTime = parseInt($(currentLine).data("start-time"));
+  currentLineEndTime = parseInt($(currentLine).data("end-time"));
+  $(currentLine).removeClass("current");
+  player.seekTo(currentLineStartTime,true);
 
   if(editMode){
     saveStartTime = true;
-    segmentStart = time; //refactor?
+    segmentStart = currentLineStartTime;
     player.playVideo();
     segmentEnd = parseInt($(this).data("end-time"));
     setTimeout(checkForSegmentEnd,1000);
@@ -223,49 +221,108 @@ function jumpTo(){
     $( "#segment-end" ).spinner( "value", segmentEnd );
     updateDisplayedTime(segmentStart, "#segment-start");
     updateDisplayedTime(segmentEnd, "#segment-end");
+  }else {
+    $(currentLine).addClass("current");
   }
+}
+
+function showEditHeaderDialog(idx){
+  var headingText = prompt("Update Heading", lyrics[idx].heading);
+  saveHeading(headingText, idx);
 }
 
 function displayLyrics(){
   $('#lyricsDisplay').empty();
   $.each(lyrics,function(i, val){
 
-    var newP = $("<p></p>")
-      .addClass(val.startTime.toString())
-      .data("start-time", val.startTime)
-      .data("end-time", val.endTime)
-      .data("index",i)
-      .click(jumpTo)
-      .append("<span>"+val.text+"</span>");
+      var newP = $("<p></p>")
+        .addClass(val.startTime.toString())
+        .data("start-time", val.startTime)
+        .data("end-time", val.endTime)
+        .data("index",i)
+        .click(jumpTo)
+        .hover(
+          function(){
+            if(editMode)
+              $(this).find(".glyphicon").css("opacity", "1");
+          },
+          function(){
+            $(this).find(".glyphicon").css("opacity", "0");
+          }
+        )
+        .append("<span>"+val.text+"</span>");
 
-    var editBtn =$('<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>')
-      .data("start-time", val.startTime)
-      .data("end-time", val.endTime)
-      .data("index",i)
-      .data("text",val.text)
-      .hover(
-        function(){
-          if(editMode)
-            $(this).css("opacity", "1");
-        },
-        function(){
-          $(this).css("opacity", "0");
-        }
-      )
-      .click(function(){
-        if ( $(this).css('opacity')=="1" && editMode ){
-          var startTime = $(this).data("start-time");
-          var endTime = $(this).data("start-end");
-          var index = $(this).data("index");
-          var text = $(this).data("text");
-          showEditDialog(i, startTime, endTime, text);
-        }
+      var editBtn =$('<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>')
+        .data("start-time", val.startTime)
+        .data("end-time", val.endTime)
+        .data("index",i)
+        .data("text",val.text)
+        .click(function(){
+          if ( $(this).css('opacity')=="1" && editMode ){
+            var startTime = $(this).data("start-time");
+            var endTime = $(this).data("start-end");
+            var index = $(this).data("index");
+            var text = $(this).data("text");
+            var isHeader = $(this).data("is-header");
+            if(isHeader)
+              showEditHeaderDialog(index);
+            else
+              showEditDialog(i, startTime, endTime, text);
+          }
 
-      });
+        });
 
-    newP.prepend(editBtn);
+        if((val.heading)){
+          var h4 = $("<h4></h4>")
+            .text(val.heading)
+            .data("index",i)
+            .hover(
+              function(){
+                if(editMode)
+                  $(this).find(".glyphicon").css("opacity", "1");
+              },
+              function(){
+                $(this).find(".glyphicon").css("opacity", "0");
+              }
+            );
 
-    $('#lyricsDisplay').append(newP);
+            $(editBtn).clone(true)
+            .data("is-header",true)
+            .prependTo(h4);
+
+            $('#lyricsDisplay').append(h4);
+
+            newP.addClass("has-heading");
+          }else {
+
+            var addHeadingBtn = $('<a href="#" class="add-heading-btn">Add Heading</a>')
+              .prepend('<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>')
+              .data("index",i)
+              .hover(
+                function(){
+                  if(editMode)
+                    $(this).css("opacity", "1");
+                },
+                function(){
+                  $(this).css("opacity", "0");
+                }
+              )
+              .click(function(){
+                if ( $(this).css('opacity')=="1" && editMode ){
+                  var index = $(this).data("index");
+                  var headingText = prompt("Please enter heading", "[]");
+                  saveHeading(headingText, index);
+                  //showEditDialog(i, startTime, endTime, text);
+                }
+
+              });
+              newP.append(addHeadingBtn);
+      }
+
+      newP.prepend(editBtn);
+
+
+      $('#lyricsDisplay').append(newP);
   })
 
 }
@@ -303,11 +360,12 @@ can add headings or lyrics
 
 lyric_line {
   id: num_of_bars
-  isHeading:
+  //isHeading:
   startTime:
   endTime:
   deleted: false,
   text:
+  heading: null || "string"
 }
 
 //id can change until annotated
@@ -327,6 +385,19 @@ revision: {
 }
 
 */
+
+//todo: refactor, integrate with saveLyric
+function saveHeading(text, idx){
+  lyrics[idx].heading=text;
+
+  storeLyrics();
+
+  displayLyrics();
+  indexBeingModified = -1;
+  $("#lyricEditor").hide();
+
+}
+
 function saveLyric(){
 
   if(indexBeingModified>-1)
@@ -353,9 +424,10 @@ function addLyric(){
     text: $('#lyric').val(),
     endTime: segmentEnd,
     deleted: false,
-    isHeading: false,
+    //isHeading: false,
     id: lyrics.length,
-    startTime: segmentStart
+    startTime: segmentStart,
+    heading: null
   });
 
 }
@@ -385,13 +457,11 @@ To do:
 
 
 -design UI
---https://rap.genius.com/
---https://soundcloud.com/freemedigital/phyno-e-sure-for-me-olisa-doo
---mobile friendly
--publish to github
+
+
 -publish to socialyte
 -adsense
 -all by March
 
-the beauty of igbo language, and indigenous languages in general is not in it's formality, but in it's familiarity
+
 */
