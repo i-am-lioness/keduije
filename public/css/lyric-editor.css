@@ -1,0 +1,77 @@
+
+#lyricEditor{
+  background-color: #5D41AE;
+  padding: 20px;
+}
+
+#lyricEditor button {
+  font-family: "Baloo";
+}
+#lyricEditor #lyric{
+  background-color: #A087E7 !important;
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border-radius: 3px;
+  border-color: white;
+  border-width: 1px;
+  font-size: 18px;
+}
+
+#lyricEditor input::-webkit-input-placeholder{
+  color: #d1cce0;
+  font-size: 18px;
+}
+
+#lyricEditor > form > div {
+ margin: 10px 0;
+}
+
+#save-lyric-btn {
+  background-color: #7ED321;
+  /*width: 90%;
+  font-size: 36px;*/
+  color: White;
+  padding: 10px;
+  width: 100%;
+}
+
+#lyricEditor label{
+  color: White;
+  font-family: "Baloo";
+}
+
+#lyricEditor .display {
+  color: White;
+  font-family: "Baloo";
+  font-size: 36px;
+  display: inline-block;
+width: 100px;
+}
+
+#lyricEditor .ui-spinner-input{
+  display: none;
+}
+
+#lyricEditor .ui-spinner {
+  background: none;
+  margin: 10px;
+  border: none;
+}
+
+#lyricEditor a.ui-spinner-button{
+  background: none;
+  border: none;
+}
+
+#lyricEditor .ui-button .ui-icon{
+  background-image: url(/img/ui-icons_ffffff_256x240.png);
+}
+
+
+#playLyric {
+    background: none;
+    color: white;
+    position: absolute;
+right: 0;
+  }

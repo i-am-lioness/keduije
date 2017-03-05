@@ -1,6 +1,7 @@
 var segmentStart=0;
 var segmentEnd=0;
 var player;
+var saveStartTime=false;
 //var songID = 'kTWYQnbqN8I'; //ogene
 var lyrics = [];
 var currentTime=0;
@@ -14,6 +15,51 @@ var lyricEditor;
 var host = "http://localhost:3000/"; //when connecting to local backend, but on separate server
 var host = "https://keduije.herokuapp.com/"; //when connecting to remote backend instance
 var host = "/"; //when backend on same host as front end
+
+
+function onSpinnerCreated(element, variableName){
+  var seconds = window[variableName];
+  var timeDisplay = $('<span class="display '+ variableName +'"></span>').text(convertToTime(seconds));
+  $(element).after(timeDisplay);
+  $(element).data("variableName",variableName)
+}
+
+function updateDisplayedTime(seconds, element){
+  var formatedTime = convertToTime(seconds);
+  var variableName = $(element).data("variableName");
+  $("span."+variableName).text(formatedTime);
+  window[variableName]=seconds;
+}
+
+$(function(){
+    $( "#segment-start" ).spinner({
+      spin: function (event, ui){
+        updateDisplayedTime(ui.value, this);
+      },
+      create: function () {
+        onSpinnerCreated(this, "segmentStart");
+      }
+    });
+    $( "#segment-end" ).spinner({
+      spin: function (event, ui){
+        updateDisplayedTime(ui.value, this);
+      },
+      create: function () {
+        onSpinnerCreated(this, "segmentEnd");
+      }
+    });
+
+    $("#playLyric").click(playLyric);
+
+    //$('#addLyricBtn').click(addLyric);
+
+    $("form").submit(function(e){
+        //alert('submit intercepted');
+        e.preventDefault(e);
+        addLyric();
+    });
+
+});
 
 jQuery.fn.extend({
   addControls: function() {
@@ -75,7 +121,7 @@ function _loadLyrics(result){
   currentLine = $('#lyricsDisplay p')[0];
   currentLineStartTime = lyrics[0].startTime;
   currentLineEndTime = lyrics[0].endTime;
-  $("p.0").addClass("current");
+  $(currentLine).addClass("current");
 }
 
 function onYouTubeIframeAPIReady() {
@@ -99,6 +145,22 @@ function onPlayerReady(event) {
   //event.target.playVideo();
   setTimeout(activateLine, 1000);
 
+}
+
+function playLyric(){
+  player.seekTo(segmentStart,true);
+  player.playVideo();
+  saveStartTime = true;
+  setTimeout(checkForSegmentEnd,1000);
+}
+
+function checkForSegmentEnd(){
+  currentTime = player.getCurrentTime();
+  if (currentTime > segmentEnd){
+    player.pauseVideo();
+  }else {
+    setTimeout(checkForSegmentEnd, 1000);
+  }
 }
 
 function getLineFromTime(time){
@@ -140,29 +202,49 @@ function scrollIfOutOfView(element){
 }
 
 function convertToTime(seconds){
+  var minutes = seconds/60;
   var seconds = seconds%60;
   if (seconds<10) seconds = "0"+seconds;
-  return Math.floor(seconds/60) + ":" + seconds;
+  return Math.floor(minutes) + ":" + seconds;
+}
+
+/* may not be needed */
+function parseTimeString( str ) {
+
+  var seconds = 0;
+  var unit = 1;
+
+  var parts = str.split(":");
+  while(parts.length>0){
+    var val=parts.pop();
+    seconds += parseInt(val)*unit;
+    unit *=60;
+  }
 }
 
 function onPlayerStateChange(event) {
   if (event.data == YT.PlayerState.PAUSED) {
-    segmentStart = segmentEnd;
+    segmentStart = saveStartTime? segmentStart : segmentEnd;
+    saveStartTime = false; //turn off switch
     segmentEnd = Math.floor(player.getCurrentTime());
-    $('#addLyricBtn').text(convertToTime(segmentStart) +  " to " + convertToTime(segmentEnd));
-    $('#lyricInput').show();
+    //$('#addLyricBtn').text(convertToTime(segmentStart) +  " to " + convertToTime(segmentEnd));
+    $( "#segment-start" ).spinner( "value", segmentStart );
+    $( "#segment-end" ).spinner( "value", segmentEnd );
+    updateDisplayedTime(segmentStart, "#segment-start");
+    updateDisplayedTime(segmentEnd, "#segment-end");
+    //$('#lyricInput').show();
     //pause timer
 
   }else if (event.data == YT.PlayerState.PLAYING) {
     //resume timer
-    $('#lyricInput').hide();
+    //$('#lyricInput').hide();
   }
 }
 
 function jumpTo(){
 
   var time = $(this).data("start-time");
-  player.seekTo(time,true);
+  player.seekTo(parseInt(time),true);
 
   //housekeeping, may not be necessary
   $(currentLine).removeClass("current");
@@ -249,7 +331,6 @@ function addLyric(){
 
 }
 
-$('#addLyricBtn').click(addLyric);
 
 function storeLyrics(){
   $.post(host, {videoID: songID, lyrics: lyrics});
@@ -260,6 +341,8 @@ function storeLyrics(){
 
 To do:
 -allow user to manually insert/edit time markings
+--update spinner time markers when jumping around
+- replace jquery spinners with react components
 -allow user more flexibility in paragraph structure
 --edit/store by line or by whole song?
 

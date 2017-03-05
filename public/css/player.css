@@ -38,7 +38,7 @@ h1, h2, h3, strong {
 
 .navbar .navbar-brand {
     padding: 0px 40px;
-    font-family: 'Chewy';
+    font-family: 'Baloo';
     line-height: 61px;
     font-size: 28px;
     color: #5D41AE;
@@ -68,10 +68,10 @@ h1, h2, h3, strong {
 input[type="text"], textarea {
 outline: none;
 box-shadow:none !important;
-border:0px solid #ccc !important;
+border:0px solid #ccc;
 }
 
-.glyphicon {
+nav .glyphicon {
   color: #D2D6DF;
   font-size: 15px;
   line-height: 55px;
@@ -80,6 +80,11 @@ border:0px solid #ccc !important;
 #video-column{
    position: fixed;
 }
+
+#lyric-column{
+   background: #69b912;
+}
+
 
 #lyricsDisplay {
   padding-top: 20px;
@@ -103,13 +108,8 @@ border:0px solid #ccc !important;
   #lyricsDisplay .current {
     color: #7ED321;
   }
-  #lyricInput{
-    display: none;
-  }
 
-  #lyric {
-    width: 80%;
-  }
+
 
   #buttons button{
     height: 90px;
