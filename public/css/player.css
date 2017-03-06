@@ -93,9 +93,14 @@ nav .glyphicon {
   line-height: 55px;
 }
 
+.container-fluid .row{
+  background-color: #7ED321;
+}
+
 #video-column{
    position: fixed;
    padding: 0;
+   top: 60px;
 }
 
 #lyric-column{
