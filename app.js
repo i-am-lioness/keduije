@@ -1,3 +1,4 @@
+require('dotenv').config()
 var MongoClient = require('mongodb').MongoClient
   , assert = require('assert');
 var express = require('express');
