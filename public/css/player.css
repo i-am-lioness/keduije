@@ -27,6 +27,22 @@ h1, h2, h3, h4, strong {
     margin: 0px;
 }
 
+.navbar-nav>li>a.user {
+  padding-left: 50px;
+}
+
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background-position: center;
+    background-size: cover;
+    display: inline-block;
+    position: absolute;
+    left: 15px;
+}
+
 #navbar .navbar-nav>li>a.accent {
   color: #5D41AE;
   font-weight: bold;

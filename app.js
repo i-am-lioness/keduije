@@ -7,10 +7,14 @@ var cors = require('cors')
 var path = require('path');
 var passport = require('passport');
 var Strategy = require('passport-facebook').Strategy;
+var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 
 // Connection URL
 var url = 'mongodb://localhost:27017/igbo';
 var url = 'mongodb://igbo:igbo@ds111940.mlab.com:11940/igbo';
+var fbCallbackURL = process.env.DEV ?
+  'http://localhost:3000/login/facebook/return'
+  : 'http://socialyte.us/login/facebook/return';
 var database;
 
 function getFacebookUser(facebookProfile, cb){
@@ -34,7 +38,7 @@ function getUser(facebookProfileId, cb){
   database.collection('users').findOne(
     { facebookID: facebookProfileId },
     function (err, result){
-      console.log("result of findOne", result);
+      //console.log("result of findOne", result);
       cb(err,result);
     });
 }
@@ -42,7 +46,7 @@ function getUser(facebookProfileId, cb){
 passport.use(new Strategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: 'http://localhost:3000/login/facebook/return'
+    callbackURL: fbCallbackURL
   },
   function(accessToken, refreshToken, profile, cb) {
     //console.log("strategy_callback", profile);
@@ -111,7 +115,7 @@ app.get('/lyrics/:videoID', function (req, res) {
 app.get('/music/:videoID', function (req, res) {
 
   getSong(req.params.videoID, function(err, obj) {
-      //console.log(obj)
+      //console.log("user", req.user);
 
       var lyrics = (obj) ? obj.lyrics : [];
 
@@ -128,9 +132,10 @@ app.get('/music/:videoID', function (req, res) {
 
 app.get(
   '/music/edit/:videoID',
-  require('connect-ensure-login').ensureLoggedIn(),
+  ensureLoggedIn(),
     function (req, res) {
-      console.log("user", req.user);
+
+      console.log("session", req.session);
       if(!req.user.admin){
         res.send("<h1>Not Authorized</h1>")
         return;
@@ -141,6 +146,7 @@ app.get(
 
         var lyrics = (obj) ? obj.lyrics : [];
 
+        //console.log("user", req.user);
         res.render('player', {
           title: "hello",
           videoID: req.params.videoID,
@@ -174,13 +180,10 @@ app.get('/login',
       res.redirect(req.session.returnTo);
     });
 
-
-  app.get('/profile',
-    require('connect-ensure-login').ensureLoggedIn(),
-    function(req, res){
-      res.render('profile', { user: req.user });
-    });
-
+  app.get('/logout', function(req, res){
+    req.logout();
+    res.redirect('/');
+  });
 
 
 app.post('/', function (req, res) {
@@ -210,6 +213,7 @@ MongoClient.connect(url, function(err, db) {
   var port = (process.env.PORT || 3000);
   app.listen(port, function () {
     console.log('Example app listening on port ' + port + "!");
+      console.log("callbackURL", fbCallbackURL);
   })
 
 });

@@ -449,16 +449,17 @@ function storeLyrics(){
 
 To do:
 -user managment
---indicate when logged in
---get more user info
 --unique userID
+
 
 -allow user to cancel/exit edit dialoge
 -replace jquery spinners with react components
 
 -implement editing by multiple ppl
--decide what happens when video finishes playing
 
+-decide what happens when video finishes playing
+- customize youtube controls (https://www.technipages.com/youtube-disable-bottom-bar-and-youtube-logo)
+https://drupal.gatech.edu/handbook/embed-youtube-video-autoplay-looping-and-no-controls
 
 
 */

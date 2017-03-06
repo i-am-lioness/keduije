@@ -37,7 +37,7 @@
     <script>
       var songID = "<%= videoID %>";
       var editMode = JSON.parse("<%= editMode %>");
-      //var user = JSON.parse("<%= user %>");
+
     </script>
     <link href="/css/player.css" rel="stylesheet">
     <link href="/css/lyric-editor.css" rel="stylesheet">
@@ -57,8 +57,18 @@
           <input type="text" class="form-control" placeholder="Search Artists, Lyrics, and more...">
         </form>
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="#">Sign In</a></li>
+          <% if (user) { %>
+          <li>
+            <a href="#" class="user">
+              <div class="user-avatar" style="background-image: url(http://graph.facebook.com/v2.8/<%= user.facebookID %>/picture);"></div>
+              <span><%= user.facebookProfile.displayName %></span>
+            </a>
+          </li>
+          <li><a href="/logout">Logout</a></li>
+          <% } else { %>
+          <li><a href="/login">Sign In</a></li>
           <li><a href="#about">Sign Up</a></li>
+          <% } %>
           <li><a href="#create" class="accent">Add Lyrics</a></li>
         </ul>
       </div><!--/.nav-collapse -->
