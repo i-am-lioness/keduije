@@ -95,6 +95,7 @@ nav .glyphicon {
 
 #video-column{
    position: fixed;
+   padding: 0;
 }
 
 #lyric-column{

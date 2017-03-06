@@ -81,17 +81,16 @@ function _loadLyrics(result){
 }
 
 function onYouTubeIframeAPIReady() {
-  player = new YT.Player('player', {
-    /*height: '390',
-    width: '640',*/
-    videoId: songID,
+  var iframe = $("iframe.embed-responsive-item")[0];
+  player = new YT.Player(iframe, {
+    //videoId: songID,
     events: {
       'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange
     }
   });
-    $(player.a).wrap('<div class="embed-responsive embed-responsive-4by3"/>');
-    $(player.a).addClass('embed-responsive-item');
+    //$(player.a).wrap('<div class="embed-responsive embed-responsive-4by3"/>');
+    //$(player.a).addClass('embed-responsive-item');
 
 
 

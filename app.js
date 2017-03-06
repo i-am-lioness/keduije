@@ -123,7 +123,8 @@ app.get('/music/:videoID', function (req, res) {
         title: "hello",
         videoID: req.params.videoID,
         user: req.user,
-        editMode: false
+        editMode: false,
+        origin: req.headers.host
       });
   });
 
@@ -135,7 +136,6 @@ app.get(
   ensureLoggedIn(),
     function (req, res) {
 
-      console.log("session", req.session);
       if(!req.user.admin){
         res.send("<h1>Not Authorized</h1>")
         return;
@@ -151,7 +151,8 @@ app.get(
           title: "hello",
           videoID: req.params.videoID,
           user: req.user,
-          editMode: true
+          editMode: true,
+          origin: req.headers.host
         });
     });
 
@@ -213,7 +214,7 @@ MongoClient.connect(url, function(err, db) {
   var port = (process.env.PORT || 3000);
   app.listen(port, function () {
     console.log('Example app listening on port ' + port + "!");
-      console.log("callbackURL", fbCallbackURL);
+      //console.log("callbackURL", fbCallbackURL);
   })
 
 });
