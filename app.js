@@ -10,9 +10,6 @@ var passport = require('passport');
 var Strategy = require('passport-facebook').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 
-// Connection URL
-var url = 'mongodb://localhost:27017/igbo';
-var url = 'mongodb://igbo:igbo@ds111940.mlab.com:11940/igbo';
 var fbCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/facebook/return'
   : 'http://socialyte.us/login/facebook/return';
@@ -45,8 +42,8 @@ function getUser(facebookProfileId, cb){
 }
 
 passport.use(new Strategy({
-    clientID: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
+    clientID: process.env.FB_CLIENT_ID,
+    clientSecret: process.env.FB_CLIENT_SECRET,
     callbackURL: fbCallbackURL
   },
   function(accessToken, refreshToken, profile, cb) {
@@ -115,54 +112,41 @@ app.get('/lyrics/:videoID', function (req, res) {
 
 app.get('/music/:videoID', function (req, res) {
 
-  getSong(req.params.videoID, function(err, obj) {
-      //console.log("user", req.user);
-
-      var lyrics = (obj) ? obj.lyrics : [];
-
-      res.render('player', {
-        title: "hello",
-        videoID: req.params.videoID,
-        user: req.user,
-        editMode: false,
-        origin: req.headers.host
-      });
-  });
+  getSong(req, res, false);
 
 });
 
+app.get( '/music/edit/:videoID', ensureLoggedIn(), function (req, res) {
 
-app.get(
-  '/music/edit/:videoID',
-  ensureLoggedIn(),
-    function (req, res) {
+    if(!req.user.admin){
+      res.send("<h1>Not Authorized</h1>")
+      return;
+    }
 
-      if(!req.user.admin){
-        res.send("<h1>Not Authorized</h1>")
-        return;
-      }
-
-    getSong(req.params.videoID, function(err, obj) {
-        //console.log(obj)
-
-        var lyrics = (obj) ? obj.lyrics : [];
-
-        //console.log("user", req.user);
-        res.render('player', {
-          title: "hello",
-          videoID: req.params.videoID,
-          user: req.user,
-          editMode: true,
-          origin: req.headers.host
-        });
-    });
+    getSong(req, res, true);
 
   });
 
-function getSong(vidID, cb){
+function getSong(req, res, editMode){
+  var vidID = req.params.videoID;
   database.collection('lyrics')
-    .find({ videoID: vidID})
-    .nextObject(cb);
+    .findOne({ videoID: vidID}, function(err, song){
+
+      console.log("song", song);
+      var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
+      var artwork_src = song.img ? song.img : youtube_thumbnail;
+
+      console.log("img", artwork_src);
+
+        res.render('player', {
+          title: "hello",
+          artwork_src: artwork_src,
+          videoID: song.videoID,
+          user: req.user,
+          editMode: editMode,
+          origin: req.headers.host
+        });
+    });
 }
 
 
@@ -207,7 +191,7 @@ app.post('/', function (req, res) {
 });
 
 
-MongoClient.connect(url, function(err, db) {
+MongoClient.connect(process.env.DB_URL, function(err, db) {
   assert.equal(null, err);
   console.log("Connected successfully to server");
   database = db;

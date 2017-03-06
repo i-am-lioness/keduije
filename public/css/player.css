@@ -93,7 +93,7 @@ nav .glyphicon {
   line-height: 55px;
 }
 
-.container-fluid .row{
+.container-fluid > .row{
   background-color: #7ED321;
 }
 
@@ -107,6 +107,7 @@ nav .glyphicon {
    /*background: #43a934;*/
    padding-left: 0px;
    padding-right: 0px;
+   background-attachment: fixed;
 }
 
 
@@ -126,7 +127,7 @@ nav .glyphicon {
   }
 
   #lyricsDisplay p:hover {
-      background-color: #5D41AE;
+      background-color: rgba(93, 65, 174, 0.75);
     }
 
       #lyricsDisplay p.has-heading {

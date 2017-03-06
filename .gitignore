@@ -3,3 +3,5 @@
 public/img/facebook_logo.png
 
 .env
+
+*.log

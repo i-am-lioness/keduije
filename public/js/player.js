@@ -53,8 +53,6 @@ $(function(){
 
     $("#playLyric").click(playLyric);
 
-    $("#lyric-column").css("background-image","url(https://img.youtube.com/vi/"+songID+"/hqdefault.jpg)");
-
     $("form").submit(function(e){
         //alert('submit intercepted');
         e.preventDefault(e);
@@ -83,16 +81,11 @@ function _loadLyrics(result){
 function onYouTubeIframeAPIReady() {
   var iframe = $("iframe.embed-responsive-item")[0];
   player = new YT.Player(iframe, {
-    //videoId: songID,
     events: {
       'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange
     }
   });
-    //$(player.a).wrap('<div class="embed-responsive embed-responsive-4by3"/>');
-    //$(player.a).addClass('embed-responsive-item');
-
-
 
 }
 
@@ -447,18 +440,11 @@ function storeLyrics(){
 
 
 To do:
--user managment
---unique userID
 
 
 -allow user to cancel/exit edit dialoge
 -replace jquery spinners with react components
 
--implement editing by multiple ppl
-
--decide what happens when video finishes playing
-- customize youtube controls (https://www.technipages.com/youtube-disable-bottom-bar-and-youtube-logo)
-https://drupal.gatech.edu/handbook/embed-youtube-video-autoplay-looping-and-no-controls
 
 
 */
