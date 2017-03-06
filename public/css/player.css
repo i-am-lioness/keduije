@@ -82,16 +82,16 @@ nav .glyphicon {
 }
 
 #lyric-column{
-   background: #43a934;
+   /*background: #43a934;*/
    padding-left: 0px;
    padding-right: 0px;
 }
 
 
 #lyricsDisplay {
-  padding-top: 20px;
-  margin-top: 80px;
+  padding-top: 100px;
   color: #dcd9d9;
+  background: rgba(0, 0, 0, 0.8);
 }
 
   #lyricsDisplay p {
@@ -119,6 +119,7 @@ nav .glyphicon {
 
   #lyricsDisplay .current {
     color: black;
+      color: #7ED321;
   }
 
   #lyricsDisplay .glyphicon-pencil{

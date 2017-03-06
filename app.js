@@ -5,11 +5,62 @@ var app = express();
 const bodyParser= require('body-parser');
 var cors = require('cors')
 var path = require('path');
+var passport = require('passport');
+var Strategy = require('passport-facebook').Strategy;
 
 // Connection URL
 var url = 'mongodb://localhost:27017/igbo';
 var url = 'mongodb://igbo:igbo@ds111940.mlab.com:11940/igbo';
 var database;
+
+function getFacebookUser(facebookProfile, cb){
+  database.collection('users').findAndModify(
+     { facebookID: facebookProfile.id } ,
+     { facebookID: -1 },
+     { $set: { facebookID: facebookProfile.id,
+                lastLogin: new Date(),
+                facebookProfile: facebookProfile
+                //,admin: true
+      } },
+     { upsert: true },
+     function(err, result) {
+       //console.log(result);
+       cb(err,result.value);
+     }
+  );
+}
+
+function getUser(facebookProfileId, cb){
+  database.collection('users').findOne(
+    { facebookID: facebookProfileId },
+    function (err, result){
+      console.log("result of findOne", result);
+      cb(err,result);
+    });
+}
+
+passport.use(new Strategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: 'http://localhost:3000/login/facebook/return'
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    //console.log("strategy_callback", profile);
+    getFacebookUser(profile, cb);
+    //return cb(null, profile);
+  }
+));
+
+passport.serializeUser(function(user, cb) {
+  //console.log("serializeUser",user);
+  cb(null, user.facebookID);
+});
+
+passport.deserializeUser(function(obj, cb) {
+  //console.log("deserializeUser",obj);
+  //cb(null, obj);
+  getUser(obj, cb);
+});
 
 // Configure view engine to render EJS templates.
 app.set('views', __dirname + '/views');
@@ -22,6 +73,14 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+//app.use(require('morgan')('combined'));
+app.use(require('cookie-parser')());
+app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
+
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.get('/', function (req, res) {
 
   res.sendFile(path.join(__dirname+'/public/player.html'));
@@ -31,7 +90,7 @@ app.get('/', function (req, res) {
 app.get('/all', function (req, res) {
   //res.send('Hello World!');
   database.collection('lyrics').find().toArray(function(err, results) {
-    console.log(results)
+    //console.log(results)
     // send HTML file populated with quotes here
     res.send(results);
   })
@@ -42,7 +101,7 @@ app.get('/lyrics/:videoID', function (req, res) {
   database.collection('lyrics')
     .find({ videoID: req.params.videoID } )
     .nextObject(function(err, obj) {
-    console.log(obj)
+    //console.log(obj)
 
     var result = (obj) ? obj.lyrics : [];
     res.send(result);
@@ -51,19 +110,77 @@ app.get('/lyrics/:videoID', function (req, res) {
 
 app.get('/music/:videoID', function (req, res) {
 
-  database.collection('lyrics')
-    .find({ videoID: req.params.videoID } )
-    .nextObject(function(err, obj) {
-      console.log(obj)
+  getSong(req.params.videoID, function(err, obj) {
+      //console.log(obj)
 
       var lyrics = (obj) ? obj.lyrics : [];
 
       res.render('player', {
         title: "hello",
-        videoID: req.params.videoID
+        videoID: req.params.videoID,
+        user: req.user,
+        editMode: false
       });
-  })
+  });
+
 });
+
+
+app.get(
+  '/music/edit/:videoID',
+  require('connect-ensure-login').ensureLoggedIn(),
+    function (req, res) {
+      console.log("user", req.user);
+      if(!req.user.admin){
+        res.send("<h1>Not Authorized</h1>")
+        return;
+      }
+
+    getSong(req.params.videoID, function(err, obj) {
+        //console.log(obj)
+
+        var lyrics = (obj) ? obj.lyrics : [];
+
+        res.render('player', {
+          title: "hello",
+          videoID: req.params.videoID,
+          user: req.user,
+          editMode: true
+        });
+    });
+
+  });
+
+function getSong(vidID, cb){
+  database.collection('lyrics')
+    .find({ videoID: vidID})
+    .nextObject(cb);
+}
+
+
+app.get('/login',
+  function(req, res){
+    res.send('<a href="/login/facebook">Log In with Facebook</a>');
+  });
+
+  app.get('/login/facebook',
+    passport.authenticate('facebook'));
+
+  app.get('/login/facebook/return',
+    passport.authenticate('facebook', { failureRedirect: '/login' }),
+    function(req, res) {
+      console.log("before redirect", res.user);
+      //res.redirect('/');
+      res.redirect(req.session.returnTo);
+    });
+
+
+  app.get('/profile',
+    require('connect-ensure-login').ensureLoggedIn(),
+    function(req, res){
+      res.render('profile', { user: req.user });
+    });
+
 
 
 app.post('/', function (req, res) {
@@ -84,23 +201,7 @@ app.post('/', function (req, res) {
 
 });
 
-app.get('/test', function (req, res) {
 
-  var obj = {videoID: "hello", lyrics: [1, 2, 3]};
-
-  database.collection('lyrics').update(
-     { videoID: obj.videoID } ,
-     { $set: { lyrics: obj.lyrics } },
-     { upsert: true },
-     function(err, result) {
-       assert.equal(err, null);
-       res.send(result);
-     }
-  );
-
-});
-
-// Use connect method to connect to the server
 MongoClient.connect(url, function(err, db) {
   assert.equal(null, err);
   console.log("Connected successfully to server");
@@ -112,31 +213,3 @@ MongoClient.connect(url, function(err, db) {
   })
 
 });
-
-
-var insertDocuments = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Insert some documents
-  collection.insertMany([
-    {a : 1}, {a : 2}, {a : 3}
-  ], function(err, result) {
-    assert.equal(err, null);
-    assert.equal(3, result.result.n);
-    assert.equal(3, result.ops.length);
-    console.log("Inserted 3 documents into the collection");
-    callback(result);
-  });
-}
-
-var findDocuments = function(db, callback) {
-  // Get the documents collection
-  var collection = db.collection('documents');
-  // Find some documents
-  collection.find({}).toArray(function(err, docs) {
-    assert.equal(err, null);
-    console.log("Found the following records");
-    console.log(docs)
-    callback(docs);
-  });
-}

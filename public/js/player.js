@@ -53,7 +53,7 @@ $(function(){
 
     $("#playLyric").click(playLyric);
 
-    if(editMode) $("#lyricEditor").show();
+    $("#lyric-column").css("background-image","url(https://img.youtube.com/vi/"+songID+"/hqdefault.jpg)");
 
     $("form").submit(function(e){
         //alert('submit intercepted');
@@ -335,6 +335,7 @@ function showNewLyricDialog(){
 }
 
 function showEditDialog(i, startTime, endTime, text){
+  $("#lyricEditor").show();
   indexBeingModified = i;
   $("#lyricEditor .originalText").show().text('original: ' + text + '"');
   $("#lyric").val(text);
@@ -447,21 +448,17 @@ function storeLyrics(){
 
 
 To do:
+-user managment
+--indicate when logged in
+--get more user info
+--unique userID
+
 -allow user to cancel/exit edit dialoge
--allow user to add headings
--update spinner time markers when jumping around
 -replace jquery spinners with react components
 
 -implement editing by multiple ppl
 -decide what happens when video finishes playing
 
-
--design UI
-
-
--publish to socialyte
--adsense
--all by March
 
 
 */

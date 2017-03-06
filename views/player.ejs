@@ -36,7 +36,8 @@
     <![endif]-->
     <script>
       var songID = "<%= videoID %>";
-      var editMode = true;
+      var editMode = JSON.parse("<%= editMode %>");
+      //var user = JSON.parse("<%= user %>");
     </script>
     <link href="/css/player.css" rel="stylesheet">
     <link href="/css/lyric-editor.css" rel="stylesheet">
@@ -48,7 +49,7 @@
   <nav class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid">
       <div class="navbar-header">
-        <a class="navbar-brand" href="/">Kedu<span>Ije</span></a>
+        <a class="navbar-brand" href="/">Socia<span>lyte</span></a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <form class="navbar-form navbar-left">
