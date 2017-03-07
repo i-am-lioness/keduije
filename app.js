@@ -68,7 +68,7 @@ passport.deserializeUser(function(obj, cb) {
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
-app.use(cors()); //may no longer be used
+//app.use(cors());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
@@ -203,3 +203,18 @@ MongoClient.connect(process.env.DB_URL, function(err, db) {
   })
 
 });
+
+
+
+/*for my server-less apps */
+var corsOptions = {
+  origin: ['http://cycles.socialyte.us', 'http://localhost:8080'],
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
+app.post('/cycles_log', cors(corsOptions), function (req, res, next) {
+  database.collection('cycles_log').insertOne(req.body, function(err, result) {
+    res.json(result);
+  });
+
+})
