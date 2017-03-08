@@ -12,7 +12,7 @@ var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 
 var fbCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/facebook/return'
-  : 'http://socialyte.us/login/facebook/return';
+  : 'https://keduije1.herokuapp.com/login/facebook/return';
 var database;
 
 function getFacebookUser(facebookProfile, cb){
