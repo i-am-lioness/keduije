@@ -3,7 +3,6 @@ var segmentEnd=0;
 var spinners = {};
 var player;
 var saveStartTime=false;
-//var songID = 'kTWYQnbqN8I'; //ogene
 var lyrics = [];
 var currentTime=0;
 var currentLine; //dom object of current lyric
@@ -14,51 +13,20 @@ var currentLyric;
 var lyricEditor;
 var indexBeingModified = -1;
 
-var host = "http://localhost:3000/"; //when connecting to local backend, but on separate server
-var host = "https://keduije.herokuapp.com/"; //when connecting to remote backend instance
-var host = "/"; //when backend on same host as front end
 var activateLineTimer;
 
-/*
-function onSpinnerCreated(element, variableName){
-  var seconds = window[variableName];
-  var timeDisplay = $('<span class="display '+ variableName +'"></span>').text(convertToTime(seconds));
-  $(element).after(timeDisplay);
-  $(element).data("variableName",variableName)
-}
 
-function updateDisplayedTime(seconds, element){
-  var formatedTime = convertToTime(seconds);
-  var variableName = $(element).data("variableName");
-  $("span."+variableName).text(formatedTime);
-  window[variableName]=seconds;
-}
-*/
 $(function(){
-  /*
-    $( "#segment-start" ).spinner({
-      spin: function (event, ui){
-        updateDisplayedTime(ui.value, this);
-      },
-      create: function () {
-        onSpinnerCreated(this, "segmentStart");
-      }
-    });
-    $( "#segment-end" ).spinner({
-      spin: function (event, ui){
-        updateDisplayedTime(ui.value, this);
-      },
-      create: function () {
-        onSpinnerCreated(this, "segmentEnd");
-      }
-    });
-*/
+
     $("#playLyric").click(playLyric);
 
     $("form").submit(function(e){
-        //alert('submit intercepted');
         e.preventDefault(e);
         saveLyric();
+    });
+
+    $("#cancel-dialog-btn").click(function (){
+      $("#lyricEditor").hide();
     });
 
     loadLyrics();
@@ -66,7 +34,7 @@ $(function(){
 });
 
 function loadLyrics(){
-  $.get(host + "lyrics/"+songID, _loadLyrics);
+  $.get("/lyrics/"+songID, _loadLyrics);
 }
 
 function _loadLyrics(result){
@@ -76,8 +44,7 @@ function _loadLyrics(result){
   currentTime=0;
   currentLine = $('#lyricsDisplay p')[0];
   currentLineStartTime = lyrics[0].startTime;
-  //currentLineEndTime = lyrics[0].endTime;
-  //$(currentLine).addClass("current");
+
 }
 
 function onYouTubeIframeAPIReady() {
@@ -182,10 +149,6 @@ function onPlayerStateChange(event) {
 
     spinners["segmentStart"].setValue(segmentStart);
     spinners["segmentEnd"].setValue(segmentEnd);
-    /*$( "#segment-start" ).spinner( "value", segmentStart );
-    $( "#segment-end" ).spinner( "value", segmentEnd );
-    updateDisplayedTime(segmentStart, "#segment-start");
-    updateDisplayedTime(segmentEnd, "#segment-end");*/
 
     if(editMode)
       showNewLyricDialog();
@@ -215,10 +178,6 @@ function jumpTo(){
     setTimeout(checkForSegmentEnd,1000);
     spinners["segmentStart"].setValue(segmentStart);
     spinners["segmentEnd"].setValue(segmentEnd);
-    /*$( "#segment-start" ).spinner( "value", segmentStart );
-    $( "#segment-end" ).spinner( "value", segmentEnd );
-    updateDisplayedTime(segmentStart, "#segment-start");
-    updateDisplayedTime(segmentEnd, "#segment-end");*/
   }else {
     $(currentLine).addClass("current");
   }
@@ -335,16 +294,12 @@ function showNewLyricDialog(){
 function showEditDialog(i, startTime, endTime, text){
   $("#lyricEditor").show();
   indexBeingModified = i;
-  $("#lyricEditor .originalText").show().text('original: ' + text + '"');
+  $("#lyricEditor .originalText").show().text('original: "' + text + '"');
   $("#lyric").val(text);
   segmentStart = startTime;
   segmentEnd = endTime;
   spinners["segmentStart"].setValue(segmentStart);
   spinners["segmentEnd"].setValue(segmentEnd);
-  /*$( "#segment-start" ).spinner( "value", segmentStart );
-  $( "#segment-end" ).spinner( "value", segmentEnd );
-  updateDisplayedTime(segmentStart, "#segment-start");
-  updateDisplayedTime(segmentEnd, "#segment-end");*/
   $("#save-lyric-btn").text("Update");
 }
 /*
@@ -441,7 +396,7 @@ function updateLyric(idx){
 
 
 function storeLyrics(){
-  $.post(host, {videoID: songID, lyrics: lyrics});
+  $.post("/", {videoID: songID, lyrics: lyrics});
 }
 
 /*
