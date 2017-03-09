@@ -1,5 +1,6 @@
 var segmentStart=0;
 var segmentEnd=0;
+var spinners = {};
 var player;
 var saveStartTime=false;
 //var songID = 'kTWYQnbqN8I'; //ogene
@@ -18,7 +19,7 @@ var host = "https://keduije.herokuapp.com/"; //when connecting to remote backend
 var host = "/"; //when backend on same host as front end
 var activateLineTimer;
 
-
+/*
 function onSpinnerCreated(element, variableName){
   var seconds = window[variableName];
   var timeDisplay = $('<span class="display '+ variableName +'"></span>').text(convertToTime(seconds));
@@ -32,8 +33,9 @@ function updateDisplayedTime(seconds, element){
   $("span."+variableName).text(formatedTime);
   window[variableName]=seconds;
 }
-
+*/
 $(function(){
+  /*
     $( "#segment-start" ).spinner({
       spin: function (event, ui){
         updateDisplayedTime(ui.value, this);
@@ -50,7 +52,7 @@ $(function(){
         onSpinnerCreated(this, "segmentEnd");
       }
     });
-
+*/
     $("#playLyric").click(playLyric);
 
     $("form").submit(function(e){
@@ -178,10 +180,12 @@ function onPlayerStateChange(event) {
     saveStartTime = false; //turn off switch
     segmentEnd = Math.floor(player.getCurrentTime());
 
-    $( "#segment-start" ).spinner( "value", segmentStart );
+    spinners["segmentStart"].setValue(segmentStart);
+    spinners["segmentEnd"].setValue(segmentEnd);
+    /*$( "#segment-start" ).spinner( "value", segmentStart );
     $( "#segment-end" ).spinner( "value", segmentEnd );
     updateDisplayedTime(segmentStart, "#segment-start");
-    updateDisplayedTime(segmentEnd, "#segment-end");
+    updateDisplayedTime(segmentEnd, "#segment-end");*/
 
     if(editMode)
       showNewLyricDialog();
@@ -209,10 +213,12 @@ function jumpTo(){
     player.playVideo();
     segmentEnd = parseInt($(this).data("end-time"));
     setTimeout(checkForSegmentEnd,1000);
-    $( "#segment-start" ).spinner( "value", segmentStart );
+    spinners["segmentStart"].setValue(segmentStart);
+    spinners["segmentEnd"].setValue(segmentEnd);
+    /*$( "#segment-start" ).spinner( "value", segmentStart );
     $( "#segment-end" ).spinner( "value", segmentEnd );
     updateDisplayedTime(segmentStart, "#segment-start");
-    updateDisplayedTime(segmentEnd, "#segment-end");
+    updateDisplayedTime(segmentEnd, "#segment-end");*/
   }else {
     $(currentLine).addClass("current");
   }
@@ -333,10 +339,12 @@ function showEditDialog(i, startTime, endTime, text){
   $("#lyric").val(text);
   segmentStart = startTime;
   segmentEnd = endTime;
-  $( "#segment-start" ).spinner( "value", segmentStart );
+  spinners["segmentStart"].setValue(segmentStart);
+  spinners["segmentEnd"].setValue(segmentEnd);
+  /*$( "#segment-start" ).spinner( "value", segmentStart );
   $( "#segment-end" ).spinner( "value", segmentEnd );
   updateDisplayedTime(segmentStart, "#segment-start");
-  updateDisplayedTime(segmentEnd, "#segment-end");
+  updateDisplayedTime(segmentEnd, "#segment-end");*/
   $("#save-lyric-btn").text("Update");
 }
 /*
@@ -443,8 +451,7 @@ To do:
 
 
 -allow user to cancel/exit edit dialoge
--replace jquery spinners with react components
 
-
+-error handling
 
 */
