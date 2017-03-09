@@ -404,9 +404,6 @@ function storeLyrics(){
 
 To do:
 
-
--allow user to cancel/exit edit dialoge
-
 -error handling
 
 */
