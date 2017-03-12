@@ -15,6 +15,16 @@ var indexBeingModified = -1;
 
 var activateLineTimer;
 
+function startEditMode(){
+    editMode=true;
+    $("#lyricEditor").show();
+    $(this).text("End Edit Mode").unbind("click").click(function(){
+      editMode=false;
+      $(this).text("Edit Mode");
+      $(this).unbind("click").click(startEditMode);
+      $("#lyricEditor").hide();
+    });
+  }
 
 $(function(){
 
@@ -29,10 +39,7 @@ $(function(){
       $("#lyricEditor").hide();
     });
 
-    $("#edit-mode-btn").click(function (){
-        editMode=true;
-        $(this).hide();
-      });
+    $("#edit-mode-btn").click(startEditMode);
 
 
     loadLyrics();
