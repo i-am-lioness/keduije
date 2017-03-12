@@ -21,12 +21,11 @@ function getFacebookUser(facebookProfile, cb){
      { facebookID: -1 },
      { $set: { facebookID: facebookProfile.id,
                 lastLogin: new Date(),
-                facebookProfile: facebookProfile
-                //,admin: true
+                facebookName: facebookProfile.displayName,
+                role: "member"
       } },
      { upsert: true },
      function(err, result) {
-       //console.log(result);
        cb(err,result.value);
      }
   );
@@ -36,7 +35,6 @@ function getUser(facebookProfileId, cb){
   database.collection('users').findOne(
     { facebookID: facebookProfileId },
     function (err, result){
-      //console.log("result of findOne", result);
       cb(err,result);
     });
 }
@@ -47,20 +45,15 @@ passport.use(new Strategy({
     callbackURL: fbCallbackURL
   },
   function(accessToken, refreshToken, profile, cb) {
-    //console.log("strategy_callback", profile);
     getFacebookUser(profile, cb);
-    //return cb(null, profile);
   }
 ));
 
 passport.serializeUser(function(user, cb) {
-  //console.log("serializeUser",user);
   cb(null, user.facebookID);
 });
 
 passport.deserializeUser(function(obj, cb) {
-  //console.log("deserializeUser",obj);
-  //cb(null, obj);
   getUser(obj, cb);
 });
 
@@ -83,27 +76,22 @@ app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveU
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/', function (req, res) {
 
-  res.sendFile(path.join(__dirname+'/public/player.html'));
 
-});
-
-app.get('/all', function (req, res) {
-  //res.send('Hello World!');
-  database.collection('lyrics').find().toArray(function(err, results) {
-    //console.log(results)
-    // send HTML file populated with quotes here
-    res.send(results);
-  })
-});
+function requireRole(role) {
+    return function(req, res, next) {
+        if(req.user && req.user.role === role)
+            next();
+        else
+            res.send(403);
+    }
+}
 
 app.get('/lyrics/:videoID', function (req, res) {
 
   database.collection('lyrics')
     .find({ videoID: req.params.videoID } )
     .nextObject(function(err, obj) {
-    //console.log(obj)
 
     var result = (obj) ? obj.lyrics : [];
     res.send(result);
@@ -112,27 +100,10 @@ app.get('/lyrics/:videoID', function (req, res) {
 
 app.get('/music/:videoID', function (req, res) {
 
-  getSong(req, res, false);
-
-});
-
-app.get( '/music/edit/:videoID', ensureLoggedIn(), function (req, res) {
-
-    if(!req.user.admin){
-      res.send("<h1>Not Authorized</h1>")
-      return;
-    }
-
-    getSong(req, res, true);
-
-  });
-
-function getSong(req, res, editMode){
   var vidID = req.params.videoID;
   database.collection('lyrics')
     .findOne({ videoID: vidID}, function(err, song){
 
-      console.log("song", song);
       var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
       var artwork_src = song.img ? song.img : youtube_thumbnail;
 
@@ -142,41 +113,52 @@ function getSong(req, res, editMode){
           title: "hello",
           artwork_src: artwork_src,
           videoID: song.videoID,
-          user: req.user,
-          editMode: editMode,
+          user: req.user || null,
+          canEdit: req.user && req.user.isAdmin,
           origin: req.headers.host
         });
     });
-}
+});
 
 
-app.get('/login',
-  function(req, res){
-    res.send('<a href="/login/facebook">Log In with Facebook</a>');
+
+app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+
+      res.send('<form method="post"><input name="videoID"><input type="submit"></form>');
+
   });
 
+  app.post( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+
+        console.log(req.body);
+        database.collection("lyrics").insertOne({videoID: req.body.videoID}, function(){
+          res.redirect("/music/"+req.body.videoID); //todo: make bettter;
+        });
+
+    });
+
   app.get('/login/facebook',
+    function (req, res, next) {
+      req.session.returnTo = req.header('Referer');
+      next()
+    },
     passport.authenticate('facebook'));
 
   app.get('/login/facebook/return',
     passport.authenticate('facebook', { failureRedirect: '/login' }),
     function(req, res) {
-      console.log("before redirect", res.user);
-      //res.redirect('/');
-      res.redirect(req.session.returnTo);
+      res.redirect(req.session.returnTo || "/");
     });
 
   app.get('/logout', function(req, res){
     req.logout();
-    res.redirect('/');
+    res.redirect(req.header('Referer') || '/');
   });
 
 
 app.post('/', function (req, res) {
 
-  console.log(req.body);
   var obj = req.body;
-  //res.send(obj);
 
   database.collection('lyrics').update(
      { videoID: obj.videoID } ,
@@ -199,7 +181,6 @@ MongoClient.connect(process.env.DB_URL, function(err, db) {
   var port = (process.env.PORT || 3000);
   app.listen(port, function () {
     console.log('Example app listening on port ' + port + "!");
-      //console.log("callbackURL", fbCallbackURL);
   })
 
 });

@@ -29,6 +29,12 @@ $(function(){
       $("#lyricEditor").hide();
     });
 
+    $("#edit-mode-btn").click(function (){
+        editMode=true;
+        $(this).hide();
+      });
+
+
     loadLyrics();
 
 });

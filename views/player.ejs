@@ -37,7 +37,8 @@
     <![endif]-->
     <script>
       var songID = "<%= videoID %>";
-      var editMode = JSON.parse("<%= editMode %>");
+      var user = JSON.parse('<%- JSON.stringify(user) %>');
+      var editMode = false;
 
     </script>
     <script type="text/babel">
@@ -122,7 +123,7 @@
   <nav class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid">
       <div class="navbar-header">
-        <a class="navbar-brand" href="/">Socia<span>lyte</span></a>
+        <a class="navbar-brand" href="/">Kedu<span>Ije</span></a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <form class="navbar-form navbar-left">
@@ -134,15 +135,15 @@
           <li>
             <a href="#" class="user">
               <div class="user-avatar" style="background-image: url(http://graph.facebook.com/v2.8/<%= user.facebookID %>/picture);"></div>
-              <span><%= user.facebookProfile.displayName %></span>
+              <span><%= user.facebookName %></span>
             </a>
           </li>
           <li><a href="/logout">Logout</a></li>
           <% } else { %>
-          <li><a href="/login">Sign In</a></li>
+          <li><a href="/login/facebook">Sign In</a></li>
           <li><a href="#about">Sign Up</a></li>
           <% } %>
-          <li><a href="#create" class="accent">Add Lyrics</a></li>
+          <li><a href="/music/new" class="accent">Add Lyrics</a></li>
         </ul>
       </div><!--/.nav-collapse -->
     </div>
@@ -152,13 +153,18 @@
 
       <div class="row">
         <div id="video-column" class="col-md-6 col-xs-12">
-           <!--div id="player" ></div-->
+
             <div class="embed-responsive embed-responsive-4by3"/>
               <iframe class="embed-responsive-item"
                 src="http://www.youtube.com/embed/<%= videoID %>?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://<%= origin %>&playsinline=1&rel=0"
                 frameborder="0">
               </iframe>
             </div>
+
+            <% if(canEdit) { %>
+              <button id="edit-mode-btn" type="button" class="btn btn-default btn-lg">Edit</button>
+            <% } %>
+
 
 
               <form id="lyricEditor">
