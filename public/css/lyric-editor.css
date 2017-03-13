@@ -1,8 +1,12 @@
 
-#lyricEditor{
+.editor-bg-color {
   background-color: rgba(93, 65, 174, 0.8);
+  fill: rgba(93, 65, 174, 0.8);
+}
+
+#lyricEditor {
   padding: 20px;
-  display: none;
+  /*display: none;*/
   position: absolute;
   bottom: 30%;
   left: 5%;
@@ -49,7 +53,7 @@
 
 #cancel-dialog-btn {
   background: none;
-  border: White 0px solid;
+  border: White 3px solid;
 }
 
 #lyricEditor .spinner-container{

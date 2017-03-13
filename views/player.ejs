@@ -23,9 +23,6 @@
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <link href="/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
 
-    <!-- Custom styles for this template >
-    <link href="/css/jumbotron-narrow.css" rel="stylesheet"-->
-
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
     <script src="/js/ie-emulation-modes-warning.js"></script>
@@ -41,74 +38,14 @@
       var editMode = false;
 
     </script>
+    <script src="/lyric-editor.js" type="text/babel"></script>
+    <script src="/time-spinner.js" type="text/babel"></script>
     <script type="text/babel">
-
-
-      class TimeSpinner extends React.Component {
-        constructor(props) {
-          super(props);
-          this.variableName = this.props.variableName;
-
-          this.state = {seconds: window[this.variableName]};
-
-
-          this.increment = this.increment.bind(this);
-          this.decrement = this.decrement.bind(this);
-
-          spinners[this.variableName]=this;
-
-        }
-
-        setValue (val){
-          this.setState({seconds: val});
-        }
-
-        decrement(){
-          if(this.state.seconds>0){
-            this.setState((prevState, props) => ({
-              seconds: prevState.seconds - 1
-            }));
-          }
-        }
-
-        increment(){
-
-            this.setState((prevState, props) => ({
-              seconds: prevState.seconds + 1
-            }));
-
-        }
-
-        componentDidUpdate(prevProps, prevState){
-          window[this.variableName]=this.state.seconds;
-        }
-        render () {
-
-          var displayedTimeMark = convertToTime(this.state.seconds);
-          return <div className="spinner-container">
-                    <div className="label">{this.props.label}</div>
-                    <div className="inner-spinner">
-                      <span className="display segmentStart">{displayedTimeMark}</span>
-                      <a onClick={this.increment} tabIndex="-1" aria-hidden="true" className="spinner-button">
-                        <span className="glyphicon glyphicon-triangle-top" aria-hidden="true"></span>
-                      </a>
-                      <a onClick={this.decrement} tabIndex="-1" aria-hidden="true" className="spinner-button" style={{top: "50%"}}>
-                        <span className="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
-                      </a>
-                      </div>
-                  </div>;
-        }
-      }
 
       $(function(){
         ReactDOM.render(
-          <TimeSpinner variableName="segmentStart" label="From"/>,
-          document.getElementById('start-spinner')
-        );
-
-        ReactDOM.render(
-          <TimeSpinner variableName="segmentEnd" label="To"/>,
-          document.getElementById('end-spinner')
+          <LyricEditor onSubmit={saveLyric} onPlay={playLyric}/>,
+          document.getElementById('editor-container')
         );
 
       });
@@ -165,38 +102,9 @@
               <button id="edit-mode-btn" type="button" class="btn btn-default btn-lg">Edit</button>
             <% } %>
 
+            <div id="editor-container"></div>
 
 
-              <form id="lyricEditor">
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="originalText"></div>
-                    <input id="lyric" type="text" placeholder="Transcibe Lyrics...">
-                  </div>
-                </div>
-                <div class="row">
-                  <div id="start-spinner" class="col-md-5">
-                  </div>
-                  <div id="end-spinner" class="col-md-5">
-                  </div>
-                  <div class="col-md-2">
-                    <a id="playLyric" type="button" class="btn btn-default btn-lg" title="play">
-                      <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
-                    </a>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-3">
-                    <button id="cancel-dialog-btn" class="btn btn-default btn-lg" type="reset">Cancel</button>
-                  </div>
-                  <div class="col-md-9">
-                    <button id="save-lyric-btn" class="btn btn-default btn-lg" type="submit">Save</button>
-                  </div>
-                </div>
-                <svg id="tail" width="100" height="100">
-                  <polygon points="10,0 40,0 30,50" style="fill: rgba(93, 65, 174, 0.8);"></polygon>
-                </svg>
-              </form>
 
 
         </div>

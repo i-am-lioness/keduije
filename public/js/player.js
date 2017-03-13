@@ -4,6 +4,7 @@ var spinners = {};
 var player;
 var saveStartTime=false;
 var lyrics = [];
+var lyricEditor = null;
 var currentTime=0;
 var currentLine; //dom object of current lyric
 var currentLineStartTime;
@@ -17,26 +18,26 @@ var activateLineTimer;
 
 function startEditMode(){
     editMode=true;
-    $("#lyricEditor").show();
+    lyricEditor.show();
     $(this).text("End Edit Mode").unbind("click").click(function(){
       editMode=false;
       $(this).text("Edit Mode");
       $(this).unbind("click").click(startEditMode);
-      $("#lyricEditor").hide();
+      lyricEditor.hide();
     });
   }
 
 $(function(){
 
-    $("#playLyric").click(playLyric);
+    //$("#playLyric").click(playLyric);
 
-    $("form").submit(function(e){
+    /*$("form").submit(function(e){
         e.preventDefault(e);
         saveLyric();
-    });
+    });*/
 
     $("#cancel-dialog-btn").click(function (){
-      $("#lyricEditor").hide();
+      lyricEditor.hide();
     });
 
     $("#edit-mode-btn").click(startEditMode);
@@ -298,22 +299,22 @@ function displayLyrics(){
 }
 
 function showNewLyricDialog(){
-  $("#lyricEditor .originalText").hide().text('');
-  $("#lyricEditor").show();
-  //$("#lyric").val("");
-  $("#save-lyric-btn").text("Add");
+  //$("#lyricEditor .originalText").hide().text('');
+  lyricEditor.show();
+
+  //$("#save-lyric-btn").text("Add");
 }
 
 function showEditDialog(i, startTime, endTime, text){
-  $("#lyricEditor").show();
+  lyricEditor.show(text);
   indexBeingModified = i;
-  $("#lyricEditor .originalText").show().text('original: "' + text + '"');
-  $("#lyric").val(text);
+  //$("#lyricEditor .originalText").show().text('original: "' + text + '"');
+  //$("#lyric").val(text);
   segmentStart = startTime;
   segmentEnd = endTime;
   spinners["segmentStart"].setValue(segmentStart);
   spinners["segmentEnd"].setValue(segmentEnd);
-  $("#save-lyric-btn").text("Update");
+  //$("#save-lyric-btn").text("Update");
 }
 /*
 
@@ -363,7 +364,7 @@ function saveHeading(text, idx){
 
   displayLyrics();
   indexBeingModified = -1;
-  $("#lyricEditor").hide();
+  lyricEditor.hide();
 
 }
 
@@ -384,7 +385,7 @@ function saveLyric(){
 
   displayLyrics();
   indexBeingModified = -1;
-  $("#lyricEditor").hide();
+  lyricEditor.hide();
 
 }
 
@@ -416,6 +417,9 @@ function storeLyrics(){
 
 
 To do:
+
+-convert editor to react component
+-migrate to pug templating
 
 -error handling
 

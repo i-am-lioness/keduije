@@ -67,8 +67,8 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
+app.use(express.static('react'));
 
-//app.use(require('morgan')('combined'));
 app.use(require('cookie-parser')());
 app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
 
