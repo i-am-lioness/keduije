@@ -1,0 +1,77 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    meta(name='description', content='')
+    meta(name='author', content='')
+    link(rel='icon', href='/favicon.ico?v=2')
+    title KeduIje?
+    link(href='https://fonts.googleapis.com/css?family=Lato', rel='stylesheet')
+    link(href='https://fonts.googleapis.com/css?family=Baloo', rel='stylesheet')
+    script(src='https://unpkg.com/react@15/dist/react.js')
+    script(src='https://unpkg.com/react-dom@15/dist/react-dom.js')
+    script(src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js')
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js')
+    link(href='/css/bootstrap.min.css', rel='stylesheet')
+    link(href='/css/ie10-viewport-bug-workaround.css', rel='stylesheet')
+    //if lt IE 9
+      script(src='../../assets/js/ie8-responsive-file-warning.js')
+    script(src='/js/ie-emulation-modes-warning.js')
+    //if lt IE 9
+      script(src='https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js')
+      script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
+    link(href='/css/player.css', rel='stylesheet')
+    link(href='/css/lyric-editor.css', rel='stylesheet')
+  body
+    nav.navbar.navbar-default.navbar-fixed-top
+      .container-fluid
+        .navbar-header
+          a.navbar-brand(href='/')
+            | Kedu
+            span Ije
+        #navbar.navbar-collapse.collapse
+          form.navbar-form.navbar-left
+            span.glyphicon.glyphicon-search(aria-hidden='true')
+            |
+            input.form-control(type='text', placeholder='Search Artists, Lyrics, and more...')
+          ul.nav.navbar-nav.navbar-right
+            if user
+              li
+                a.user(href="#")
+                  div.user-avatar(style="background-image: url(http://graph.facebook.com/v2.8/" + user.facebookID + "/picture);")
+                  span=user.facebookName
+              li
+                a(href="/logout") Logout
+            else
+              li
+                a(href="/login/facebook") Sign In
+              li
+                a(href="#about") Sign Up
+            li
+              a.accent(href="/music/new") Add Lyrics
+    .container-fluid
+      .row
+        #video-column.col-md-6.col-xs-12
+          .embed-responsive.embed-responsive-4by3
+            iframe.embed-responsive-item(src='http://www.youtube.com/embed/' + videoID +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://' + origin + '&playsinline=1&rel=0', frameborder='0')
+          #editor-container
+        #lyric-column.col-md-6.col-xs-12.col-md-offset-6(style='background-image: url('+ artwork_src +')')
+          #lyricsDisplay
+      footer.footer
+        p &copy; 2017 KeduIje, Inc.
+    script(src='/js/ie10-viewport-bug-workaround.js')
+    script.
+    script(src='/lyric-editor.js', type='text/babel')
+    script(src='/time-spinner.js', type='text/babel')
+    script(src='/js/player.js')
+    script(type='text/babel').
+      songID = "#{videoID}";
+      user = JSON.parse(!'{JSON.stringify(user)}');
+      loadLyrics();
+      ReactDOM.render(
+      <LyricEditor onSubmit={saveLyric} onPlay={playLyric}/>,
+      document.getElementById('editor-container')
+      );
+    script(src='https://www.youtube.com/iframe_api', async='')

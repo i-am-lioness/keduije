@@ -26,7 +26,8 @@
     "morgan": "^1.8.1",
     "passport": "^0.3.2",
     "passport-facebook": "^2.1.1",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "pug": "^2.0.0-beta11"
   },
   "bugs": {
     "url": "https://github.com/nnennaude/keduije/issues"

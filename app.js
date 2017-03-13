@@ -59,7 +59,8 @@ passport.deserializeUser(function(obj, cb) {
 
 // Configure view engine to render EJS templates.
 app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
+//app.set('view engine', 'ejs');
+app.set('view engine', 'pug')
 
 //app.use(cors());
 app.use(bodyParser.urlencoded({
@@ -107,7 +108,7 @@ app.get('/music/:videoID', function (req, res) {
       var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
       var artwork_src = song.img ? song.img : youtube_thumbnail;
 
-      console.log("img", artwork_src);
+      console.log("req.user", req.user);
 
         res.render('player', {
           title: "hello",
