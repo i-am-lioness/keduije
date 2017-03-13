@@ -32,7 +32,8 @@
 
         handleSubmit(event) {
           event.preventDefault();
-          this.props.onSubmit();
+          this.props.onSubmit(this.state.value);
+          this.setState({value: ""});
         }
 
         handleCancel(){
@@ -46,7 +47,7 @@
         show(text){
           var mode = "add";
           var originalText = null;
-          var value = "";
+          var value = this.state.value || "";
           if(text){
             mode = "save";
             originalText = 'original: "' + text + '"';

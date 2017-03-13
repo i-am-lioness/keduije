@@ -59,10 +59,9 @@ passport.deserializeUser(function(obj, cb) {
 
 // Configure view engine to render EJS templates.
 app.set('views', __dirname + '/views');
-//app.set('view engine', 'ejs');
 app.set('view engine', 'pug')
 
-//app.use(cors());
+
 app.use(bodyParser.urlencoded({
   extended: true
 }));
@@ -81,10 +80,11 @@ app.use(passport.session());
 
 function requireRole(role) {
     return function(req, res, next) {
+      //console.log(req.user);
         if(req.user && req.user.role === role)
             next();
         else
-            res.send(403);
+            res.sendStatus(403);
     }
 }
 
@@ -99,7 +99,7 @@ app.get('/lyrics/:videoID', function (req, res) {
   })
 });
 
-app.get('/music/:videoID', function (req, res) {
+app.get('/music/id/:videoID', function (req, res) {
 
   var vidID = req.params.videoID;
   database.collection('lyrics')
@@ -107,8 +107,6 @@ app.get('/music/:videoID', function (req, res) {
 
       var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
       var artwork_src = song.img ? song.img : youtube_thumbnail;
-
-      //console.log("req.user", req.user);
 
         res.render('player', {
           title: "hello",
@@ -128,7 +126,19 @@ app.get('/', function (req, res) {
     user: req.user || null,
   });
 
+});
 
+app.get('/songs/all', function (req, res) {
+
+  database.collection('lyrics').find({},{videoID: 1}).toArray(function(err, results) {
+    var videos = [];
+    results.forEach(function(obj){
+      if(obj.videoID){
+        videos.push(obj.videoID);
+      }
+    })
+    res.send(videos);
+  });
 });
 
 app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
@@ -141,10 +151,15 @@ app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, re
 
         console.log(req.body);
         database.collection("lyrics").insertOne({videoID: req.body.videoID}, function(){
-          res.redirect("/music/"+req.body.videoID); //todo: make bettter;
+          res.redirect("/music/id/"+req.body.videoID); //todo: make bettter;
         });
 
     });
+
+    app.get('/login',
+      function(req, res) {
+        res.redirect("/login/facebook");
+      });
 
   app.get('/login/facebook',
     function (req, res, next) {
@@ -193,18 +208,3 @@ MongoClient.connect(process.env.DB_URL, function(err, db) {
   })
 
 });
-
-
-
-/*for my server-less apps */
-var corsOptions = {
-  origin: ['http://cycles.socialyte.us', 'http://localhost:8080'],
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
-
-app.post('/cycles_log', cors(corsOptions), function (req, res, next) {
-  database.collection('cycles_log').insertOne(req.body, function(err, result) {
-    res.json(result);
-  });
-
-})

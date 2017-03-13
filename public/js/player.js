@@ -90,7 +90,9 @@ function activateLine(){
 
   }
 
-  activateLineTimer = setTimeout(activateLine, 1000);
+  //only keep timer going if the video is playing
+  if (player.getPlayerState()==YT.PlayerState.PLAYING)
+    activateLineTimer = setTimeout(activateLine, 1000);
 }
 
 //responsively adjusts scroll position of lyrics during playback
@@ -153,7 +155,7 @@ function jumpTo(){
   currentLine = this;
   currentLineStartTime = parseInt($(currentLine).data("start-time"));
   currentLineEndTime = parseInt($(currentLine).data("end-time"));
-  $(currentLine).removeClass("current");
+  $(".current").removeClass("current");
   player.seekTo(currentLineStartTime,true);
 
   if(editMode){
@@ -340,15 +342,15 @@ function saveHeading(text, idx){
 
 }
 
-function saveLyric(){
+function saveLyric(text){
 
   if(indexBeingModified>-1)
-    updateLyric(indexBeingModified);
+    updateLyric(text,indexBeingModified);
   else {
-    addLyric()
+    addLyric(text)
   }
 
-  $('#lyric').val("");
+  //$('#lyric').val("");
   lyrics.sort(function(a, b){
     return a.endTime-b.endTime;
   });
@@ -361,12 +363,11 @@ function saveLyric(){
 
 }
 
-function addLyric(){
+function addLyric(text){
   lyrics.push({
     text: $('#lyric').val(),
     endTime: segmentEnd,
     deleted: false,
-    //isHeading: false,
     id: lyrics.length,
     startTime: segmentStart,
     heading: null
@@ -374,8 +375,9 @@ function addLyric(){
 
 }
 
-function updateLyric(idx){
-  lyrics[idx].text=$("#lyric").val();
+function updateLyric(text,idx){
+  //lyrics[idx].text=$("#lyric").val();
+  lyrics[idx].text=text;
   lyrics[idx].startTime=segmentStart;
   lyrics[idx].endTime=segmentEnd;
 }
@@ -390,7 +392,8 @@ function storeLyrics(){
 
 To do:
 
--migrate to pug templating
+-load video info
+-when edit mode triggered while playing, show current time marks
 
 -error handling
 
