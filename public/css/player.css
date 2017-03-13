@@ -1,98 +1,3 @@
-
-body {
-  background-color: Black;
-  color: White;
-  font-family: 'Lato', sans-serif;
-}
-
-h1, h2, h3, h4, strong {
-  font-family: 'Baloo', cursive;
-}
-
-.navbar{
-    background-color: White;
-}
-
-.navbar-nav>li>a, .navbar-form  {
-    text-transform: uppercase;
-    border-left: 1px solid #EFF2F5;
-    padding-left: 20px;
-    padding-right: 20px;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    border-radius: 0px;
-    color: #45494E;
-    line-height: 31px;
-    height: 61px;
-    margin: 0px;
-}
-
-.navbar-nav>li>a.user {
-  padding-left: 50px;
-}
-
-  .user-avatar {
-    width: 30px;
-    height: 30px;
-    margin-right: 5px;
-    border-radius: 50%;
-    background-position: center;
-    background-size: cover;
-    display: inline-block;
-    position: absolute;
-    left: 15px;
-}
-
-#navbar .navbar-nav>li>a.accent {
-  color: #5D41AE;
-  font-weight: bold;
-}
-
-#navbar .navbar-nav>li>a:hover {
-  background-color: #d9e4cd;
-}
-
-.navbar .navbar-brand {
-    padding: 0px 40px;
-    font-family: 'Baloo';
-    line-height: 61px;
-    font-size: 28px;
-    color: #5D41AE;
-}
-.navbar .navbar-brand span {
-    color: #7ED321;
-}
-#navbar .navbar-form input{
-    font-size: 15px;
-    font-weight: 400;
-    height: 60px;
-    line-height: 1.2em;
-    box-shadow: none;
-    border: none;
-    border-radius: 0;
-    -webkit-appearance: none;
-    margin: 0px;
-    width: 400px;
-}
-
-#navbar .navbar-form input::-webkit-input-placeholder{
-  color: #D2D6DF;
-  letter-spacing: 1px;
-  font-weight: 100;
-}
-
-input[type="text"], textarea {
-outline: none;
-box-shadow:none !important;
-border:0px solid #ccc;
-}
-
-nav .glyphicon {
-  color: #D2D6DF;
-  font-size: 15px;
-  line-height: 55px;
-}
-
 .container-fluid > .row{
   background-color: #7ED321;
 }
@@ -104,7 +9,6 @@ nav .glyphicon {
 }
 
 #lyric-column{
-   /*background: #43a934;*/
    padding-left: 0px;
    padding-right: 0px;
    background-attachment: fixed;
