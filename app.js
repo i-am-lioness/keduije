@@ -108,7 +108,7 @@ app.get('/music/:videoID', function (req, res) {
       var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
       var artwork_src = song.img ? song.img : youtube_thumbnail;
 
-      console.log("req.user", req.user);
+      //console.log("req.user", req.user);
 
         res.render('player', {
           title: "hello",
@@ -121,7 +121,15 @@ app.get('/music/:videoID', function (req, res) {
     });
 });
 
+app.get('/', function (req, res) {
 
+  res.render('home', {
+    title: "hello",
+    user: req.user || null,
+  });
+
+
+});
 
 app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
 

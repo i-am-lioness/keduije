@@ -1,0 +1,27 @@
+doctype html
+html(lang='en')
+  head
+    title Playback KeduIje?
+    include head.pug
+  body
+    include nav-bar.pug
+    .container-fluid
+      .row
+        .col-md-8
+          #buttons
+      footer.footer
+        p &copy; 2017 KeduIje, Inc.
+    script(src='/js/ie10-viewport-bug-workaround.js')
+    script.
+    script(src='/lyric-editor.js', type='text/babel')
+    script(src='/time-spinner.js', type='text/babel')
+    script(src='/js/player.js')
+    script.
+      var videos = ["cWx8tUtfdeE", "kTWYQnbqN8I", "h01_dEXLqsk", "Uyr1c0pkpas", "9F53UQ_2L_I", "jkO8tHcda5E"];
+      $.each(videos, function (index, songID){
+      var thumbnail = $('<div class="col-xs-6 col-md-3"><a href="/music/' +
+      songID + '" class="thumbnail"><img src="https://img.youtube.com/vi/'+
+      songID + '/1.jpg" alt="..."></a></div>');
+      $("#buttons").append(thumbnail);
+      });
+    script(src='https://www.youtube.com/iframe_api', async='')

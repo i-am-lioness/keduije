@@ -1,0 +1,26 @@
+nav.navbar.navbar-default.navbar-fixed-top
+  .container-fluid
+    .navbar-header
+      a.navbar-brand(href='/')
+        | Kedu
+        span Ije
+    #navbar.navbar-collapse.collapse
+      form.navbar-form.navbar-left
+        span.glyphicon.glyphicon-search(aria-hidden='true')
+        |
+        input.form-control(type='text', placeholder='Search Artists, Lyrics, and more...')
+      ul.nav.navbar-nav.navbar-right
+        if user
+          li
+            a.user(href="#")
+              div.user-avatar(style="background-image: url(http://graph.facebook.com/v2.8/" + user.facebookID + "/picture);")
+              span=user.facebookName
+          li
+            a(href="/logout") Logout
+        else
+          li
+            a(href="/login/facebook") Sign In
+          li
+            a(href="#about") Sign Up
+        li
+          a.accent(href="/music/new") Add Lyrics
