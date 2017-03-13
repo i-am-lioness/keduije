@@ -4,17 +4,26 @@
           super(props);
           this.state = {
             value: '',
-            displayed: false,
+            displayed: true,
             originalText: "",
-            mode: "add" /*edit or add*/
+            mode: "add" /*update or add*/,
+            enabled: false
           };
 
           this.handleChange = this.handleChange.bind(this);
           this.handleSubmit = this.handleSubmit.bind(this);
           this.handleCancel = this.handleCancel.bind(this);
+          this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
 
           lyricEditor = this;
 
+        }
+
+        handleToggleEditMode(){
+          editMode = !this.state.enabled;
+          this.setState((prevState, props) => ({
+            enabled: !prevState.enabled
+          }));
         }
 
         handleChange(event) {
@@ -54,8 +63,8 @@
         render () {
           var btnText = (this.state.mode=="add") ? "Add" : "Update";
           var originalText = this.state.originalText ? <div className="originalText">{this.state.originalText}</div> : null;
-
-          return this.state.displayed && <form id="lyricEditor" className="editor-bg-color" onSubmit={this.handleSubmit}><div className="row">
+          var editSwitchText = (this.state.enabled) ? "Done Editing" : "Edit";
+          var dialog = this.state.displayed && <form id="lyricEditor" className="editor-bg-color" onSubmit={this.handleSubmit}><div className="row">
             <div className="col-md-12">
               {originalText}
               <input id="lyric" type="text" placeholder="Transcibe Lyrics..." value={this.state.value} onChange={this.handleChange} />
@@ -85,6 +94,11 @@
           <svg id="tail" width="100" height="100">
             <polygon points="10,0 40,0 30,50" className="editor-bg-color"></polygon>
           </svg></form>;
+
+          return <div>
+          <button id="edit-mode-btn" type="button" className="btn btn-default btn-lg" onClick={this.handleToggleEditMode}>{editSwitchText}</button>
+          {this.state.enabled && dialog}
+          </div>;
 
         }
       }

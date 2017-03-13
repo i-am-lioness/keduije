@@ -1,3 +1,4 @@
+var editMode = false;
 var segmentStart=0;
 var segmentEnd=0;
 var spinners = {};
@@ -10,42 +11,13 @@ var currentLine; //dom object of current lyric
 var currentLineStartTime;
 var currentLineEndTime = -1;
 
+var songID = null;
+var user = null;
 var currentLyric;
 var lyricEditor;
 var indexBeingModified = -1;
 
 var activateLineTimer;
-
-function startEditMode(){
-    editMode=true;
-    lyricEditor.show();
-    $(this).text("End Edit Mode").unbind("click").click(function(){
-      editMode=false;
-      $(this).text("Edit Mode");
-      $(this).unbind("click").click(startEditMode);
-      lyricEditor.hide();
-    });
-  }
-
-$(function(){
-
-    //$("#playLyric").click(playLyric);
-
-    /*$("form").submit(function(e){
-        e.preventDefault(e);
-        saveLyric();
-    });*/
-
-    $("#cancel-dialog-btn").click(function (){
-      lyricEditor.hide();
-    });
-
-    $("#edit-mode-btn").click(startEditMode);
-
-
-    loadLyrics();
-
-});
 
 function loadLyrics(){
   $.get("/lyrics/"+songID, _loadLyrics);
@@ -418,7 +390,6 @@ function storeLyrics(){
 
 To do:
 
--convert editor to react component
 -migrate to pug templating
 
 -error handling

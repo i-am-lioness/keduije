@@ -32,24 +32,7 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <script>
-      var songID = "<%= videoID %>";
-      var user = JSON.parse('<%- JSON.stringify(user) %>');
-      var editMode = false;
 
-    </script>
-    <script src="/lyric-editor.js" type="text/babel"></script>
-    <script src="/time-spinner.js" type="text/babel"></script>
-    <script type="text/babel">
-
-      $(function(){
-        ReactDOM.render(
-          <LyricEditor onSubmit={saveLyric} onPlay={playLyric}/>,
-          document.getElementById('editor-container')
-        );
-
-      });
-    </script>
     <link href="/css/player.css" rel="stylesheet">
     <link href="/css/lyric-editor.css" rel="stylesheet">
   </head>
@@ -99,10 +82,11 @@
             </div>
 
             <% if(canEdit) { %>
-              <button id="edit-mode-btn" type="button" class="btn btn-default btn-lg">Edit</button>
+
+              <div id="editor-container"></div>
             <% } %>
 
-            <div id="editor-container"></div>
+
 
 
 
@@ -127,7 +111,25 @@
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="/js/ie10-viewport-bug-workaround.js"></script>
+    <script>
+
+
+    </script>
+    <script src="/lyric-editor.js" type="text/babel"></script>
+    <script src="/time-spinner.js" type="text/babel"></script>
     <script src="/js/player.js"></script>
+    <script type="text/babel">
+        songID = "<%= videoID %>";
+        user = JSON.parse('<%- JSON.stringify(user) %>');
+        
+        loadLyrics();
+
+        ReactDOM.render(
+          <LyricEditor onSubmit={saveLyric} onPlay={playLyric}/>,
+          document.getElementById('editor-container')
+        );
+
+    </script>
     <script src="https://www.youtube.com/iframe_api" async></script>
   </body>
 </html>
