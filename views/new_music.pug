@@ -1,0 +1,44 @@
+doctype html
+html(lang='en')
+  head
+    title New Lyrics
+    include head.pug
+  body
+    include nav-bar.pug
+    .container-fluid
+      .row
+        .col-md-8
+          form#new-song-form(method="post")
+            .form-group
+              label(for="title-input") Title
+              input#title-input.form-control.input-lg(name="title", placeholder="Title")
+            .form-group
+              label(for="video-url-input") Video URL
+              input#video-url-input.form-control.input-lg(name="video-url", placeholder="Youtube URL")
+              input#video-id-input(name="videoID", type="hidden")
+              
+            button.btn.btn-default(type="submit") Add
+            //button#search-btn.btn.btn-default(type="button") Search
+        .col-md-4
+          img#video-img
+      .row
+        #results
+    script(src="/js/youtube-data.js")
+    script.
+      $("#video-url-input").change(getVideoInfo);
+
+      function displayVideoInfo(res){
+        var video = res.snippet;
+        $("#title-input").val(video.title);
+        $("#video-id-input").val(res.id);
+        
+        var tns=video.thumbnails;
+        /*for(var tn in tns){
+          var src = tns[tn].url;
+          $("<img />").attr("src",src).appendTo("#results");
+        }*/
+        $("#video-img").attr("src",tns.medium.url);
+      }
+      
+      
+    script(src="https://apis.google.com/js/client.js?onload=googleApiClientReady")

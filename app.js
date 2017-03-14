@@ -19,11 +19,14 @@ function getFacebookUser(facebookProfile, cb){
   database.collection('users').findAndModify(
      { facebookID: facebookProfile.id } ,
      { facebookID: -1 },
-     { $set: { facebookID: facebookProfile.id,
-                lastLogin: new Date(),
+     { $setOnInsert: { facebookID: facebookProfile.id,
                 facebookName: facebookProfile.displayName,
                 role: "member"
-      } },
+      },
+       $set: {
+         lastLogin: new Date(),
+       }
+     },
      { upsert: true },
      function(err, result) {
        cb(err,result.value);
@@ -142,15 +145,16 @@ app.get('/songs/all', function (req, res) {
 });
 
 app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+  res.render("new_music",{});
 
-      res.send('<form method="post"><input name="videoID"><input type="submit"></form>');
+      //res.send('<form method="post"><input name="videoID"><input type="submit"></form>');
 
   });
 
   app.post( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
 
         console.log(req.body);
-        database.collection("lyrics").insertOne({videoID: req.body.videoID}, function(){
+        database.collection("lyrics").insertOne(req.body, function(){
           res.redirect("/music/id/"+req.body.videoID); //todo: make bettter;
         });
 
