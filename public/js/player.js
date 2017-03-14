@@ -1,6 +1,7 @@
 var editMode = false;
 var segmentStart=0;
 var segmentEnd=0;
+var maxTime = 300; //default for now
 var spinners = {};
 var player;
 var saveStartTime=false;
@@ -45,8 +46,8 @@ function onYouTubeIframeAPIReady() {
 }
 
 function onPlayerReady(event) {
-  //event.target.playVideo();
 
+  maxTime = player.getDuration();
 
 }
 
@@ -392,7 +393,7 @@ function storeLyrics(){
 
 To do:
 
--load video info
+-when not logged on, and click "add lyrics", redirect to "add lyrics" page
 -when edit mode triggered while playing, show current time marks
 
 -error handling

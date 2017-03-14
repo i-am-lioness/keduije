@@ -27,15 +27,17 @@
         }
 
         increment(){
-
+          if(this.state.seconds<window["maxTime"]){
             this.setState((prevState, props) => ({
               seconds: prevState.seconds + 1
             }));
-
+          }
         }
 
         componentDidUpdate(prevProps, prevState){
           window[this.variableName]=this.state.seconds;
+          if((prevState.seconds!=this.state.seconds)&&(this.props.onChange))
+            this.props.onChange(this.state.seconds);
         }
         render () {
 

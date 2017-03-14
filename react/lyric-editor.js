@@ -7,16 +7,39 @@
             displayed: true,
             originalText: "",
             mode: "add" /*update or add*/,
-            enabled: false
+            enabled: false,
+            /*tail coordinates */
+            rightX: 10,
+            rightY: 0,
+            leftX: 40,
+            leftY: 0,
+            bottomX: 25,
+            bottomY: 50
           };
 
           this.handleChange = this.handleChange.bind(this);
           this.handleSubmit = this.handleSubmit.bind(this);
           this.handleCancel = this.handleCancel.bind(this);
+          this.moveTail = this.moveTail.bind(this);
           this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
 
           lyricEditor = this;
 
+        }
+
+        moveTail(time){
+          var dialogWidth = $("#lyricEditor").outerWidth();
+          console.log(dialogWidth);
+          var tailWidth = dialogWidth/4;
+          var offset = dialogWidth * time/window["maxTime"];
+         this.setState({
+            rightX: offset,
+            rightY: 0,
+            leftX: offset + tailWidth,
+            leftY: 0,
+            bottomX: offset + tailWidth/2,
+            bottomY: 50
+          });
         }
 
         handleToggleEditMode(){
@@ -62,6 +85,9 @@
         }
 
         render () {
+          var points = this.state.leftX + "," + this.state.leftY + " "
+                      + this.state.rightX + "," + this.state.rightY + " "
+                      + this.state.bottomX + "," + this.state.bottomY;
           var btnText = (this.state.mode=="add") ? "Add" : "Update";
           var originalText = this.state.originalText ? <div className="originalText">{this.state.originalText}</div> : null;
           var editSwitchText = (this.state.enabled) ? "Done Editing" : "Edit";
@@ -73,7 +99,7 @@
           </div>
           <div className="row">
             <div className="col-md-5">
-              <TimeSpinner className="col-md-5"  id="start-spinner" variableName="segmentStart" label="From"/>
+              <TimeSpinner className="col-md-5"  id="start-spinner" variableName="segmentStart" label="From" onChange={this.moveTail}/>
             </div>
             <div className="col-md-5">
               <TimeSpinner className="col-md-5"  id="end-spinner" variableName="segmentEnd" label="To"/>
@@ -92,8 +118,8 @@
               <button id="save-lyric-btn" className="btn btn-default btn-lg" type="submit">{btnText}</button>
             </div>
           </div>
-          <svg id="tail" width="100" height="100">
-            <polygon points="10,0 40,0 30,50" className="editor-bg-color"></polygon>
+          <svg id="tail">
+            <polygon points={points} className="editor-bg-color"></polygon>
           </svg></form>;
 
           return <div>
