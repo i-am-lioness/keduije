@@ -1,16 +1,16 @@
 doctype html
 html(lang='en')
   head
-    title Playback KeduIje?
+    title KeduIje?
     include head.pug
+    script(src='/js/bootstrap.min.js')
   body
     include nav-bar.pug
     .container-fluid
       .row
-        .col-md-8
-          #buttons
+        .col-md-8.col-md-offset-2
+          #main-carousel.carousel.slide(data-ride="carousel")
       footer.footer
         p &copy; 2017 KeduIje, Inc.
     script(src='/js/ie10-viewport-bug-workaround.js')
     script(src='/js/home.js')
-    script(src='https://www.youtube.com/iframe_api', async='')

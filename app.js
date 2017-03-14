@@ -131,6 +131,14 @@ app.get('/', function (req, res) {
 
 });
 
+
+app.get('/carousel', function (req, res) {
+
+  database.collection('lyrics').find({},{videoID: 1, title: 1}).toArray(function(err, videos) {
+    res.render("carousel",{videos: videos, carouselIDquery: "#main-carousel"});
+  });
+});
+
 app.get('/songs/all', function (req, res) {
 
   database.collection('lyrics').find({},{videoID: 1}).toArray(function(err, results) {
