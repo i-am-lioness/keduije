@@ -41,6 +41,8 @@
           this.setState((prevState, props) => ({
             enabled: !prevState.enabled
           }));
+
+          if(editMode) stopHighlighting();
         }
 
         handleChange(event) {

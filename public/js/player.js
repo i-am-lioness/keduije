@@ -15,7 +15,6 @@ var currentLineEndTime = -1;
 var songID = null;
 var user = null;
 var currentLyric;
-var lyricEditor;
 var indexBeingModified = -1;
 
 var activateLineTimer;
@@ -78,13 +77,18 @@ function getLineFromTime(time){
   }
 }
 
+function stopHighlighting(){
+  clearTimeout(activateLineTimer);
+  $(".current").removeClass("current");
+}
+
 /*shows active lyric during playback */
 function activateLine(){
   currentTime = player.getCurrentTime();
 
   if ((currentTime<currentLineStartTime) || (currentTime>currentLineEndTime))
   {
-    $(currentLine).removeClass("current");
+    $(".current").removeClass("current");
     currentLine = getLineFromTime(currentTime);
     $(currentLine).addClass("current");
     scrollIfOutOfView(currentLine);
@@ -92,7 +96,7 @@ function activateLine(){
   }
 
   //only keep timer going if the video is playing
-  if (player.getPlayerState()==YT.PlayerState.PLAYING)
+  if ((player.getPlayerState()==YT.PlayerState.PLAYING)||(!editMode))
     activateLineTimer = setTimeout(activateLine, 1000);
 }
 
@@ -114,34 +118,23 @@ function convertToTime(seconds){
   return Math.floor(minutes) + ":" + seconds;
 }
 
-/* may not be needed */
-function parseTimeString( str ) {
-
-  var seconds = 0;
-  var unit = 1;
-
-  var parts = str.split(":");
-  while(parts.length>0){
-    var val=parts.pop();
-    seconds += parseInt(val)*unit;
-    unit *=60;
-  }
-}
-
 function onPlayerStateChange(event) {
   if (event.data == YT.PlayerState.PAUSED) {
-    if(indexBeingModified>-1) return;
+    if(indexBeingModified>-1) return; //revisit
 
     segmentStart = saveStartTime? segmentStart : segmentEnd;
     saveStartTime = false; //turn off switch
     segmentEnd = Math.floor(player.getCurrentTime());
 
-    spinners["segmentStart"].setValue(segmentStart);
-    spinners["segmentEnd"].setValue(segmentEnd);
+    if(lyricEditor.state.enabled && lyricEditor.state.displayed){
+      spinners["segmentStart"].setValue(segmentStart);
+      spinners["segmentEnd"].setValue(segmentEnd);
+    }
 
     if(editMode)
       showNewLyricDialog();
-    //pause timer
+
+    //stop timer
     clearTimeout(activateLineTimer);
 
   }else if (event.data == YT.PlayerState.PLAYING) {
@@ -163,7 +156,7 @@ function jumpTo(){
     saveStartTime = true;
     segmentStart = currentLineStartTime;
     player.playVideo();
-    segmentEnd = parseInt($(this).data("end-time"));
+    segmentEnd = currentLineEndTime;
     setTimeout(checkForSegmentEnd,1000);
     spinners["segmentStart"].setValue(segmentStart);
     spinners["segmentEnd"].setValue(segmentEnd);
@@ -258,7 +251,6 @@ function displayLyrics(){
                   var index = $(this).data("index");
                   var headingText = prompt("Please enter heading", "[]");
                   saveHeading(headingText, index);
-                  //showEditDialog(i, startTime, endTime, text);
                 }
 
               });
@@ -274,22 +266,16 @@ function displayLyrics(){
 }
 
 function showNewLyricDialog(){
-  //$("#lyricEditor .originalText").hide().text('');
   lyricEditor.show();
-
-  //$("#save-lyric-btn").text("Add");
 }
 
 function showEditDialog(i, startTime, endTime, text){
   lyricEditor.show(text);
   indexBeingModified = i;
-  //$("#lyricEditor .originalText").show().text('original: "' + text + '"');
-  //$("#lyric").val(text);
   segmentStart = startTime;
   segmentEnd = endTime;
   spinners["segmentStart"].setValue(segmentStart);
   spinners["segmentEnd"].setValue(segmentEnd);
-  //$("#save-lyric-btn").text("Update");
 }
 /*
 
@@ -351,7 +337,6 @@ function saveLyric(text){
     addLyric(text)
   }
 
-  //$('#lyric').val("");
   lyrics.sort(function(a, b){
     return a.endTime-b.endTime;
   });
@@ -377,7 +362,6 @@ function addLyric(text){
 }
 
 function updateLyric(text,idx){
-  //lyrics[idx].text=$("#lyric").val();
   lyrics[idx].text=text;
   lyrics[idx].startTime=segmentStart;
   lyrics[idx].endTime=segmentEnd;
@@ -390,11 +374,7 @@ function storeLyrics(){
 
 /*
 
-
 To do:
-
--when not logged on, and click "add lyrics", redirect to "add lyrics" page
--when edit mode triggered while playing, show current time marks
 
 -error handling
 
