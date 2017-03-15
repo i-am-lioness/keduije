@@ -79,11 +79,17 @@ app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveU
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(function(req, res, next){
+  res.locals.user = req.user;
+  res.locals.title = "KeduIje?"
+  //res.locals.authenticated = ! req.user.anonymous;
+  next();
+});
 
 
 function requireRole(role) {
     return function(req, res, next) {
-      //console.log(req.user);
+
         if(req.user && req.user.role === role)
             next();
         else
@@ -112,7 +118,7 @@ app.get('/music/id/:videoID', function (req, res) {
       var artwork_src = song.img ? song.img : youtube_thumbnail;
 
         res.render('player', {
-          title: "hello",
+          title: song.title + " | " + res.locals.title,
           artwork_src: artwork_src,
           videoID: song.videoID,
           user: req.user || null,
@@ -153,7 +159,7 @@ app.get('/songs/all', function (req, res) {
 });
 
 app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
-  res.render("new_music",{});
+  res.render("new_music",{title: "New Music | " + res.locals.title});
 
   });
 
