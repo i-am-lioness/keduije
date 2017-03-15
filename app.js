@@ -155,8 +155,6 @@ app.get('/songs/all', function (req, res) {
 app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
   res.render("new_music",{});
 
-      //res.send('<form method="post"><input name="videoID"><input type="submit"></form>');
-
   });
 
   app.post( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
@@ -175,7 +173,7 @@ app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, re
 
   app.get('/login/facebook',
     function (req, res, next) {
-      req.session.returnTo = req.header('Referer');
+      req.session.returnTo = req.session.returnTo || req.header('Referer');
       next()
     },
     passport.authenticate('facebook'));

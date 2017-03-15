@@ -10,11 +10,8 @@
             enabled: false,
             /*tail coordinates */
             rightX: 10,
-            rightY: 0,
             leftX: 40,
-            leftY: 0,
-            bottomX: 25,
-            bottomY: 50
+            bottomX: 25
           };
 
           this.handleChange = this.handleChange.bind(this);
@@ -30,15 +27,12 @@
         moveTail(time){
           var dialogWidth = $("#lyricEditor").outerWidth();
           console.log(dialogWidth);
-          var tailWidth = dialogWidth/4;
+          var tailWidth = 30;
           var offset = dialogWidth * time/window["maxTime"];
          this.setState({
             rightX: offset,
-            rightY: 0,
             leftX: offset + tailWidth,
-            leftY: 0,
-            bottomX: offset + tailWidth/2,
-            bottomY: 50
+            bottomX: offset + 20
           });
         }
 
@@ -85,9 +79,9 @@
         }
 
         render () {
-          var points = this.state.leftX + "," + this.state.leftY + " "
-                      + this.state.rightX + "," + this.state.rightY + " "
-                      + this.state.bottomX + "," + this.state.bottomY;
+          var points = this.state.leftX + ",0 "
+                      + this.state.rightX + ",0 "
+                      + this.state.bottomX + ",50";
           var btnText = (this.state.mode=="add") ? "Add" : "Update";
           var originalText = this.state.originalText ? <div className="originalText">{this.state.originalText}</div> : null;
           var editSwitchText = (this.state.enabled) ? "Done Editing" : "Edit";
@@ -99,10 +93,10 @@
           </div>
           <div className="row">
             <div className="col-md-5">
-              <TimeSpinner className="col-md-5"  id="start-spinner" variableName="segmentStart" label="From" onChange={this.moveTail}/>
+              <TimeSpinner className="col-md-5"  id="start-spinner" variableName="segmentStart" label="From"/>
             </div>
             <div className="col-md-5">
-              <TimeSpinner className="col-md-5"  id="end-spinner" variableName="segmentEnd" label="To"/>
+              <TimeSpinner className="col-md-5"  id="end-spinner" variableName="segmentEnd" label="To" onChange={this.moveTail}/>
             </div>
             <div className="col-md-2">
               <a id="playLyric" type="button" className="btn btn-default btn-lg" title="play" onClick={this.props.onPlay}>

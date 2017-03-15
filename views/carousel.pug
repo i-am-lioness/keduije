@@ -3,11 +3,11 @@ ol.carousel-indicators
     li(data-target=carouselIDquery,data-slide-to=idx)
 .carousel-inner(role="listbox")
   each video in videos
-    div.item(role="listbox")
-      img(src='https://i.ytimg.com/vi/'+ video.videoID + '/maxresdefault.jpg',alt=video.title)
-      .carousel-caption
-        h1=video.title
-        a(href="/music/id/"+video.videoID) Click To Watch
+    div.item
+      a(href="/music/id/"+video.videoID)
+        img(src='https://i.ytimg.com/vi/'+ video.videoID + '/sddefault.jpg',alt=video.title)
+        .carousel-caption
+          h1=video.title  
 a.left.carousel-control(href=carouselIDquery,role="button",data-slide="prev")
   span.glyphicon.glyphicon-chevron-left(aria-hidden="true")
   span.sr-only Previous
