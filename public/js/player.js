@@ -171,6 +171,13 @@ function showEditHeaderDialog(idx){
 }
 
 function displayLyrics(){
+  indexBeingModified = -1;
+  lyricEditor.hide();
+
+  lyrics.sort(function(a, b){
+    return a.endTime-b.endTime;
+  });
+
   $('#lyricsDisplay').empty();
   $.each(lyrics,function(i, val){
 
@@ -291,24 +298,21 @@ can add headings or lyrics
 
 lyric_line {
   id: num_of_bars
-  //isHeading:
   startTime:
   endTime:
   deleted: false,
   text:
-  heading: null || "string"
+  heading: null || "string",
+  lastEdit: {dateTime}
+  lastEditBy: null || "userID" //null, if never revised by another
 }
 
-//id can change until annotated
+//id can change until annotated or edited
 revision: {
   user:
   songID:
   lineID:
-  before: {
-  startTime: x ||
-  endTime: x ||
-  content: x
-   }
+  date: {dateTime}
   change: {deleted: true ||
           startTime: x ||
           endTime: x ||
@@ -318,14 +322,9 @@ revision: {
 */
 
 //todo: refactor, integrate with saveLyric
-function saveHeading(text, idx){
-  lyrics[idx].heading=text;
+function saveHeading(headingText, idx){
 
-  storeLyrics();
-
-  displayLyrics();
-  indexBeingModified = -1;
-  lyricEditor.hide();
+  updateLyric(null, idx, headingText);
 
 }
 
@@ -337,45 +336,74 @@ function saveLyric(text){
     addLyric(text)
   }
 
-  lyrics.sort(function(a, b){
-    return a.endTime-b.endTime;
-  });
-
-  storeLyrics();
-
-  displayLyrics();
-  indexBeingModified = -1;
-  lyricEditor.hide();
-
 }
 
 function addLyric(text){
-  lyrics.push({
+
+  var newLyric = {
     text: $('#lyric').val(),
     endTime: segmentEnd,
     deleted: false,
     id: lyrics.length,
     startTime: segmentStart,
     heading: null
+  };
+
+  $.post("/lyrics/"+songID+"/addline", newLyric, function(res){
+    lyrics.push(newLyric); //or re-render display
+    displayLyrics();
   });
-
 }
 
-function updateLyric(text,idx){
-  lyrics[idx].text=text;
-  lyrics[idx].startTime=segmentStart;
-  lyrics[idx].endTime=segmentEnd;
-}
+function updateLyric(text, idx, heading){
 
+  var oldLyricObj = lyrics[idx];
+  var updateObj = {};
 
-function storeLyrics(){
-  $.post("/", {videoID: songID, lyrics: lyrics});
+  function appendIfChanged(field, variable){
+    if((!variable)&&(!oldLyricObj[field])) //for empty, null, and undefined strings
+      return;
+    if(variable==parseInt(oldLyricObj[field])) //for integers
+      return;
+    if(variable==oldLyricObj[field]) //for matching strings
+      return;
+
+    updateObj[field]=variable;
+  }
+
+    if(heading){
+    appendIfChanged("heading",heading);
+    }else {
+      appendIfChanged("text",text);
+      appendIfChanged("startTime",segmentStart);
+      appendIfChanged("endTime",segmentEnd);
+    }
+
+//  console.log(updateObj);
+
+  $.post("/lyrics/"+songID+"/editline/"+lyrics[idx].id, updateObj, function(res){
+
+        //or re-render display
+        for(k in updateObj){
+          lyrics[idx][k]=updateObj[k];
+        }
+
+        displayLyrics();
+      });
+
 }
 
 /*
 
 To do:
 
+-multi user edit tracking
+--save creator for each song
+--track date created and last edit
+--track if revision has been made for each line
+
+-edit button should not show if not logged in
+-refactoring
 -error handling
 
 */

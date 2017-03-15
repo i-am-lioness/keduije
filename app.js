@@ -164,8 +164,9 @@ app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, re
   });
 
   app.post( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+        req.body["creator"] = req.user._id;
+        //req.body["created"] = new Date(); // not necessary since included in id
 
-        console.log(req.body);
         database.collection("lyrics").insertOne(req.body, function(){
           res.redirect("/music/id/"+req.body.videoID); //todo: make bettter;
         });
@@ -195,23 +196,43 @@ app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, re
     res.redirect(req.header('Referer') || '/');
   });
 
-
-app.post('/', function (req, res) {
+app.post('/lyrics/:videoID/addline', function (req, res) {
 
   var obj = req.body;
 
   database.collection('lyrics').update(
-     { videoID: obj.videoID } ,
-     { $set: { lyrics: obj.lyrics } },
-     { upsert: true },
+     { videoID: req.params.videoID } ,
+     {
+       $push: { lyrics: obj } 
+     },
      function(err, result) {
-       assert.equal(err, null);
-       res.send(result);
+
+       res.send(result); //todo: send updated lyric display?
      }
   );
 
 });
 
+
+app.post('/lyrics/:videoID/editline/:lineID', function (req, res) {
+
+var obj = {};
+for(k in req.body){
+  obj["lyrics.$."+k]=req.body[k];
+}
+
+database.collection('lyrics').update(
+   { videoID: req.params.videoID, "lyrics.id": req.params.lineID } ,
+   { $set: obj,
+     $currentDate: {"lyrics.$.lastEdit": true}
+    },
+   function(err, result) {
+
+     res.send(result); //todo: send updated lyric display?
+   }
+);
+
+});
 
 MongoClient.connect(process.env.DB_URL, function(err, db) {
   assert.equal(null, err);
