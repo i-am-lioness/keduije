@@ -19,8 +19,19 @@ nav.navbar.navbar-default
             a(href="/logout") Logout
         else
           li
-            a(href="/login") Sign In
+            a(href="#loginModal",data-toggle="modal") Sign In
           li
             a(href="#about") Sign Up
         li
           a.accent(href="/music/new") Add Lyrics
+#loginModal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="myModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        button.close(type="button" data-dismiss="modal" aria-label="Close")
+          span(aria-hidden="true") &times;
+        h4#myModalLabel.modal-title Login
+      .modal-body
+        a(href="/login/facebook") Login with Facebook
+        br
+        a(href="/login/twitter") Login with Twitter
