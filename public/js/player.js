@@ -316,7 +316,8 @@ revision: {
   change: {deleted: true ||
           startTime: x ||
           endTime: x ||
-          content: }
+          content:,
+          header: }
 }
 
 */
@@ -350,7 +351,7 @@ function addLyric(text){
   };
 
   $.post("/lyrics/"+songID+"/addline", newLyric, function(res){
-    lyrics.push(newLyric); //or re-render display
+    lyrics.push(res); //or re-render display
     displayLyrics();
   });
 }
@@ -379,14 +380,18 @@ function updateLyric(text, idx, heading){
       appendIfChanged("endTime",segmentEnd);
     }
 
-//  console.log(updateObj);
+    var postData = {
+      update: updateObj,
+      original: oldLyricObj
+    };
 
-  $.post("/lyrics/"+songID+"/editline/"+lyrics[idx].id, updateObj, function(res){
+  $.post("/lyrics/"+songID+"/editline/"+lyrics[idx].id, postData, function(res){
 
         //or re-render display
         for(k in updateObj){
           lyrics[idx][k]=updateObj[k];
         }
+        lyrics[idx].lastEditBy = res;
 
         displayLyrics();
       });

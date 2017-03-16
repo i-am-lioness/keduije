@@ -199,6 +199,8 @@ app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, re
 app.post('/lyrics/:videoID/addline', function (req, res) {
 
   var obj = req.body;
+  obj.lastEditBy = req.user._id;
+  obj.revised=false;
 
   database.collection('lyrics').update(
      { videoID: req.params.videoID } ,
@@ -207,30 +209,81 @@ app.post('/lyrics/:videoID/addline', function (req, res) {
      },
      function(err, result) {
 
-       res.send(result); //todo: send updated lyric display?
+       res.send(obj); //todo: send updated lyric display?
      }
   );
 
 });
 
+function updateLyric(req, res, obj) {
 
-app.post('/lyrics/:videoID/editline/:lineID', function (req, res) {
+  database.collection('lyrics').update(
+     { videoID: req.params.videoID, "lyrics.id": req.params.lineID } ,
+     { $set: obj,
+       $currentDate: {"lyrics.$.lastEdit": true}
+      },
+     function(err, result) {
 
-var obj = {};
-for(k in req.body){
-  obj["lyrics.$."+k]=req.body[k];
+       res.send(req.user._id); //todo: send updated lyric display?
+     }
+  );
+
 }
 
-database.collection('lyrics').update(
-   { videoID: req.params.videoID, "lyrics.id": req.params.lineID } ,
-   { $set: obj,
-     $currentDate: {"lyrics.$.lastEdit": true}
-    },
-   function(err, result) {
+/*temporary script */
+app.get('/temp',ensureLoggedIn(), function (req, res) {
 
-     res.send(result); //todo: send updated lyric display?
-   }
-);
+  database.collection('lyrics').find().forEach(function (song){
+    if(song.lyrics){
+
+
+      song.lyrics.forEach(function(lyric){
+        //lyric.lastEditBy = req.user._id;
+        lyric.revised = false;
+      });
+
+
+      database.collection('lyrics').save(song);
+
+    }
+  });
+
+  res.send("done");
+
+});
+
+
+app.post('/lyrics/:videoID/editline/:lineID', ensureLoggedIn(), function (req, res) {
+
+
+var obj = {};
+for(k in req.body.update){
+  obj["lyrics.$."+k]=req.body.update[k];
+}
+obj["lyrics.$.lastEditBy"]=req.user._id;
+
+  console.log("req.body.original.revised",req.body.original.revised);
+
+  if((JSON.parse(req.body.original.revised))  || (req.user._id!=req.body.original.lastEditBy)){
+    console.log("this lyric is in revision phase");
+
+    //different user, so must start saving revisions
+    obj["lyrics.$.revised"]=true; //todo: could be redundant
+
+    var revision = req.body.original;
+    revision.songID = req.params.videoID;
+    revision.user = revision.lastEditBy;
+    delete revision.lastEditBy;
+
+
+    database.collection("revisions").insertOne(revision, function(err, results){
+      updateLyric(req, res, obj);
+    });
+
+  }else{ //todo: use promise
+    console.log("this lyric is not yet being revised. direct update")
+    updateLyric(req, res, obj);
+  }
 
 });
 
