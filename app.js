@@ -8,7 +8,37 @@ var cors = require('cors')
 var path = require('path');
 var passport = require('passport');
 var Strategy = require('passport-facebook').Strategy;
+var TwitterStrategy = require('passport-twitter').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
+var ObjectId = require('mongodb').ObjectId;
+
+var twCallbackURL = process.env.DEV ?
+  'http://localhost:3000/login/twitter/return'
+  : 'http://keduije1.herokuapp.com/login/twitter/return';
+
+  function getTwitterUser(twitterProfile, cb){
+    //console.log("twitterProfile", twitterProfile);
+
+    database.collection('users').findAndModify(
+       { twitterID: twitterProfile.id } ,
+       { twitterID: -1 },
+       { $setOnInsert: { twitterID: twitterProfile.id,
+                  displayName: twitterProfile.username,
+                  photo: twitterProfile.photos[0].value, //todo: make sure it exists
+                  role: "member"
+        },
+         $set: {
+           lastLogin: new Date(),
+         }
+       },
+       { upsert: true },
+       function(err, result) {
+         cb(err,result.value);
+       }
+    );
+  }
+
+
 
 var fbCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/facebook/return'
@@ -20,8 +50,9 @@ function getFacebookUser(facebookProfile, cb){
      { facebookID: facebookProfile.id } ,
      { facebookID: -1 },
      { $setOnInsert: { facebookID: facebookProfile.id,
-                facebookName: facebookProfile.displayName,
-                role: "member"
+                displayName: facebookProfile.displayName,
+                role: "member",
+                photo: "http://graph.facebook.com/v2.8/" + facebookProfile.id + "/picture"
       },
        $set: {
          lastLogin: new Date(),
@@ -34,10 +65,11 @@ function getFacebookUser(facebookProfile, cb){
   );
 }
 
-function getUser(facebookProfileId, cb){
+function getUser(userID, cb){
   database.collection('users').findOne(
-    { facebookID: facebookProfileId },
+    { _id: new ObjectId(userID) },
     function (err, result){
+      console.log("result", result);
       cb(err,result);
     });
 }
@@ -53,11 +85,11 @@ passport.use(new Strategy({
 ));
 
 passport.serializeUser(function(user, cb) {
-  cb(null, user.facebookID);
+  cb(null, user._id);
 });
 
-passport.deserializeUser(function(obj, cb) {
-  getUser(obj, cb);
+passport.deserializeUser(function(id, cb) {
+  getUser(id, cb);
 });
 
 // Configure view engine to render EJS templates.
@@ -85,6 +117,25 @@ app.use(function(req, res, next){
   //res.locals.authenticated = ! req.user.anonymous;
   next();
 });
+
+passport.use(new TwitterStrategy({
+    consumerKey: process.env.TWITTER_CONSUMER_KEY,
+    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+    callbackURL: twCallbackURL
+  },
+  function(token, tokenSecret, profile, cb) {
+    getTwitterUser(profile, cb);
+  }
+));
+
+app.get('/login/twitter',
+  passport.authenticate('twitter'));
+
+app.get('/login/twitter/return',
+  passport.authenticate('twitter', { failureRedirect: '/login' }),
+  function(req, res) {
+    res.redirect(req.session.returnTo || "/");
+  });
 
 
 function requireRole(role) {
@@ -175,7 +226,9 @@ app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, re
 
     app.get('/login',
       function(req, res) {
-        res.redirect("/login/facebook");
+        //res.redirect("/login/facebook");
+        req.session.returnTo = req.session.returnTo || req.header('Referer');
+        res.send('<a href="/login/facebook">Login with Facebook</a><br/><a href="/login/twitter">Login with Twitter</a>');
       });
 
   app.get('/login/facebook',
@@ -205,7 +258,7 @@ app.post('/lyrics/:videoID/addline', function (req, res) {
   database.collection('lyrics').update(
      { videoID: req.params.videoID } ,
      {
-       $push: { lyrics: obj } 
+       $push: { lyrics: obj }
      },
      function(err, result) {
 

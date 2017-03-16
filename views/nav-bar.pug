@@ -13,13 +13,13 @@ nav.navbar.navbar-default
         if user
           li
             a.user(href="#")
-              div.user-avatar(style="background-image: url(http://graph.facebook.com/v2.8/" + user.facebookID + "/picture);")
-              span=user.facebookName
+              div.user-avatar(style="background-image: url(" + user.photo + ");")
+              span=user.displayName
           li
             a(href="/logout") Logout
         else
           li
-            a(href="/login/facebook") Sign In
+            a(href="/login") Sign In
           li
             a(href="#about") Sign Up
         li
