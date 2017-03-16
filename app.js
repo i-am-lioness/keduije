@@ -231,7 +231,7 @@ function updateLyric(req, res, obj) {
 }
 
 /*temporary script */
-app.get('/temp',ensureLoggedIn(), function (req, res) {
+/*app.get('/temp',ensureLoggedIn(), function (req, res) {
 
   database.collection('lyrics').find().forEach(function (song){
     if(song.lyrics){
@@ -251,6 +251,7 @@ app.get('/temp',ensureLoggedIn(), function (req, res) {
   res.send("done");
 
 });
+*/
 
 
 app.post('/lyrics/:videoID/editline/:lineID', ensureLoggedIn(), function (req, res) {

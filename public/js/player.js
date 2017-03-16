@@ -6,7 +6,10 @@ var spinners = {};
 var player;
 var saveStartTime=false;
 var lyrics = [];
-var lyricEditor = null;
+var lyricEditor = {
+  show: function(){},
+  hide: function(){},
+};
 var currentTime=0;
 var currentLine; //dom object of current lyric
 var currentLineStartTime;
@@ -402,12 +405,6 @@ function updateLyric(text, idx, heading){
 
 To do:
 
--multi user edit tracking
---save creator for each song
---track date created and last edit
---track if revision has been made for each line
-
--edit button should not show if not logged in
 -refactoring
 -error handling
 

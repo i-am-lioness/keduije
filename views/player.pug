@@ -25,8 +25,10 @@ html(lang='en')
       songID = "#{videoID}";
       user = JSON.parse(!'{JSON.stringify(user)}');
       loadLyrics();
-      ReactDOM.render(
-      <LyricEditor onSubmit={saveLyric} onPlay={playLyric}/>,
-      document.getElementById('editor-container')
-      );
+    if (canEdit)
+      script(type='text/babel').
+        ReactDOM.render(
+        <LyricEditor onSubmit={saveLyric} onPlay={playLyric}/>,
+        document.getElementById('editor-container')
+        );
     script(src='https://www.youtube.com/iframe_api', async='')
