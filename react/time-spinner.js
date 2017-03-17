@@ -4,13 +4,12 @@
           super(props);
           this.variableName = this.props.variableName;
 
-          this.state = {seconds: window[this.variableName]};
 
+          this.state = {seconds: 0};
 
           this.increment = this.increment.bind(this);
           this.decrement = this.decrement.bind(this);
 
-          spinners[this.variableName]=this;
 
         }
 
@@ -27,7 +26,7 @@
         }
 
         increment(){
-          if(this.state.seconds<window["maxTime"]){
+          if(this.state.seconds<this.maxTime){
             this.setState((prevState, props) => ({
               seconds: prevState.seconds + 1
             }));
@@ -35,13 +34,21 @@
         }
 
         componentDidUpdate(prevProps, prevState){
-          window[this.variableName]=this.state.seconds;
+          this.timeController.set(this.variableName,this.state.seconds);
           if((prevState.seconds!=this.state.seconds)&&(this.props.onChange))
             this.props.onChange(this.state.seconds);
         }
+
+        convertToTime(seconds){
+          var minutes = seconds/60;
+          var seconds = seconds%60;
+          if (seconds<10) seconds = "0"+seconds;
+          return Math.floor(minutes) + ":" + seconds;
+        }
+
         render () {
 
-          var displayedTimeMark = convertToTime(this.state.seconds);
+          var displayedTimeMark = this.convertToTime(this.state.seconds);
           return <div className="spinner-container">
                     <div className="label">{this.props.label}</div>
                     <div className="inner-spinner">

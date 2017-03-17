@@ -22,13 +22,13 @@ html(lang='en')
     script(src='/time-spinner.js', type='text/babel')
     script(src='/js/player.js')
     script(type='text/babel').
-      songID = "#{videoID}";
-      user = JSON.parse(!'{JSON.stringify(user)}');
-      loadLyrics();
+      var onYouTubeIframeAPIReady = KeduIje.onYouTubeIframeAPIReady;
+      KeduIje.loadLyrics("#{videoID}");
     if (canEdit)
       script(type='text/babel').
+
         ReactDOM.render(
-        <LyricEditor onSubmit={saveLyric} onPlay={playLyric}/>,
-        document.getElementById('editor-container')
+          <LyricEditor ref={KeduIje.registerEditor} />,
+          document.getElementById('editor-container')
         );
     script(src='https://www.youtube.com/iframe_api', async='')

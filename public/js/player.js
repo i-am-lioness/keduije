@@ -1,3 +1,7 @@
+
+var KeduIje = (function(ki){
+
+
 var editMode = false;
 var segmentStart=0;
 var segmentEnd=0;
@@ -22,7 +26,8 @@ var indexBeingModified = -1;
 
 var activateLineTimer;
 
-function loadLyrics(){
+function loadLyrics(_songID){
+  songID = _songID;
   $.get("/lyrics/"+songID, _loadLyrics);
 }
 
@@ -112,13 +117,6 @@ function scrollIfOutOfView(element){
 
   if ((position<windowTop) || (position > windowBottom))
     $("html,body").animate({scrollTop: position-height*0.2}, 800);
-}
-
-function convertToTime(seconds){
-  var minutes = seconds/60;
-  var seconds = seconds%60;
-  if (seconds<10) seconds = "0"+seconds;
-  return Math.floor(minutes) + ":" + seconds;
 }
 
 function onPlayerStateChange(event) {
@@ -287,43 +285,6 @@ function showEditDialog(i, startTime, endTime, text){
   spinners["segmentStart"].setValue(segmentStart);
   spinners["segmentEnd"].setValue(segmentEnd);
 }
-/*
-
-//each line must begin with a time marker
-
-no free text editing. editing is line by line.
-can add headings or lyrics
-[chorus]
-<0:00> olisa doo olisa doo
-<0:13>* Nna dubem oo nye m ude gi oh
-<0:15> Aga m agbachazi nbo gbara aka laa
-<>Imana mu na Chi m so
-
-lyric_line {
-  id: num_of_bars
-  startTime:
-  endTime:
-  deleted: false,
-  text:
-  heading: null || "string",
-  lastEdit: {dateTime}
-  lastEditBy: null || "userID" //null, if never revised by another
-}
-
-//id can change until annotated or edited
-revision: {
-  user:
-  songID:
-  lineID:
-  date: {dateTime}
-  change: {deleted: true ||
-          startTime: x ||
-          endTime: x ||
-          content:,
-          header: }
-}
-
-*/
 
 //todo: refactor, integrate with saveLyric
 function saveHeading(headingText, idx){
@@ -401,11 +362,65 @@ function updateLyric(text, idx, heading){
 
 }
 
+  function setEditMode(val){
+    editMode = val;
+    if(editMode) stopHighlighting();
+  }
+  function getTime(variableName){
+    switch(variableName) {
+      case "segmentStart":
+        return segmentStart;
+      case "segmentEnd":
+        return segmentEnd;
+    }
+  }
+  function setTime(variableName, val){
+    switch(variableName) {
+      case "segmentStart":
+        segmentStart = val;
+        break;
+      case "segmentEnd":
+        segmentEnd = val;
+        break;
+    }
+  }
+  function registerSpinner(component){
+    if(component){
+      spinners[component.props.variableName]=component;
+      component.maxTime = maxTime;
+      component.timeController = {
+        get: getTime,
+        set: setTime
+      };
+      component.setState({seconds: getTime(component.props.variableName)});
+    }
+  }
+
+  ki.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+  ki.loadLyrics = loadLyrics;
+  ki.registerEditor = function (component){
+    lyricEditor=component;
+    component.maxTime = maxTime;
+    component.saveLyric = saveLyric;
+    component.playLyric = playLyric;
+    component.setEditMode = setEditMode;
+    component.registerSpinner = registerSpinner;
+  }
+
+  return ki;
+
+})({});
+
 /*
 
 To do:
 
+-make sure that player loaded
+-bug: after login, goes to http://localhost:3000/music/id/h01_dEXLqsk#_=_ (achikolo)
+
 -refactoring
 -error handling
+
+-start time should never be after end time
 
 */

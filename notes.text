@@ -1,0 +1,33 @@
+each line must begin with a time marker
+
+no free text editing. editing is line by line.
+can add headings or lyrics
+[chorus]
+<0:00> olisa doo olisa doo
+<0:13>* Nna dubem oo nye m ude gi oh
+<0:15> Aga m agbachazi nbo gbara aka laa
+<>Imana mu na Chi m so
+
+lyric_line {
+  id: num_of_bars
+  startTime:
+  endTime:
+  deleted: false,
+  text:
+  heading: null || "string",
+  lastEdit: {dateTime}
+  lastEditBy: null || "userID" //null, if never revised by another
+}
+
+//id can change until annotated or edited
+revision: {
+  user:
+  songID:
+  lineID:
+  date: {dateTime}
+  change: {deleted: true ||
+          startTime: x ||
+          endTime: x ||
+          content:,
+          header: }
+}

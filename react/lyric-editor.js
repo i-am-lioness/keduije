@@ -20,15 +20,12 @@
           this.moveTail = this.moveTail.bind(this);
           this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
 
-          lyricEditor = this;
-
         }
 
         moveTail(time){
-          var dialogWidth = $("#lyricEditor").outerWidth();
-          console.log(dialogWidth);
+          var dialogWidth = $(this.refs.lyricEditor).outerWidth();
           var tailWidth = 30;
-          var offset = dialogWidth * time/window["maxTime"];
+          var offset = dialogWidth * time/this.maxTime;
          this.setState({
             rightX: offset,
             leftX: offset + tailWidth,
@@ -37,12 +34,11 @@
         }
 
         handleToggleEditMode(){
-          editMode = !this.state.enabled;
+          this.setEditMode(!this.state.enabled);
+
           this.setState((prevState, props) => ({
             enabled: !prevState.enabled
           }));
-
-          if(editMode) stopHighlighting();
         }
 
         handleChange(event) {
@@ -51,7 +47,7 @@
 
         handleSubmit(event) {
           event.preventDefault();
-          this.props.onSubmit(this.state.value);
+          this.saveLyric(this.state.value);
           this.setState({value: ""});
         }
 
@@ -87,7 +83,7 @@
           var btnText = (this.state.mode=="add") ? "Add" : "Update";
           var originalText = this.state.originalText ? <div className="originalText">{this.state.originalText}</div> : null;
           var editSwitchText = (this.state.enabled) ? "Done Editing" : "Edit";
-          var dialog = this.state.displayed && <form id="lyricEditor" className="editor-bg-color" onSubmit={this.handleSubmit}><div className="row">
+          var dialog = this.state.displayed && <form id="lyricEditor" ref="lyricEditor" className="editor-bg-color" onSubmit={this.handleSubmit}><div className="row">
             <div className="col-md-12">
               {originalText}
               <input id="lyric" type="text" placeholder="Transcibe Lyrics..." value={this.state.value} onChange={this.handleChange} />
@@ -95,13 +91,27 @@
           </div>
           <div className="row">
             <div className="col-md-5">
-              <TimeSpinner className="col-md-5"  id="start-spinner" variableName="segmentStart" label="From"/>
+              <TimeSpinner
+                className="col-md-5"
+                id="start-spinner"
+                variableName="segmentStart"
+                label="From"
+                ref={this.registerSpinner}
+              />
             </div>
             <div className="col-md-5">
-              <TimeSpinner className="col-md-5"  id="end-spinner" variableName="segmentEnd" label="To" onChange={this.moveTail}/>
+              <TimeSpinner
+                className="col-md-5"
+                id="end-spinner"
+                variableName="segmentEnd"
+                label="To"
+                getTime={this.props.getEndTime}
+                onChange={this.moveTail}
+                ref={this.registerSpinner}
+              />
             </div>
             <div className="col-md-2">
-              <a id="playLyric" type="button" className="btn btn-default btn-lg" title="play" onClick={this.props.onPlay}>
+              <a id="playLyric" type="button" className="btn btn-default btn-lg" title="play" onClick={this.playLyric}>
                 <span className="glyphicon glyphicon-play" aria-hidden="true"></span>
               </a>
             </div>
