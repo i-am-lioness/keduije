@@ -11,6 +11,8 @@ var Strategy = require('passport-facebook').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var ObjectId = require('mongodb').ObjectId;
+const pug = require('pug');
+const compiledFunction = pug.compileFile('views/lyricsDisplay.pug');
 
 var twCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/twitter/return'
@@ -154,10 +156,20 @@ app.get('/lyrics/:videoID', function (req, res) {
     .find({ videoID: req.params.videoID } )
     .nextObject(function(err, obj) {
 
-    var result = (obj) ? obj.lyrics : [];
-    res.send(result);
-  })
-});
+      var lyrics = (obj) ? obj.lyrics : [];
+
+
+      lyrics.sort(function(a, b){
+        return a.endTime-b.endTime;
+      });
+
+      var html = compiledFunction({
+        lyrics: lyrics
+      });
+
+      res.send({html: html, lyrics: lyrics});
+    })
+  });
 
 app.get('/music/id/:videoID', function (req, res) {
 

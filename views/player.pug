@@ -23,7 +23,7 @@ html(lang='en')
     script(src='/js/player.js')
     script(type='text/babel').
       var onYouTubeIframeAPIReady = KeduIje.onYouTubeIframeAPIReady;
-      KeduIje.loadLyrics("#{videoID}");
+      KeduIje.init("#{videoID}");
     if (canEdit)
       script(type='text/babel').
 

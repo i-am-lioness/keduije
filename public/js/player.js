@@ -11,6 +11,8 @@ var player;
 var saveStartTime=false;
 var lyrics = [];
 var lyricEditor = {
+  state: {enabled: false},
+  displayed: {enabled: false},
   show: function(){},
   hide: function(){},
 };
@@ -20,21 +22,18 @@ var currentLineStartTime;
 var currentLineEndTime = -1;
 
 var songID = null;
-var user = null;
-var currentLyric;
 var indexBeingModified = -1;
 
 var activateLineTimer;
 
-function loadLyrics(_songID){
-  songID = _songID;
+function loadLyrics(){
   $.get("/lyrics/"+songID, _loadLyrics);
 }
 
 function _loadLyrics(result){
-  lyrics = result || [];
+  lyrics = result.lyrics;
 
-  displayLyrics();
+  displayLyrics(result.html);
   currentTime=0;
   currentLine = $('#lyricsDisplay p')[0];
   currentLineStartTime = lyrics[0].startTime;
@@ -97,10 +96,10 @@ function activateLine(){
   if ((currentTime<currentLineStartTime) || (currentTime>currentLineEndTime))
   {
     $(".current").removeClass("current");
-    currentLine = getLineFromTime(currentTime);
-    $(currentLine).addClass("current");
-    scrollIfOutOfView(currentLine);
-
+    if(currentLine = getLineFromTime(currentTime)){
+      $(currentLine).addClass("current");
+      scrollIfOutOfView(currentLine);
+    }
   }
 
   //only keep timer going if the video is playing
@@ -171,105 +170,53 @@ function showEditHeaderDialog(idx){
   saveHeading(headingText, idx);
 }
 
-function displayLyrics(){
+function displayLyrics(html){
   indexBeingModified = -1;
   lyricEditor.hide();
 
-  lyrics.sort(function(a, b){
-    return a.endTime-b.endTime;
+  $('#lyricsDisplay').html(html);
+  $('#lyricsDisplay p').click(jumpTo);
+  $('#lyricsDisplay p,#lyricsDisplay h4').hover(
+    function(){
+      if(editMode)
+        $(this).find(".glyphicon").css("opacity", "1");
+    },
+    function(){
+      $(this).find(".glyphicon").css("opacity", "0");
+    }
+  );
+  $('#lyricsDisplay .add-heading-btn').hover(
+    function(){
+      if(editMode)
+        $(this).css("opacity", "1");
+    },
+    function(){
+      $(this).css("opacity", "0");
+    }
+  )
+  .click(function(){
+    if ( $(this).css('opacity')=="1" && editMode ){
+      var index = $(this).data("index");
+      var headingText = prompt("Please enter heading", "[]");
+      saveHeading(headingText, index);
+    }
+
   });
 
-  $('#lyricsDisplay').empty();
-  $.each(lyrics,function(i, val){
+  $('#lyricsDisplay span.glyphicon-pencil').click(function(){
+    if ( $(this).css('opacity')=="1" && editMode ){
+      var startTime = $(this).data("start-time");
+      var endTime = $(this).data("start-end");
+      var index = $(this).data("index");
+      var text = $(this).data("text");
+      var isHeader = $(this).data("is-header");
+      if(isHeader)
+        showEditHeaderDialog(index);
+      else
+        showEditDialog(index, startTime, endTime, text);
+    }
 
-      var newP = $("<p></p>")
-        .addClass(val.startTime.toString())
-        .data("start-time", val.startTime)
-        .data("end-time", val.endTime)
-        .data("index",i)
-        .click(jumpTo)
-        .hover(
-          function(){
-            if(editMode)
-              $(this).find(".glyphicon").css("opacity", "1");
-          },
-          function(){
-            $(this).find(".glyphicon").css("opacity", "0");
-          }
-        )
-        .append("<span>"+val.text+"</span>");
-
-      var editBtn =$('<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>')
-        .data("start-time", val.startTime)
-        .data("end-time", val.endTime)
-        .data("index",i)
-        .data("text",val.text)
-        .click(function(){
-          if ( $(this).css('opacity')=="1" && editMode ){
-            var startTime = $(this).data("start-time");
-            var endTime = $(this).data("start-end");
-            var index = $(this).data("index");
-            var text = $(this).data("text");
-            var isHeader = $(this).data("is-header");
-            if(isHeader)
-              showEditHeaderDialog(index);
-            else
-              showEditDialog(i, startTime, endTime, text);
-          }
-
-        });
-
-        if((val.heading)){
-          var h4 = $("<h4></h4>")
-            .text(val.heading)
-            .data("index",i)
-            .hover(
-              function(){
-                if(editMode)
-                  $(this).find(".glyphicon").css("opacity", "1");
-              },
-              function(){
-                $(this).find(".glyphicon").css("opacity", "0");
-              }
-            );
-
-            $(editBtn).clone(true)
-            .data("is-header",true)
-            .prependTo(h4);
-
-            $('#lyricsDisplay').append(h4);
-
-            newP.addClass("has-heading");
-          }else {
-
-            var addHeadingBtn = $('<a href="#" class="add-heading-btn">Add Heading</a>')
-              .prepend('<span class="glyphicon glyphicon-plus" aria-hidden="true"></span>')
-              .data("index",i)
-              .hover(
-                function(){
-                  if(editMode)
-                    $(this).css("opacity", "1");
-                },
-                function(){
-                  $(this).css("opacity", "0");
-                }
-              )
-              .click(function(){
-                if ( $(this).css('opacity')=="1" && editMode ){
-                  var index = $(this).data("index");
-                  var headingText = prompt("Please enter heading", "[]");
-                  saveHeading(headingText, index);
-                }
-
-              });
-              newP.append(addHeadingBtn);
-      }
-
-      newP.prepend(editBtn);
-
-
-      $('#lyricsDisplay').append(newP);
-  })
+  });
 
 }
 
@@ -286,7 +233,6 @@ function showEditDialog(i, startTime, endTime, text){
   spinners["segmentEnd"].setValue(segmentEnd);
 }
 
-//todo: refactor, integrate with saveLyric
 function saveHeading(headingText, idx){
 
   updateLyric(null, idx, headingText);
@@ -315,8 +261,7 @@ function addLyric(text){
   };
 
   $.post("/lyrics/"+songID+"/addline", newLyric, function(res){
-    lyrics.push(res); //or re-render display
-    displayLyrics();
+    loadLyrics();
   });
 }
 
@@ -350,14 +295,7 @@ function updateLyric(text, idx, heading){
     };
 
   $.post("/lyrics/"+songID+"/editline/"+lyrics[idx].id, postData, function(res){
-
-        //or re-render display
-        for(k in updateObj){
-          lyrics[idx][k]=updateObj[k];
-        }
-        lyrics[idx].lastEditBy = res;
-
-        displayLyrics();
+        loadLyrics();
       });
 
 }
@@ -397,7 +335,10 @@ function updateLyric(text, idx, heading){
   }
 
   ki.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
-  ki.loadLyrics = loadLyrics;
+  ki.init = function (_songID){
+    songID = _songID;
+    loadLyrics();
+  };
   ki.registerEditor = function (component){
     lyricEditor=component;
     component.maxTime = maxTime;
