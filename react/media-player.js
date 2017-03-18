@@ -71,6 +71,7 @@ class Audio {
           this.saveStartTime=false; //accounts for "jumping" around, rename to "holdStartTime"
           this.timeMarksFrozen = false; //todo: make sure to unfreeze
           this.timer;
+          this.timerHooks = [];
 
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
           this.onPlayerReady = this.onPlayerReady.bind(this);
@@ -120,8 +121,10 @@ class Audio {
 
         onTimeout(){
           var percentage = 100 * this.media.getCurrentTime()/this.media.getDuration();
-
           $(this.refs.seeker).css("width",percentage +"%");
+
+          this.timerHooks.forEach((hook)=>hook(this.getCurrentTime()));
+
           if(this.media.isPlaying())
             this.timer = setTimeout(this.onTimeout,1000);
         }
@@ -170,7 +173,7 @@ class Audio {
         }
 
         handleResume(){
-          this.onResumeCallback();
+          //this.onResumeCallback();
           this.timer = setTimeout(this.onTimeout,1000);
         }
 

@@ -17,8 +17,6 @@ var currentLineEndTime = -1;
 var songID = null;
 var indexBeingModified = -1;
 
-var activateLineTimer;
-
 function loadLyrics(){
   $.get("/lyrics/"+songID, _loadLyrics);
 }
@@ -44,14 +42,9 @@ function getLineFromTime(time){
   }
 }
 
-function stopHighlighting(){
-  clearTimeout(activateLineTimer);
-  $(".current").removeClass("current");
-}
-
 /*shows active lyric during playback */
-function activateLine(){
-  var currentTime = mediaPlayer.getCurrentTime();
+function activateLine(currentTime){
+  if(editMode) return;
 
   if ((currentTime<currentLineStartTime) || (currentTime>currentLineEndTime))
   {
@@ -62,9 +55,6 @@ function activateLine(){
     }
   }
 
-  //only keep timer going if the video is playing
-  if (mediaPlayer.isPlaying()&&(!editMode))
-    activateLineTimer = setTimeout(activateLine, 1000);
 }
 
 //responsively adjusts scroll position of lyrics during playback
@@ -227,22 +217,14 @@ function updateLyric(text, idx, heading){
 
   function setEditMode(val){
     editMode = val;
-    if(editMode) stopHighlighting();
+    if(editMode) //stop activating lines
+      $(".current").removeClass("current");
   }
 
   function onPaused(segmentStart, segmentEnd){
 
       if(editMode)
         lyricEditor.show();
-
-      //stop timer
-      clearTimeout(activateLineTimer);
-  }
-
-  function onResume(){
-    //resume timer
-    if(!editMode)
-      activateLineTimer = setTimeout(activateLine, 1000);
   }
 
   ki.init = function (_songID){
@@ -252,7 +234,8 @@ function updateLyric(text, idx, heading){
   ki.registerPlayer = function (component){
     mediaPlayer=component;
     component.onPausedCallback = onPaused;
-    component.onResumeCallback = onResume;
+    //component.onResumeCallback = onResume;
+    component.timerHooks.push(activateLine);
   }
   ki.registerEditor = function (component){
     lyricEditor=component;
@@ -267,14 +250,17 @@ function updateLyric(text, idx, heading){
 /*
 
 To do:
+--explore integrating LyricDisplay component into MediaPlayer
 -fully integrate audio
 --new music form
 --re-design data schema
 --implement controls
+--move timer controlls to hook
 
 -UI design
 --design control
 
+-move pug rednering of lyric display to client side
 
 -bug: after login, goes to http://localhost:3000/music/id/h01_dEXLqsk#_=_ (achikolo)
 
