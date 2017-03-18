@@ -106,7 +106,15 @@ class Audio {
           this.media.pause();
         }
 
-        seekTo(){
+        seekTo(e){
+          var seeker = $(e.target);
+          var barPosition = seeker.offset().left;
+          var relativePosition = e.pageX - barPosition;
+          var percentage = relativePosition/(seeker.width());
+
+          var time = percentage * this.media.getDuration();
+          console.log(time);
+          this.media.seekTo(time);
 
         }
 
@@ -170,7 +178,7 @@ class Audio {
         onPlayerStateChange(event) {
 
           if (event.data == YT.PlayerState.PAUSED) {
-            this.handlePause();
+            this.handlePaused();
           }else if (event.data == YT.PlayerState.PLAYING) {
             this.handleResume();
           }
