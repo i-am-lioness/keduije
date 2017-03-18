@@ -1,4 +1,5 @@
 
+var playAudio = false;
 class Media {
   constructor(ytVID) {
     this.video = ytVID;
@@ -27,6 +28,36 @@ class Media {
   }
 }
 
+class Audio {
+  constructor(audio, pausedHandler, resumeHandler) {
+    this.audio = audio;
+    this.audio.onpause = pausedHandler;
+    this.audio.onplay = resumeHandler;
+  }
+  play(){
+    this.audio.play();
+  }
+  pause(){
+    this.audio.pause();
+  }
+
+  getCurrentTime(){
+    return this.audio.currentTime;
+  }
+
+  seekTo(pos, buffer){
+    this.audio.currentTime = pos;
+  }
+
+  isPlaying(){
+    return (!this.audio.paused);
+  }
+
+  getDuration(){
+    return this.audio.duration;
+  }
+}
+
       class MediaPlayer extends React.Component {
         constructor(props) {
           super(props); //type,
@@ -39,6 +70,7 @@ class Media {
           this.media = null;
           this.saveStartTime=false; //accounts for "jumping" around, rename to "holdStartTime"
           this.timeMarksFrozen = false; //todo: make sure to unfreeze
+          this.timer;
 
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
           this.onPlayerReady = this.onPlayerReady.bind(this);
@@ -52,7 +84,18 @@ class Media {
           this.decrementTime = this.decrementTime.bind(this);
           this.play = this.play.bind(this);
           this.pause = this.pause.bind(this);
+          this.handlePaused = this.handlePaused.bind(this);
+          this.seekTo = this.seekTo.bind(this);
+          this.onTimeout = this.onTimeout.bind(this);
+          this.handleResume = this.handleResume.bind(this);
 
+
+
+        }
+
+        componentDidMount(){
+          if(playAudio)
+            this.media = new Audio(this.refs.audio, this.handlePaused, this.handleResume);
         }
 
         play(){
@@ -63,6 +106,18 @@ class Media {
           this.media.pause();
         }
 
+        seekTo(){
+
+        }
+
+        onTimeout(){
+          var percentage = 100 * this.media.getCurrentTime()/this.media.getDuration();
+
+          $(this.refs.seeker).css("width",percentage +"%");
+          if(this.media.isPlaying())
+            this.timer = setTimeout(this.onTimeout,1000);
+        }
+
         onYouTubeIframeAPIReady() {
           var iframe = $("iframe.embed-responsive-item")[0]; //revisit
           var video = new YT.Player(iframe, {
@@ -71,7 +126,8 @@ class Media {
               'onStateChange': this.onPlayerStateChange
             }
           });
-          this.media= new Media(video);
+          if(!playAudio)
+            this.media= new Media(video);
         }
 
         onPlayerReady(event) {
@@ -82,32 +138,41 @@ class Media {
           this.timeMarksFrozen = val;
         }
 
+        handlePaused(){
+          clearTimeout(this.timer);
 
-        onPlayerStateChange(event) {
           var segmentStart= this.state.segmentStart;
           var segmentEnd= this.state.segmentEnd;
+          if(this.timeMarksFrozen) return; //revisit
+
+          if(!this.saveStartTime){
+            this.setState({
+              segmentStart: segmentEnd
+            });
+            segmentStart = segmentEnd;
+          }
+          this.saveStartTime = false; //turn off switch
+          segmentEnd = Math.floor(this.media.getCurrentTime());
+          this.setState({
+            segmentEnd: segmentEnd
+          });
+
+          this.onPausedCallback(segmentStart, segmentEnd);
+
+        }
+
+        handleResume(){
+          this.onResumeCallback();
+          this.timer = setTimeout(this.onTimeout,1000);
+        }
+
+
+        onPlayerStateChange(event) {
 
           if (event.data == YT.PlayerState.PAUSED) {
-            if(this.timeMarksFrozen) return; //revisit
-
-            if(!this.saveStartTime){
-              this.setState({
-                segmentStart: segmentEnd
-              });
-              segmentStart = segmentEnd;
-            }
-            this.saveStartTime = false; //turn off switch
-            segmentEnd = Math.floor(this.media.getCurrentTime());
-            this.setState({
-              segmentEnd: segmentEnd
-            });
-
-            this.onPaused(segmentStart, segmentEnd);
-
+            this.handlePause();
           }else if (event.data == YT.PlayerState.PLAYING) {
-
-            this.onResume();
-
+            this.handleResume();
           }
         }
 
@@ -158,10 +223,17 @@ class Media {
 
         render () {
           var percentage=this.state.segmentEnd/this.maxTime;
+          var mediaElement = <iframe className='embed-responsive-item' src={this.props.src} frameBorder='0' />
+
+          if(playAudio){
+            mediaElement = <audio ref="audio">
+              <source src="http://tooxclusive.com.ng/download/2016/03/Tmol_-_Ezinne_ft_Selebobo_tooxclusive.com.ng.mp3" type="audio/mpeg" />
+            </audio>
+          }
 
           return <div>
           <div className='embed-responsive embed-responsive-4by3'>
-            <iframe className='embed-responsive-item' src={this.props.src} frameBorder='0' />
+            {mediaElement}
           </div>
           <div className="controls">
             <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.play}>
@@ -170,6 +242,11 @@ class Media {
             <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.pause}>
               <span className="glyphicon glyphicon-pause" aria-hidden="true"></span>
             </button>
+            <div className="seeking btn btn-default">
+              <div className="seeking-bar" onClick={this.seekTo}>
+                <div className="seeking-bar-meter" ref="seeker"></div>
+              </div>
+            </div>
           </div>
           {this.props.canEdit &&
             <LyricEditor

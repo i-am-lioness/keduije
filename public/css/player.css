@@ -75,3 +75,32 @@
     color: White;
     weight: bold;
   }
+
+#video-column .controls button {
+  float: left;
+}
+
+  #video-column .controls .seeking {
+    overflow: auto;
+    display: block;
+    padding: 6px 6px;
+
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: White;
+  }
+
+    #video-column .controls .seeking .seeking-bar{
+      background: #f5f5f5;
+      margin: 5px;
+      height: 10px;
+      cursor: pointer;
+    }
+
+      #video-column .controls .seeking .seeking-bar .seeking-bar-meter{
+        margin: 0;
+        padding: 0;
+        width: 0%;
+        background: #5D41AE;
+        height: 100%;
+      }

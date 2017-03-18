@@ -230,7 +230,7 @@ function updateLyric(text, idx, heading){
     if(editMode) stopHighlighting();
   }
 
-  function onPause(segmentStart, segmentEnd){
+  function onPaused(segmentStart, segmentEnd){
 
       if(editMode)
         lyricEditor.show();
@@ -251,8 +251,8 @@ function updateLyric(text, idx, heading){
   };
   ki.registerPlayer = function (component){
     mediaPlayer=component;
-    component.onPaused = onPause;
-    component.onResume = onResume;
+    component.onPausedCallback = onPaused;
+    component.onResumeCallback = onResume;
   }
   ki.registerEditor = function (component){
     lyricEditor=component;
@@ -267,13 +267,20 @@ function updateLyric(text, idx, heading){
 /*
 
 To do:
+-fully integrate audio
+--new music form
+--re-design data schema
+--implement controls
 
--play mp3s
--make sure that player loaded
+-UI design
+--design control
+
+
 -bug: after login, goes to http://localhost:3000/music/id/h01_dEXLqsk#_=_ (achikolo)
 
 -error handling
+--make sure that youtube api loaded on time
 
--start time should never be after end time
+-log visitors
 
 */
