@@ -4,26 +4,26 @@
           super(props);
           this.state = {
             value: '',
-            displayed: true,
             originalText: "",
             mode: "add" /*update or add*/,
-            enabled: false,
+            displayed: true,
+            editMode: false
           };
 
           this.dialogWidth = 500;
           this.handleChange = this.handleChange.bind(this);
           this.handleSubmit = this.handleSubmit.bind(this);
-          this.handleCancel = this.handleCancel.bind(this);
-          this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
           this.calculateTail = this.calculateTail.bind(this);
+          this.close = this.close.bind(this);
+          this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
 
         }
 
         handleToggleEditMode(){
-          this.setEditMode(!this.state.enabled);
+          this.setEditMode(!this.state.editMode);
 
           this.setState((prevState, props) => ({
-            enabled: !prevState.enabled
+            editMode: !prevState.editMode
           }));
         }
 
@@ -31,18 +31,21 @@
           this.setState({value: event.target.value});
         }
 
+        close(){
+          this.setState({
+            value: "",
+            displayed: false,
+            originalText: null,
+            mode: "add"
+          });
+
+          //unfreeze time markers
+          this.props.holdTimeMarkers(false);
+        }
+
         handleSubmit(event) {
           event.preventDefault();
           this.saveLyric(this.state.value);
-          this.setState({value: ""});
-        }
-
-        handleCancel(){
-          this.setState({displayed: false});
-        }
-
-        hide(){
-          this.setState({displayed: false});
         }
 
         show(text){
@@ -50,6 +53,7 @@
           var originalText = null;
           var value = this.state.value || "";
           if(text){
+            this.props.holdTimeMarkers(true);
             mode = "save";
             originalText = 'original: "' + text + '"';
             value = text;
@@ -82,7 +86,7 @@
 
           var btnText = (this.state.mode=="add") ? "Add" : "Update";
           var originalText = this.state.originalText ? <div className="originalText">{this.state.originalText}</div> : null;
-          var editSwitchText = (this.state.enabled) ? "Done Editing" : "Edit";
+          var editSwitchText = (this.state.editMode) ? "Done Editing" : "Edit";
           var dialog = this.state.displayed && <form id="lyricEditor" ref="lyricEditor" className="editor-bg-color" onSubmit={this.handleSubmit}><div className="row">
             <div className="col-md-12">
               {originalText}
@@ -113,14 +117,14 @@
               />
             </div>
             <div className="col-md-2">
-              <a id="playLyric" type="button" className="btn btn-default btn-lg" title="play" onClick={this.playLyric}>
+              <a id="playLyric" type="button" className="btn btn-default btn-lg" title="play" onClick={this.props.playLyric}>
                 <span className="glyphicon glyphicon-play" aria-hidden="true"></span>
               </a>
             </div>
           </div>
           <div className="row">
             <div className="col-md-3">
-              <button id="cancel-dialog-btn" className="btn btn-default btn-lg" type="reset" onClick={this.handleCancel}>Cancel</button>
+              <button id="cancel-dialog-btn" className="btn btn-default btn-lg" type="reset" onClick={this.close}>Cancel</button>
             </div>
             <div className="col-md-9">
               <button id="save-lyric-btn" className="btn btn-default btn-lg" type="submit">{btnText}</button>
@@ -132,7 +136,7 @@
 
           return <div>
           <button id="edit-mode-btn" type="button" className="btn btn-default btn-lg" onClick={this.handleToggleEditMode}>{editSwitchText}</button>
-          {this.state.enabled && dialog}
+          {this.state.editMode && dialog}
           </div>;
 
         }

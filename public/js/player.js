@@ -6,10 +6,8 @@ var editMode = false;
 
 var lyrics = [];
 var lyricEditor = {
-  state: {enabled: false},
-  displayed: {enabled: false},
   show: function(){},
-  hide: function(){},
+  close: function(){},
 };
 
 var currentLine; //dom object of current lyric
@@ -33,10 +31,6 @@ function _loadLyrics(result){
   currentLine = $('#lyricsDisplay p')[0]; //todo: error handlig
   currentLineStartTime = lyrics[0].startTime;
 
-}
-
-function playLyric(){
-  mediaPlayer.playSegment();
 }
 
 function getLineFromTime(time){
@@ -108,7 +102,7 @@ function showEditHeaderDialog(idx){
 
 function displayLyrics(html){
   indexBeingModified = -1;
-  lyricEditor.hide();
+  lyricEditor.close();
 
   $('#lyricsDisplay').html(html);
   $('#lyricsDisplay p').click(jumpTo);
@@ -157,13 +151,8 @@ function displayLyrics(html){
 
 }
 
-function showNewLyricDialog(){
-  lyricEditor.show();
-}
-
 function showEditDialog(i, startTime, endTime, text){
   lyricEditor.show(text);
-  mediaPlayer.freezeTimeMarks();
   indexBeingModified = i;
   mediaPlayer.setState({segmentStart: startTime});
   mediaPlayer.setState({segmentEnd: endTime});
@@ -244,7 +233,7 @@ function updateLyric(text, idx, heading){
   function onPause(segmentStart, segmentEnd){
 
       if(editMode)
-        showNewLyricDialog();
+        lyricEditor.show();
 
       //stop timer
       clearTimeout(activateLineTimer);
@@ -268,7 +257,6 @@ function updateLyric(text, idx, heading){
   ki.registerEditor = function (component){
     lyricEditor=component;
     component.saveLyric = saveLyric;
-    component.playLyric = playLyric;
     component.setEditMode = setEditMode;
   }
 
@@ -283,8 +271,6 @@ To do:
 -play mp3s
 -make sure that player loaded
 -bug: after login, goes to http://localhost:3000/music/id/h01_dEXLqsk#_=_ (achikolo)
-
--bug: edit dialog stops showing up
 
 -error handling
 

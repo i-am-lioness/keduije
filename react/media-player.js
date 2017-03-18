@@ -39,8 +39,8 @@
           this.maxTime = this.player.getDuration();
         }
 
-        freezeTimeMarks(){
-          this.timeMarksFrozen = true;
+        freezeTimeMarks(val){
+          this.timeMarksFrozen = val;
         }
 
 
@@ -132,6 +132,8 @@
               incrementTime={this.incrementTime}
               decrementTime={this.decrementTime}
               percentage={percentage || 0}
+              playLyric = {this.playSegment}
+              holdTimeMarkers = {this.freezeTimeMarks}
               />}
           </div>;
 
