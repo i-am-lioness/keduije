@@ -1,4 +1,32 @@
 
+class Media {
+  constructor(ytVID) {
+    this.video = ytVID;
+  }
+  play(){
+    this.video.playVideo();
+  }
+  pause(){
+    this.video.pauseVideo();
+  }
+
+  getCurrentTime(){
+    return this.video.getCurrentTime();
+  }
+
+  seekTo(pos, buffer){
+    this.video.seekTo(pos, buffer);
+  }
+
+  isPlaying(){
+    return (this.video.getPlayerState()==YT.PlayerState.PLAYING);
+  }
+
+  getDuration(){
+    return this.video.getDuration();
+  }
+}
+
       class MediaPlayer extends React.Component {
         constructor(props) {
           super(props); //type,
@@ -8,7 +36,7 @@
           };
 
           this.maxTime = null;
-          this.player = null;
+          this.media = null;
           this.saveStartTime=false; //accounts for "jumping" around, rename to "holdStartTime"
           this.timeMarksFrozen = false; //todo: make sure to unfreeze
 
@@ -22,21 +50,32 @@
           this.getCurrentTime = this.getCurrentTime.bind(this);
           this.incrementTime = this.incrementTime.bind(this);
           this.decrementTime = this.decrementTime.bind(this);
+          this.play = this.play.bind(this);
+          this.pause = this.pause.bind(this);
 
+        }
+
+        play(){
+          this.media.play();
+        }
+
+        pause(){
+          this.media.pause();
         }
 
         onYouTubeIframeAPIReady() {
           var iframe = $("iframe.embed-responsive-item")[0]; //revisit
-          this.player = new YT.Player(iframe, {
+          var video = new YT.Player(iframe, {
             events: {
               'onReady': this.onPlayerReady,
               'onStateChange': this.onPlayerStateChange
             }
           });
+          this.media= new Media(video);
         }
 
         onPlayerReady(event) {
-          this.maxTime = this.player.getDuration();
+          this.maxTime = this.media.getDuration();
         }
 
         freezeTimeMarks(val){
@@ -58,7 +97,7 @@
               segmentStart = segmentEnd;
             }
             this.saveStartTime = false; //turn off switch
-            segmentEnd = Math.floor(this.player.getCurrentTime());
+            segmentEnd = Math.floor(this.media.getCurrentTime());
             this.setState({
               segmentEnd: segmentEnd
             });
@@ -73,27 +112,27 @@
         }
 
         playSegment(){
-          this.player.seekTo(this.state.segmentStart,true);
-          this.player.playVideo();
+          this.media.seekTo(this.state.segmentStart,true);
+          this.media.play();
           this.saveStartTime = true;
           if(this.state.segmentEnd>-1)
             setTimeout(this.checkForSegmentEnd,1000);
         }
 
         checkForSegmentEnd(){
-          var currentTime = this.player.getCurrentTime();
+          var currentTime = this.media.getCurrentTime();
           if (currentTime > this.state.segmentEnd){
-            this.player.pauseVideo();
+            this.media.pause();
           }else {
             setTimeout(this.checkForSegmentEnd, 1000);
           }
         }
 
         isPlaying(){
-          return (this.player.getPlayerState()==YT.PlayerState.PLAYING);
+          return (this.media.isPlaying());
         }
         getCurrentTime(){
-          var currentTime = this.player.getCurrentTime(); //extract method
+          var currentTime = this.media.getCurrentTime(); //extract method
           return currentTime;
         }
 
@@ -123,6 +162,14 @@
           return <div>
           <div className='embed-responsive embed-responsive-4by3'>
             <iframe className='embed-responsive-item' src={this.props.src} frameBorder='0' />
+          </div>
+          <div className="controls">
+            <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.play}>
+              <span className="glyphicon glyphicon-play" aria-hidden="true"></span>
+            </button>
+            <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.pause}>
+              <span className="glyphicon glyphicon-pause" aria-hidden="true"></span>
+            </button>
           </div>
           {this.props.canEdit &&
             <LyricEditor
