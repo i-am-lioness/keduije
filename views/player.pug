@@ -10,23 +10,35 @@ html(lang='en')
       .row
         #video-column.col-md-6.col-xs-12
           .embed-responsive.embed-responsive-4by3
-            iframe.embed-responsive-item(src='http://www.youtube.com/embed/' + videoID +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://' + origin + '&playsinline=1&rel=0', frameborder='0')
+            if(false)
+              audio(controls)
+                source(src="http://cdn.tooxclusive.com/wp-content/uploads/2016/01/iLLBLiSS-Nku-ft.-Flavour-Stormrex.mp3")
+            else
+              iframe#media-container.embed-responsive-item(src='http://www.youtube.com/embed/' + videoID +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://' + origin + '&playsinline=1&rel=0', frameborder='0')
           #editor-container
         #lyric-column.col-md-6.col-xs-12.col-md-offset-6(style='background-image: url('+ artwork_src +')')
           #lyricsDisplay
       footer.footer
         p &copy; 2017 KeduIje, Inc.
     script(src='/js/ie10-viewport-bug-workaround.js')
-    script.
-    script(src='/lyric-editor.js', type='text/babel')
-    script(src='/time-spinner.js', type='text/babel')
+    script(src='/media-player.js', type='text/babel')
     script(src='/js/player.js')
     script(type='text/babel').
-      var onYouTubeIframeAPIReady = KeduIje.onYouTubeIframeAPIReady;
+      var onYouTubeIframeAPIReady;
       KeduIje.init("#{videoID}");
+      function setCallback(component){
+        onYouTubeIframeAPIReady = component.onYouTubeIframeAPIReady;
+        KeduIje.registerPlayer(component);
+      }
+      ReactDOM.render(
+        <MediaPlayer ref={setCallback} />,
+        document.getElementById('media-container')
+      );
     if (canEdit)
+      script(src='/time-spinner.js', type='text/babel')
+      script(src='/lyric-editor.js', type='text/babel')
       script(type='text/babel').
-
+        //should be some delay so that maxTime can be defined
         ReactDOM.render(
           <LyricEditor ref={KeduIje.registerEditor} />,
           document.getElementById('editor-container')

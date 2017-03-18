@@ -156,7 +156,7 @@ app.get('/lyrics/:videoID', function (req, res) {
     .find({ videoID: req.params.videoID } )
     .nextObject(function(err, obj) {
 
-      var lyrics = (obj) ? obj.lyrics : [];
+      var lyrics = (obj&&obj.lyrics) ? obj.lyrics : [];
 
 
       lyrics.sort(function(a, b){

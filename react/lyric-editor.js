@@ -25,7 +25,7 @@
         moveTail(time){
           var dialogWidth = $(this.refs.lyricEditor).outerWidth();
           var tailWidth = 30;
-          var offset = dialogWidth * time/this.maxTime;
+          var offset = dialogWidth * time/this.mediaPlayer.maxTime;
          this.setState({
             rightX: offset,
             leftX: offset + tailWidth,

@@ -26,7 +26,7 @@
         }
 
         increment(){
-          if(this.state.seconds<this.maxTime){
+          if(this.state.seconds<this.mediaPlayer.maxTime){
             this.setState((prevState, props) => ({
               seconds: prevState.seconds + 1
             }));
@@ -34,9 +34,10 @@
         }
 
         componentDidUpdate(prevProps, prevState){
-          this.timeController.set(this.variableName,this.state.seconds);
-          if((prevState.seconds!=this.state.seconds)&&(this.props.onChange))
-            this.props.onChange(this.state.seconds);
+          if(prevState.seconds!=this.state.seconds){
+            this.mediaPlayer[this.variableName]=this.state.seconds;
+            if (this.props.onChange) this.props.onChange(this.state.seconds);
+          }
         }
 
         convertToTime(seconds){
