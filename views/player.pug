@@ -23,24 +23,24 @@ html(lang='en')
     script(src='/js/ie10-viewport-bug-workaround.js')
     script(src='/media-player.js', type='text/babel')
     script(src='/js/player.js')
+    if (canEdit)
+      script(src='/time-spinner.js', type='text/babel')
+      script(src='/lyric-editor.js', type='text/babel')
     script(type='text/babel').
       var onYouTubeIframeAPIReady;
+      var src = 'http://www.youtube.com/embed/' + '#{videoID}' +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://' + '#{origin}' + '&playsinline=1&rel=0';
       KeduIje.init("#{videoID}");
       function setCallback(component){
         onYouTubeIframeAPIReady = component.onYouTubeIframeAPIReady;
         KeduIje.registerPlayer(component);
       }
       ReactDOM.render(
-        <MediaPlayer ref={setCallback} />,
-        document.getElementById('media-container')
+        <MediaPlayer 
+          ref={setCallback}
+          canEdit={#{canEdit}}
+          src={src}
+          registerEditor={KeduIje.registerEditor} 
+        />,
+        document.getElementById('video-column')
       );
-    if (canEdit)
-      script(src='/time-spinner.js', type='text/babel')
-      script(src='/lyric-editor.js', type='text/babel')
-      script(type='text/babel').
-        //should be some delay so that maxTime can be defined
-        ReactDOM.render(
-          <LyricEditor ref={KeduIje.registerEditor} />,
-          document.getElementById('editor-container')
-        );
     script(src='https://www.youtube.com/iframe_api', async='')

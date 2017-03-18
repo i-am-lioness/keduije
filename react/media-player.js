@@ -3,12 +3,10 @@
         constructor(props) {
           super(props); //type,
           this.state = {
-            //currentTime: 0
+            segmentStart: 0,
+            segmentEnd: 0
           };
 
-          this.currentTime = 0;
-          this.segmentStart=0; //todo: make state
-          this.segmentEnd=0;
           this.maxTime = null;
           this.player = null;
           this.saveStartTime=false; //accounts for "jumping" around, rename to "holdStartTime"
@@ -22,6 +20,8 @@
           this.checkForSegmentEnd = this.checkForSegmentEnd.bind(this);
           this.isPlaying = this.isPlaying.bind(this);
           this.getCurrentTime = this.getCurrentTime.bind(this);
+          this.incrementTime = this.incrementTime.bind(this);
+          this.decrementTime = this.decrementTime.bind(this);
 
         }
 
@@ -45,14 +45,25 @@
 
 
         onPlayerStateChange(event) {
+          var segmentStart= this.state.segmentStart;
+          var segmentEnd= this.state.segmentEnd;
+
           if (event.data == YT.PlayerState.PAUSED) {
             if(this.timeMarksFrozen) return; //revisit
 
-            this.segmentStart = this.saveStartTime? this.segmentStart : this.segmentEnd;
+            if(!this.saveStartTime){
+              this.setState({
+                segmentStart: segmentEnd
+              });
+              segmentStart = segmentEnd;
+            }
             this.saveStartTime = false; //turn off switch
-            this.segmentEnd = Math.floor(this.player.getCurrentTime());
+            segmentEnd = Math.floor(this.player.getCurrentTime());
+            this.setState({
+              segmentEnd: segmentEnd
+            });
 
-            this.onPaused(this.segmentStart, this.segmentEnd);
+            this.onPaused(segmentStart, segmentEnd);
 
           }else if (event.data == YT.PlayerState.PLAYING) {
 
@@ -62,16 +73,16 @@
         }
 
         playSegment(){
-          this.player.seekTo(this.segmentStart,true);
+          this.player.seekTo(this.state.segmentStart,true);
           this.player.playVideo();
           this.saveStartTime = true;
-          if(this.segmentEnd>-1)
+          if(this.state.segmentEnd>-1)
             setTimeout(this.checkForSegmentEnd,1000);
         }
 
         checkForSegmentEnd(){
-          this.currentTime = this.player.getCurrentTime();
-          if (this.currentTime > this.segmentEnd){
+          var currentTime = this.player.getCurrentTime();
+          if (currentTime > this.state.segmentEnd){
             this.player.pauseVideo();
           }else {
             setTimeout(this.checkForSegmentEnd, 1000);
@@ -82,11 +93,47 @@
           return (this.player.getPlayerState()==YT.PlayerState.PLAYING);
         }
         getCurrentTime(){
-          this.currentTime = this.player.getCurrentTime(); //extract method
-          return this.currentTime;
+          var currentTime = this.player.getCurrentTime(); //extract method
+          return currentTime;
         }
+
+        decrementTime(variableName){
+          if(this.state[variableName]>0){
+            this.setState((prevState, props) => {
+              var newState = {};
+              newState[variableName] = prevState[variableName] - 1;
+              return newState;
+            });
+          }
+        }
+
+        incrementTime(variableName){
+          if(this.state[variableName]<this.maxTime){
+            this.setState((prevState, props) => {
+              var newState = {};
+              newState[variableName] = prevState[variableName] + 1;
+              return newState;
+            });
+          }
+        }
+
         render () {
-          return null;
+          var percentage=this.state.segmentEnd/this.maxTime;
+
+          return <div>
+          <div className='embed-responsive embed-responsive-4by3'>
+            <iframe className='embed-responsive-item' src={this.props.src} frameBorder='0' />
+          </div>
+          {this.props.canEdit &&
+            <LyricEditor
+              ref={this.props.registerEditor}
+              segmentStart={this.state.segmentStart}
+              segmentEnd={this.state.segmentEnd}
+              incrementTime={this.incrementTime}
+              decrementTime={this.decrementTime}
+              percentage={percentage || 0}
+              />}
+          </div>;
 
         }
       }

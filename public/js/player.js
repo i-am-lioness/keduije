@@ -4,9 +4,6 @@ var KeduIje = (function(ki){
 var mediaPlayer;
 var editMode = false;
 
-
-var spinners = {};
-
 var lyrics = [];
 var lyricEditor = {
   state: {enabled: false},
@@ -33,7 +30,7 @@ function _loadLyrics(result){
 
   displayLyrics(result.html);
   currentTime=0;
-  currentLine = $('#lyricsDisplay p')[0];
+  currentLine = $('#lyricsDisplay p')[0]; //todo: error handlig
   currentLineStartTime = lyrics[0].startTime;
 
 }
@@ -93,13 +90,11 @@ function jumpTo(){ //revisit
   currentLineStartTime = parseInt($(currentLine).data("start-time"));
   currentLineEndTime = parseInt($(currentLine).data("end-time"));
   $(".current").removeClass("current");
-  mediaPlayer.segmentStart = currentLineStartTime;
-  mediaPlayer.segmentEnd = -1;
+  mediaPlayer.setState({segmentStart: currentLineStartTime});
+  mediaPlayer.setState({segmentEnd: -1});
 
   if(editMode){
-    mediaPlayer.segmentEnd = currentLineEndTime;
-    spinners["segmentStart"].setValue(currentLineStartTime);
-    spinners["segmentEnd"].setValue(currentLineStartTime);
+    mediaPlayer.setState({segmentEnd: currentLineEndTime});
   }else {
     $(currentLine).addClass("current");
   }
@@ -170,10 +165,8 @@ function showEditDialog(i, startTime, endTime, text){
   lyricEditor.show(text);
   mediaPlayer.freezeTimeMarks();
   indexBeingModified = i;
-  //mediaPlayer.segmentStart = startTime;
-  //mediaPlayer.segmentEnd = endTime;
-  spinners["segmentStart"].setValue(startTime);
-  spinners["segmentEnd"].setValue(endTime);
+  mediaPlayer.setState({segmentStart: startTime});
+  mediaPlayer.setState({segmentEnd: endTime});
 }
 
 function saveHeading(headingText, idx){
@@ -196,10 +189,10 @@ function addLyric(text){
 
   var newLyric = {
     text: $('#lyric').val(),
-    endTime: mediaPlayer.segmentEnd,
+    endTime: mediaPlayer.state.segmentEnd,
     deleted: false,
     id: lyrics.length,
-    startTime: mediaPlayer.segmentStart,
+    startTime: mediaPlayer.state.segmentStart,
     heading: null
   };
 
@@ -228,15 +221,15 @@ function updateLyric(text, idx, heading){
     appendIfChanged("heading",heading);
     }else {
       appendIfChanged("text",text);
-      appendIfChanged("startTime",mediaPlayer.segmentStart);
-      appendIfChanged("endTime",mediaPlayer.segmentEnd);
+      appendIfChanged("startTime",mediaPlayer.state.segmentStart);
+      appendIfChanged("endTime",mediaPlayer.state.segmentEnd);
     }
 
     var postData = {
       update: updateObj,
       original: oldLyricObj
     };
-
+//todo: postdata should be validated
   $.post("/lyrics/"+songID+"/editline/"+lyrics[idx].id, postData, function(res){
         loadLyrics();
       });
@@ -247,20 +240,8 @@ function updateLyric(text, idx, heading){
     editMode = val;
     if(editMode) stopHighlighting();
   }
-  function registerSpinner(component){
-    if(component){
-      spinners[component.props.variableName]=component;
-      component.mediaPlayer = mediaPlayer;
-      component.setState({seconds: mediaPlayer[component.props.variableName]}); //move to onMount
-    }
-  }
 
   function onPause(segmentStart, segmentEnd){
-
-      if(lyricEditor.state.enabled && lyricEditor.state.displayed){
-        spinners["segmentStart"].setValue(segmentStart);
-        spinners["segmentEnd"].setValue(segmentEnd);
-      }
 
       if(editMode)
         showNewLyricDialog();
@@ -286,12 +267,9 @@ function updateLyric(text, idx, heading){
   }
   ki.registerEditor = function (component){
     lyricEditor=component;
-    mediaPlayer.lyricEditor=component;
-    component.mediaPlayer = mediaPlayer;
     component.saveLyric = saveLyric;
     component.playLyric = playLyric;
     component.setEditMode = setEditMode;
-    component.registerSpinner = registerSpinner;
   }
 
   return ki;

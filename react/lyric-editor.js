@@ -8,29 +8,15 @@
             originalText: "",
             mode: "add" /*update or add*/,
             enabled: false,
-            /*tail coordinates */
-            rightX: 10,
-            leftX: 40,
-            bottomX: 25
           };
 
+          this.dialogWidth = 500;
           this.handleChange = this.handleChange.bind(this);
           this.handleSubmit = this.handleSubmit.bind(this);
           this.handleCancel = this.handleCancel.bind(this);
-          this.moveTail = this.moveTail.bind(this);
           this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
+          this.calculateTail = this.calculateTail.bind(this);
 
-        }
-
-        moveTail(time){
-          var dialogWidth = $(this.refs.lyricEditor).outerWidth();
-          var tailWidth = 30;
-          var offset = dialogWidth * time/this.mediaPlayer.maxTime;
-         this.setState({
-            rightX: offset,
-            leftX: offset + tailWidth,
-            bottomX: offset + 20
-          });
         }
 
         handleToggleEditMode(){
@@ -76,10 +62,24 @@
           });
         }
 
+        calculateTail(){
+          var tailWidth = 30;
+          this.dialogWidth = $(this.refs.lyricEditor).outerWidth() || this.dialogWidth || 500;
+          var offset = this.dialogWidth * this.props.percentage;
+          var rightX = offset;
+          var leftX =  offset + tailWidth;
+          var bottomX = offset + 20;
+
+
+          var points = leftX + ",0 "
+                      + rightX + ",0 "
+                      + bottomX + ",50";
+
+          return (points || "");
+        }
+
         render () {
-          var points = this.state.leftX + ",0 "
-                      + this.state.rightX + ",0 "
-                      + this.state.bottomX + ",50";
+
           var btnText = (this.state.mode=="add") ? "Add" : "Update";
           var originalText = this.state.originalText ? <div className="originalText">{this.state.originalText}</div> : null;
           var editSwitchText = (this.state.enabled) ? "Done Editing" : "Edit";
@@ -96,7 +96,9 @@
                 id="start-spinner"
                 variableName="segmentStart"
                 label="From"
-                ref={this.registerSpinner}
+                seconds={this.props.segmentStart}
+                increment={this.props.incrementTime}
+                decrement={this.props.decrementTime}
               />
             </div>
             <div className="col-md-5">
@@ -105,9 +107,9 @@
                 id="end-spinner"
                 variableName="segmentEnd"
                 label="To"
-                getTime={this.props.getEndTime}
-                onChange={this.moveTail}
-                ref={this.registerSpinner}
+                seconds={this.props.segmentEnd}
+                increment={this.props.incrementTime}
+                decrement={this.props.decrementTime}
               />
             </div>
             <div className="col-md-2">
@@ -125,7 +127,7 @@
             </div>
           </div>
           <svg id="tail">
-            <polygon points={points} className="editor-bg-color"></polygon>
+            <polygon points={this.calculateTail()} className="editor-bg-color"></polygon>
           </svg></form>;
 
           return <div>

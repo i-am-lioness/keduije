@@ -10,34 +10,14 @@
           this.increment = this.increment.bind(this);
           this.decrement = this.decrement.bind(this);
 
-
-        }
-
-        setValue (val){
-          this.setState({seconds: val});
         }
 
         decrement(){
-          if(this.state.seconds>0){
-            this.setState((prevState, props) => ({
-              seconds: prevState.seconds - 1
-            }));
-          }
+          this.props.decrement(this.variableName);
         }
 
         increment(){
-          if(this.state.seconds<this.mediaPlayer.maxTime){
-            this.setState((prevState, props) => ({
-              seconds: prevState.seconds + 1
-            }));
-          }
-        }
-
-        componentDidUpdate(prevProps, prevState){
-          if(prevState.seconds!=this.state.seconds){
-            this.mediaPlayer[this.variableName]=this.state.seconds;
-            if (this.props.onChange) this.props.onChange(this.state.seconds);
-          }
+          this.props.increment(this.variableName);
         }
 
         convertToTime(seconds){
@@ -49,7 +29,7 @@
 
         render () {
 
-          var displayedTimeMark = this.convertToTime(this.state.seconds);
+          var displayedTimeMark = this.convertToTime(this.props.seconds);
           return <div className="spinner-container">
                     <div className="label">{this.props.label}</div>
                     <div className="inner-spinner">

@@ -180,14 +180,16 @@ app.get('/music/id/:videoID', function (req, res) {
       var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
       var artwork_src = song.img ? song.img : youtube_thumbnail;
 
-        res.render('player', {
-          title: song.title + " | " + res.locals.title,
-          artwork_src: artwork_src,
-          videoID: song.videoID,
-          user: req.user || null,
-          canEdit: req.user && req.user.isAdmin,
-          origin: req.headers.host
-        });
+      var data = {
+        title: song.title + " | " + res.locals.title,
+        artwork_src: artwork_src,
+        videoID: song.videoID,
+        user: req.user || null,
+        canEdit: !!(req.user && req.user.isAdmin),
+        origin: req.headers.host
+      };
+      console.log(data);
+        res.render('player', data);
     });
 });
 
