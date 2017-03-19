@@ -11,8 +11,6 @@ var Strategy = require('passport-facebook').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var ObjectId = require('mongodb').ObjectId;
-const pug = require('pug');
-const compiledFunction = pug.compileFile('views/lyricsDisplay.pug');
 
 var twCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/twitter/return'
@@ -71,7 +69,6 @@ function getUser(userID, cb){
   database.collection('users').findOne(
     { _id: new ObjectId(userID) },
     function (err, result){
-      console.log("result", result);
       cb(err,result);
     });
 }
@@ -163,11 +160,7 @@ app.get('/lyrics/:videoID', function (req, res) {
         return a.endTime-b.endTime;
       });
 
-      var html = compiledFunction({
-        lyrics: lyrics
-      });
-
-      res.send({html: html, lyrics: lyrics});
+      res.send(lyrics);
     })
   });
 
@@ -188,7 +181,7 @@ app.get('/music/id/:videoID', function (req, res) {
         canEdit: !!(req.user && req.user.isAdmin),
         origin: req.headers.host
       };
-      console.log(data);
+      //console.log(data);
         res.render('player', data);
     });
 });
@@ -269,29 +262,32 @@ app.post('/lyrics/:videoID/addline', function (req, res) {
   obj.lastEditBy = req.user._id;
   obj.revised=false;
 
-  database.collection('lyrics').update(
+  database.collection('lyrics').findAndModify(
      { videoID: req.params.videoID } ,
+     null,
      {
        $push: { lyrics: obj }
      },
+     {new: true},
      function(err, result) {
-
-       res.send(obj); //todo: send updated lyric display?
+       res.send(result.value.lyrics); //todo: error checking
      }
   );
 
 });
 
-function updateLyric(req, res, obj) {
+function updateLyric(req, res, obj) { //todo: obj might be redundant
 
-  database.collection('lyrics').update(
+  database.collection('lyrics').findAndModify(
      { videoID: req.params.videoID, "lyrics.id": req.params.lineID } ,
-     { $set: obj,
+     null,
+     { $set: { "lyrics.$" : obj },
        $currentDate: {"lyrics.$.lastEdit": true}
       },
+      true,
      function(err, result) {
-
-       res.send(req.user._id); //todo: send updated lyric display?
+       //console.log("result of update", result.value);
+       res.send(result.value.lyrics); //todo: error checking
      }
   );
 
@@ -323,12 +319,7 @@ function updateLyric(req, res, obj) {
 
 app.post('/lyrics/:videoID/editline/:lineID', ensureLoggedIn(), function (req, res) {
 
-
-var obj = {};
-for(k in req.body.update){
-  obj["lyrics.$."+k]=req.body.update[k];
-}
-obj["lyrics.$.lastEditBy"]=req.user._id;
+  req.body.new.lastEditBy=req.user._id;
 
   console.log("req.body.original.revised",req.body.original.revised);
 
@@ -336,21 +327,21 @@ obj["lyrics.$.lastEditBy"]=req.user._id;
     console.log("this lyric is in revision phase");
 
     //different user, so must start saving revisions
-    obj["lyrics.$.revised"]=true; //todo: could be redundant
+    req.body.new.revised = true; //todo: could be redundant
 
-    var revision = req.body.original;
+    var revision = req.body.original; //todo: get original record directly from db rather than from client
     revision.songID = req.params.videoID;
     revision.user = revision.lastEditBy;
     delete revision.lastEditBy;
 
 
     database.collection("revisions").insertOne(revision, function(err, results){
-      updateLyric(req, res, obj);
+      updateLyric(req, res, req.body.new);
     });
 
   }else{ //todo: use promise
     console.log("this lyric is not yet being revised. direct update")
-    updateLyric(req, res, obj);
+    updateLyric(req, res, req.body.new);
   }
 
 });

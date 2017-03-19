@@ -1,88 +1,10 @@
 
 var KeduIje = (function(ki){
 
-var mediaPlayer;
-var editMode = false;
-
-var lyrics = [];
-var lyricEditor = {
-  show: function(){},
-  close: function(){},
-};
-
-var currentLine; //dom object of current lyric
-var currentLineStartTime;
-var currentLineEndTime = -1;
-
 var songID = null;
-var indexBeingModified = -1;
 
-function loadLyrics(){
-  $.get("/lyrics/"+songID, _loadLyrics);
-}
-
-function _loadLyrics(result){
-  lyrics = result.lyrics;
-
-  displayLyrics(result.html);
-  currentTime=0;
-  currentLine = $('#lyricsDisplay p')[0]; //todo: error handlig
-  currentLineStartTime = lyrics[0].startTime;
-
-}
-
-function getLineFromTime(time){
-  for (var i=0; i<lyrics.length; i++){
-    if(time<lyrics[i].endTime){
-      currentLineStartTime = lyrics[i].startTime;
-      currentLineEndTime = lyrics[i].endTime;
-      var query = "p."+lyrics[i].startTime;
-      return $(query)[0];
-    }
-  }
-}
-
-/*shows active lyric during playback */
-function activateLine(currentTime){
-  if(editMode) return;
-
-  if ((currentTime<currentLineStartTime) || (currentTime>currentLineEndTime))
-  {
-    $(".current").removeClass("current");
-    if(currentLine = getLineFromTime(currentTime)){
-      $(currentLine).addClass("current");
-      scrollIfOutOfView(currentLine);
-    }
-  }
-
-}
-
-//responsively adjusts scroll position of lyrics during playback
-function scrollIfOutOfView(element){
-  var position = $(element).offset().top;
-  var windowTop = $(window).scrollTop();
-  var height = $(window).height();
-  var windowBottom = windowTop + height * 0.7;
-
-  if ((position<windowTop) || (position > windowBottom))
-    $("html,body").animate({scrollTop: position-height*0.2}, 800);
-}
-
-function jumpTo(){ //revisit
-
-  currentLine = this;
-  currentLineStartTime = parseInt($(currentLine).data("start-time"));
-  currentLineEndTime = parseInt($(currentLine).data("end-time"));
-  $(".current").removeClass("current");
-  mediaPlayer.setState({segmentStart: currentLineStartTime});
-  mediaPlayer.setState({segmentEnd: -1});
-
-  if(editMode){
-    mediaPlayer.setState({segmentEnd: currentLineEndTime});
-  }else {
-    $(currentLine).addClass("current");
-  }
-  mediaPlayer.playSegment();
+function loadLyrics(cb){
+  $.get("/lyrics/"+songID, cb || _loadLyrics);
 }
 
 function showEditHeaderDialog(idx){
@@ -91,8 +13,6 @@ function showEditHeaderDialog(idx){
 }
 
 function displayLyrics(html){
-  indexBeingModified = -1;
-  lyricEditor.close();
 
   $('#lyricsDisplay').html(html);
   $('#lyricsDisplay p').click(jumpTo);
@@ -141,12 +61,6 @@ function displayLyrics(html){
 
 }
 
-function showEditDialog(i, startTime, endTime, text){
-  lyricEditor.show(text);
-  indexBeingModified = i;
-  mediaPlayer.setState({segmentStart: startTime});
-  mediaPlayer.setState({segmentEnd: endTime});
-}
 
 function saveHeading(headingText, idx){
 
@@ -154,94 +68,29 @@ function saveHeading(headingText, idx){
 
 }
 
-function saveLyric(text){
+function addLyric(newLyric, cb){
 
-  if(indexBeingModified>-1)
-    updateLyric(text,indexBeingModified);
-  else {
-    addLyric(text)
-  }
-
+  $.post("/lyrics/"+songID+"/addline", newLyric, cb);
 }
 
-function addLyric(text){
-
-  var newLyric = {
-    text: $('#lyric').val(),
-    endTime: mediaPlayer.state.segmentEnd,
-    deleted: false,
-    id: lyrics.length,
-    startTime: mediaPlayer.state.segmentStart,
-    heading: null
-  };
-
-  $.post("/lyrics/"+songID+"/addline", newLyric, function(res){
-    loadLyrics();
-  });
-}
-
-function updateLyric(text, idx, heading){
-
-  var oldLyricObj = lyrics[idx];
-  var updateObj = {};
-
-  function appendIfChanged(field, variable){
-    if((!variable)&&(!oldLyricObj[field])) //for empty, null, and undefined strings
-      return;
-    if(variable==parseInt(oldLyricObj[field])) //for integers
-      return;
-    if(variable==oldLyricObj[field]) //for matching strings
-      return;
-
-    updateObj[field]=variable;
-  }
-
-    if(heading){
-    appendIfChanged("heading",heading);
-    }else {
-      appendIfChanged("text",text);
-      appendIfChanged("startTime",mediaPlayer.state.segmentStart);
-      appendIfChanged("endTime",mediaPlayer.state.segmentEnd);
-    }
+function updateLyric(oldLyricObj, newLyricObj, cb){
 
     var postData = {
-      update: updateObj,
+      new: newLyricObj,
       original: oldLyricObj
     };
 //todo: postdata should be validated
-  $.post("/lyrics/"+songID+"/editline/"+lyrics[idx].id, postData, function(res){
-        loadLyrics();
-      });
+  $.post("/lyrics/"+songID+"/editline/"+lyrics[idx].id, postData, cb);
 
 }
 
-  function setEditMode(val){
-    editMode = val;
-    if(editMode) //stop activating lines
-      $(".current").removeClass("current");
-  }
-
-  function onPaused(segmentStart, segmentEnd){
-
-      if(editMode)
-        lyricEditor.show();
-  }
-
   ki.init = function (_songID){
     songID = _songID;
-    loadLyrics();
   };
-  ki.registerPlayer = function (component){
-    mediaPlayer=component;
-    component.onPausedCallback = onPaused;
-    //component.onResumeCallback = onResume;
-    component.timerHooks.push(activateLine);
-  }
-  ki.registerEditor = function (component){
-    lyricEditor=component;
-    component.saveLyric = saveLyric;
-    component.setEditMode = setEditMode;
-  }
+
+  ki.loadLyrics = loadLyrics;
+  ki.updateLyric = updateLyric;
+  ki.addLyric = addLyric;
 
   return ki;
 
@@ -257,10 +106,14 @@ To do:
 --implement controls
 --move timer controlls to hook
 
+Backend
+--remove "isHeading" field form lyrics
+
 -UI design
 --design control
 
 -move pug rednering of lyric display to client side
+--remove obsolete template
 
 -bug: after login, goes to http://localhost:3000/music/id/h01_dEXLqsk#_=_ (achikolo)
 

@@ -1,69 +1,26 @@
 
       class LyricEditor extends React.Component {
         constructor(props) {
-          super(props);
+          super(props); //holdTimeMarkers, displayed, originalText, editMode, mode, close, handleToggleEditMode, saveLyric
           this.state = {
             value: '',
-            originalText: "",
-            mode: "add" /*update or add*/,
-            displayed: true,
-            editMode: false
           };
 
           this.dialogWidth = 500;
           this.handleChange = this.handleChange.bind(this);
           this.handleSubmit = this.handleSubmit.bind(this);
           this.calculateTail = this.calculateTail.bind(this);
-          this.close = this.close.bind(this);
-          this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
 
-        }
-
-        handleToggleEditMode(){
-          this.setEditMode(!this.state.editMode);
-
-          this.setState((prevState, props) => ({
-            editMode: !prevState.editMode
-          }));
         }
 
         handleChange(event) {
           this.setState({value: event.target.value});
         }
 
-        close(){
-          this.setState({
-            value: "",
-            displayed: false,
-            originalText: null,
-            mode: "add"
-          });
-
-          //unfreeze time markers
-          this.props.holdTimeMarkers(false);
-        }
-
         handleSubmit(event) {
           event.preventDefault();
-          this.saveLyric(this.state.value);
-        }
-
-        show(text){
-          var mode = "add";
-          var originalText = null;
-          var value = this.state.value || "";
-          if(text){
-            this.props.holdTimeMarkers(true);
-            mode = "save";
-            originalText = 'original: "' + text + '"';
-            value = text;
-          }
-          this.setState({
-            displayed: true,
-            originalText: originalText,
-            value: value,
-            mode: mode
-          });
+          this.props.saveLyric(this.state.value);
+          this.setState({value: ""}); //todo: use callback clear value only after saved
         }
 
         calculateTail(){
@@ -84,10 +41,10 @@
 
         render () {
 
-          var btnText = (this.state.mode=="add") ? "Add" : "Update";
-          var originalText = this.state.originalText ? <div className="originalText">{this.state.originalText}</div> : null;
-          var editSwitchText = (this.state.editMode) ? "Done Editing" : "Edit";
-          var dialog = this.state.displayed && <form id="lyricEditor" ref="lyricEditor" className="editor-bg-color" onSubmit={this.handleSubmit}><div className="row">
+          var btnText = (this.props.mode=="add") ? "Add" : "Update";
+          var originalText = this.props.originalText ? <div className="originalText">{this.props.originalText}</div> : null;
+          var editSwitchText = (this.props.editMode) ? "Done Editing" : "Edit";
+          var dialog = this.props.displayed && <form id="lyricEditor" ref="lyricEditor" className="editor-bg-color" onSubmit={this.handleSubmit}><div className="row">
             <div className="col-md-12">
               {originalText}
               <input id="lyric" type="text" placeholder="Transcibe Lyrics..." value={this.state.value} onChange={this.handleChange} />
@@ -124,7 +81,7 @@
           </div>
           <div className="row">
             <div className="col-md-3">
-              <button id="cancel-dialog-btn" className="btn btn-default btn-lg" type="reset" onClick={this.close}>Cancel</button>
+              <button id="cancel-dialog-btn" className="btn btn-default btn-lg" type="reset" onClick={this.props.close}>Cancel</button>
             </div>
             <div className="col-md-9">
               <button id="save-lyric-btn" className="btn btn-default btn-lg" type="submit">{btnText}</button>
@@ -135,8 +92,8 @@
           </svg></form>;
 
           return <div>
-          <button id="edit-mode-btn" type="button" className="btn btn-default btn-lg" onClick={this.handleToggleEditMode}>{editSwitchText}</button>
-          {this.state.editMode && dialog}
+          <button id="edit-mode-btn" type="button" className="btn btn-default btn-lg" onClick={this.props.handleToggleEditMode}>{editSwitchText}</button>
+          {this.props.editMode && dialog}
           </div>;
 
         }

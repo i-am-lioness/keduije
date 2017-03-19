@@ -6,16 +6,13 @@ html(lang='en')
     link(href='/css/lyric-editor.css', rel='stylesheet')
   body
     include nav-bar.pug
-    .container-fluid
-      .row
-        #video-column.col-md-6.col-xs-12
-        #lyric-column.col-md-6.col-xs-12.col-md-offset-6(style='background-image: url('+ artwork_src +')')
-          #lyricsDisplay
-      footer.footer
-        p &copy; 2017 KeduIje, Inc.
+    .container-fluid#root
+    footer.footer
+      p &copy; 2017 KeduIje, Inc.
     script(src='/js/ie10-viewport-bug-workaround.js')
     script(src='/media-player.js', type='text/babel')
     script(src='/js/player.js')
+    script(src='/lyric-display.js', type='text/babel')
     if (canEdit)
       script(src='/time-spinner.js', type='text/babel')
       script(src='/lyric-editor.js', type='text/babel')
@@ -23,17 +20,18 @@ html(lang='en')
       var onYouTubeIframeAPIReady;
       var src = 'http://www.youtube.com/embed/' + '#{videoID}' +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://' + '#{origin}' + '&playsinline=1&rel=0';
       KeduIje.init("#{videoID}");
+      var hi;
       function setCallback(component){
-        onYouTubeIframeAPIReady = component.onYouTubeIframeAPIReady;
-        KeduIje.registerPlayer(component);
+        onYouTubeIframeAPIReady = component.onYouTubeIframeAPIReady; //todo, move to keduije module
+        hi=component;
       }
       ReactDOM.render(
         <MediaPlayer 
           ref={setCallback}
           canEdit={#{canEdit}}
           src={src}
-          registerEditor={KeduIje.registerEditor} 
+          artworkSrc={"#{artwork_src}"}
         />,
-        document.getElementById('video-column')
+        document.getElementById('root')
       );
     script(src='https://www.youtube.com/iframe_api', async='')

@@ -63,7 +63,13 @@ class Audio {
           super(props); //type,
           this.state = {
             segmentStart: 0,
-            segmentEnd: 0
+            segmentEnd: 0,
+            currentTime: 0,
+            displayEditor: false,
+            originalText: "",
+            editMode: false,
+            editType: "add",
+            lyrics: []
           };
 
           this.maxTime = null;
@@ -71,11 +77,10 @@ class Audio {
           this.saveStartTime=false; //accounts for "jumping" around, rename to "holdStartTime"
           this.timeMarksFrozen = false; //todo: make sure to unfreeze
           this.timer;
-          this.timerHooks = [];
+          this.indexBeingModified = -1;
 
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
           this.onPlayerReady = this.onPlayerReady.bind(this);
-          this.freezeTimeMarks = this.freezeTimeMarks.bind(this);
           this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
           this.playSegment = this.playSegment.bind(this);
           this.checkForSegmentEnd = this.checkForSegmentEnd.bind(this);
@@ -89,12 +94,96 @@ class Audio {
           this.seekTo = this.seekTo.bind(this);
           this.onTimeout = this.onTimeout.bind(this);
           this.handleResume = this.handleResume.bind(this);
-
-
+          this.showEditDialog = this.showEditDialog.bind(this);
+          this.saveLyric = this.saveLyric.bind(this);
+          this.loadLyrics = this.loadLyrics.bind(this);
+          this.jumpTo = this.jumpTo.bind(this);
+          this.close = this.close.bind(this);
+          this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
 
         }
 
+        saveLyric(text){
+
+          if(this.indexBeingModified>-1){
+
+
+              var oldLyricObj = this.state.lyrics[this.indexBeingModified];
+              var newLyricObj = $.extend({}, oldLyricObj);
+              newLyricObj.text = text;
+              newLyricObj.startTime = this.state.segmentStart;
+              newLyricObj.endTime = this.state.segmentEnd;
+              //newLyricObj.heading = heading; //todo: finish this
+
+            KeduIje.updateLyric(oldLyricObj, newLyricObj, this.loadLyrics);
+
+          }else {
+            var newLyric = {
+              text: text,
+              endTime: this.state.segmentEnd,
+              deleted: false,
+              id: this.state.lyrics.length,
+              startTime: this.state.segmentStart,
+              heading: null
+            };
+            KeduIje.addLyric(newLyric, this.loadLyrics);
+          }
+          this.indexBeingModified = -1;
+
+        }
+
+        showEditDialog(i, startTime, endTime, text){
+          //todo: merge with show
+          this.show(text);
+          this.indexBeingModified = i;
+          this.setState({
+            segmentStart: startTime,
+            segmentEnd: endTime
+          });
+
+        }
+
+        handleToggleEditMode(){
+
+          this.setState((prevState, props) => ({
+            editMode: !prevState.editMode
+          }));
+        }
+
+        show(text){
+          var mode = "add";
+          var originalText = null;
+          if(text){
+            this.timeMarksFrozen = true;
+            mode = "save";
+            originalText = 'original: "' + text + '"';
+          }
+          this.setState({
+            displayEditor: true,
+            originalText: originalText,
+            editType: mode
+          });
+        }
+
+        close(){
+          this.setState({
+            displayEditor: false,
+            originalText: null,
+            editType: "add"
+          });
+
+          this.timeMarksFrozen = false;
+        }
+
+        loadLyrics(lyrics){
+          this.setState({
+            lyrics: lyrics,
+            displayEditor: false
+          });
+        }
+
         componentDidMount(){
+            KeduIje.loadLyrics(this.loadLyrics)
           if(playAudio)
             this.media = new Audio(this.refs.audio, this.handlePaused, this.handleResume);
         }
@@ -120,10 +209,11 @@ class Audio {
         }
 
         onTimeout(){
-          var percentage = 100 * this.media.getCurrentTime()/this.media.getDuration();
-          $(this.refs.seeker).css("width",percentage +"%");
+          var currentTime = this.media.getCurrentTime();
+          this.setState({currentTime: currentTime});
 
-          this.timerHooks.forEach((hook)=>hook(this.getCurrentTime()));
+          var percentage = 100 * currentTime/this.media.getDuration();
+          $(this.refs.seeker).css("width",percentage +"%");
 
           if(this.media.isPlaying())
             this.timer = setTimeout(this.onTimeout,1000);
@@ -145,16 +235,12 @@ class Audio {
           this.maxTime = this.media.getDuration();
         }
 
-        freezeTimeMarks(val){
-          this.timeMarksFrozen = val;
-        }
-
         handlePaused(){
           clearTimeout(this.timer);
+          if(this.timeMarksFrozen) return; //revisit
 
           var segmentStart= this.state.segmentStart;
           var segmentEnd= this.state.segmentEnd;
-          if(this.timeMarksFrozen) return; //revisit
 
           if(!this.saveStartTime){
             this.setState({
@@ -168,12 +254,15 @@ class Audio {
             segmentEnd: segmentEnd
           });
 
-          this.onPausedCallback(segmentStart, segmentEnd);
+          if(this.state.editMode){
+            this.setState({
+              displayEditor: true
+            });
+          }
 
         }
 
         handleResume(){
-          //this.onResumeCallback();
           this.timer = setTimeout(this.onTimeout,1000);
         }
 
@@ -185,6 +274,15 @@ class Audio {
           }else if (event.data == YT.PlayerState.PLAYING) {
             this.handleResume();
           }
+        }
+
+        jumpTo(start, end){
+
+          this.setState({
+            segmentStart: start,
+            segmentEnd: this.state.editMode ? end : -1
+          }, this.playSegment);
+
         }
 
         playSegment(){
@@ -242,7 +340,7 @@ class Audio {
             </audio>
           }
 
-          return <div>
+          var videoColumn =  <div id="video-column" className="col-md-6 col-xs-12">
           <div className='embed-responsive embed-responsive-4by3'>
             {mediaElement}
           </div>
@@ -268,8 +366,21 @@ class Audio {
               decrementTime={this.decrementTime}
               percentage={percentage || 0}
               playLyric = {this.playSegment}
-              holdTimeMarkers = {this.freezeTimeMarks}
+              displayed = {this.state.displayEditor}
+              originalText = {this.state.originalText}
+              editMode = {this.state.editMode}
+              mode = {this.state.editType}
+              close = {this.close}
+              handleToggleEditMode = {this.handleToggleEditMode}
+              saveLyric = {this.saveLyric}
               />}
+          </div>;
+
+          return <div className="row">
+            {videoColumn}
+            <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
+              <LyricDisplay lyrics={this.state.lyrics} currentTime={this.state.currentTime} editMode={this.state.editMode} jumpTo={this.jumpTo}/>
+            </div>
           </div>;
 
         }
