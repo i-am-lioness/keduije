@@ -63,6 +63,4 @@ ROADMAP:
 -error handling
 -log visitors
 
--bug: after login, goes to http://localhost:3000/music/id/h01_dEXLqsk#_=_ (achikolo)
-
 */

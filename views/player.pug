@@ -2,7 +2,7 @@ doctype html
 html(lang='en')
   head
     include head.pug
-    link(href='/css/player.css', rel='stylesheet')
+    link(href='/css/media-player.css', rel='stylesheet')
     link(href='/css/lyric-editor.css', rel='stylesheet')
   body
     include nav-bar.pug
@@ -10,8 +10,8 @@ html(lang='en')
     footer.footer
       p &copy; 2017 KeduIje, Inc.
     script(src='/js/ie10-viewport-bug-workaround.js')
+    script(src='/js/keduije.js')
     script(src='/media-player.js', type='text/babel')
-    script(src='/js/player.js')
     script(src='/lyric-display.js', type='text/babel')
     if (canEdit)
       script(src='/time-spinner.js', type='text/babel')

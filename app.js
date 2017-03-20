@@ -128,6 +128,10 @@ passport.use(new TwitterStrategy({
 ));
 
 app.get('/login/twitter',
+  function (req, res, next) {
+    req.session.returnTo = req.session.returnTo || req.header('Referer');
+    next()
+  },
   passport.authenticate('twitter'));
 
 app.get('/login/twitter/return',
@@ -248,7 +252,9 @@ app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, re
   app.get('/login/facebook/return',
     passport.authenticate('facebook', { failureRedirect: '/login' }),
     function(req, res) {
-      res.redirect(req.session.returnTo || "/");
+      var returnTo = req.session.returnTo || "/";
+      req.session.returnTo=null;
+      res.redirect(returnTo);
     });
 
   app.get('/logout', function(req, res){
@@ -280,7 +286,7 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
 
   //'Cannot update \'lyrics.5\' and \'lyrics.5.lastEdit\' at the same time',
   obj.lastEdit = new Date();
-  
+
   database.collection('lyrics').findAndModify(
      { videoID: req.params.videoID, "lyrics.id": req.params.lineID } ,
      null,
