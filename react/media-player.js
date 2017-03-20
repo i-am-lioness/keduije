@@ -1,9 +1,26 @@
 
-var playAudio = false;
-class Media {
-  constructor(ytVID) {
-    this.video = ytVID;
+class Media { //todo: combine both classes
+  constructor(iframe, onPlayerReady, handlePaused, handleResume) {
+    this.video = new YT.Player(iframe, {
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': this._onPlayerStateChange.bind(this)
+      }
+    });
+
+    this.handlePaused = handlePaused;
+    this.handleResume = handleResume;
+
   }
+  _onPlayerStateChange(event) {
+
+    if (event.data == YT.PlayerState.PAUSED) {
+      this.handlePaused();
+    }else if (event.data == YT.PlayerState.PLAYING) {
+      this.handleResume();
+    }
+  }
+
   play(){
     this.video.playVideo();
   }
@@ -29,10 +46,12 @@ class Media {
 }
 
 class Audio {
-  constructor(audio, pausedHandler, resumeHandler) {
+  constructor(audio, playerReadyHandler, pausedHandler, resumeHandler) {
     this.audio = audio;
+    this.audio.onPlayerReady = playerReadyHandler;
     this.audio.onpause = pausedHandler;
     this.audio.onplay = resumeHandler;
+    this.audio.load();
   }
   play(){
     this.audio.play();
@@ -82,7 +101,6 @@ class Audio {
 
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
           this.onPlayerReady = this.onPlayerReady.bind(this);
-          this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
           this.playSegment = this.playSegment.bind(this);
           this.checkForSegmentEnd = this.checkForSegmentEnd.bind(this);
           this.isPlaying = this.isPlaying.bind(this);
@@ -194,12 +212,6 @@ class Audio {
           });
         }
 
-        componentDidMount(){
-            KeduIje.loadLyrics(this.loadLyrics)
-          if(playAudio)
-            this.media = new Audio(this.refs.audio, this.handlePaused, this.handleResume);
-        }
-
         play(){
           this.media.play();
         }
@@ -232,15 +244,20 @@ class Audio {
         }
 
         onYouTubeIframeAPIReady() {
-          var iframe = $("iframe.embed-responsive-item")[0]; //revisit
-          var video = new YT.Player(iframe, {
-            events: {
-              'onReady': this.onPlayerReady,
-              'onStateChange': this.onPlayerStateChange
-            }
-          });
-          if(!playAudio)
-            this.media= new Media(video);
+          if(this.props.mediaType!=KeduIje.mediaTypes.VIDEO) return; //todo: add sanity check here
+
+          this.media= new Media(this.iframe, this.onPlayerReady, this.handlePaused, this.handleResume);
+        }
+
+        loadAudio(audio){
+          this.audioElement = audio;
+        }
+
+        componentDidMount(){
+            KeduIje.loadLyrics(this.loadLyrics)
+
+            if(this.props.mediaType!=KeduIje.mediaTypes.AUDIO) return; //todo: add sanity check here
+            this.media = new Audio(this.audioElement, this.onPlayerReady, this.handlePaused, this.handleResume);
         }
 
         onPlayerReady(event) {
@@ -271,16 +288,6 @@ class Audio {
 
         handleResume(){
           this.timer = setTimeout(this.onTimeout,1000);
-        }
-
-
-        onPlayerStateChange(event) {
-
-          if (event.data == YT.PlayerState.PAUSED) {
-            this.handlePaused();
-          }else if (event.data == YT.PlayerState.PLAYING) {
-            this.handleResume();
-          }
         }
 
         jumpTo(start, end){
@@ -339,12 +346,14 @@ class Audio {
 
         render () {
           var percentage=this.state.segmentEnd/this.maxTime;
-          var mediaElement = <iframe className='embed-responsive-item' src={this.props.src} frameBorder='0' />
+          var mediaElement;
 
-          if(playAudio){
-            mediaElement = <audio ref="audio">
-              <source src="http://tooxclusive.com.ng/download/2016/03/Tmol_-_Ezinne_ft_Selebobo_tooxclusive.com.ng.mp3" type="audio/mpeg" />
+          if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
+            mediaElement = <audio ref={this.loadAudio.bind(this)}>
+              <source src="http://tooxclusive.com.ng/download/2016/03/Tmol_-_Ezinne_ft_Selebobo_tooxclusive.com.ng.mp3" type="audio/mpeg" />;
             </audio>
+          }else {
+            mediaElement = <iframe ref={(iframe) => {this.iframe = iframe;}} className='embed-responsive-item' src={this.props.src} frameBorder='0' />;
           }
 
           var videoColumn =  <div id="video-column" className="col-md-6 col-xs-12">

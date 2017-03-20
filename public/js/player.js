@@ -23,6 +23,11 @@ var KeduIje = (function(ki){
 
   }
 
+  ki.mediaTypes = {
+    AUDIO: 0,
+    VIDEO: 1
+  };
+
   ki.init = function (_songID){
     songID = _songID;
   };
@@ -47,18 +52,17 @@ URGENT: fix edit lyric bug
 --make smoother highlting flow
 --new music form
 --re-design data schema
+---remove "isHeading" field from lyrics
 
 
-Backend
---remove "isHeading" field form lyrics
 
+ROADMAP:
 -UI design
---design control
-
--bug: after login, goes to http://localhost:3000/music/id/h01_dEXLqsk#_=_ (achikolo)
+--design controls
 
 -error handling
-
 -log visitors
+
+-bug: after login, goes to http://localhost:3000/music/id/h01_dEXLqsk#_=_ (achikolo)
 
 */
