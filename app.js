@@ -257,11 +257,22 @@ app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, re
     res.redirect(req.header('Referer') || '/');
   });
 
+//Todo: complete
+function validate(lyric){
+  lyric.startTime = parseInt(lyric.startTime);
+  lyric.endTime = parseInt(lyric.endTime);
+  return false;
+}
+
 app.post('/lyrics/:videoID/addline', function (req, res) {
 
   var obj = req.body;
   obj.lastEditBy = req.user._id;
   obj.revised=false;
+
+  if(validate(obj)){
+    res.send("error validating");
+  }
 
   database.collection('lyrics').findAndModify(
      { videoID: req.params.videoID } ,
@@ -306,8 +317,9 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
 
 
       song.lyrics.forEach(function(lyric){
-        //lyric.lastEditBy = req.user._id;
-        lyric.revised = false;
+        //delete lyric.isHeading;
+        lyric.startTime = parseInt(lyric.startTime);
+        lyric.endTime = parseInt(lyric.endTime);
       });
 
 

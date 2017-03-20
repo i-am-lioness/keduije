@@ -39,7 +39,8 @@
             $("html,body").animate({scrollTop: position-height*0.2}, 800);
         }
 
-        componentDidUpdate(){
+        componentDidUpdate(prevProps, prevState){
+          if(prevProps.currentTime==this.props.currentTime) return;
           var currentLine= $(".current")[0];
           if(currentLine){ //todo: consider using ref
             this.scrollIfOutOfView(currentLine);
@@ -97,7 +98,7 @@
             </h4>;
           }
 
-          var pClass = ly.startTime; //todo: revisit, may no longer be necessary
+          var pClass = "";
           var a = null;
           if(ly.hasHeading){
             pClass +=(" has-heading");
