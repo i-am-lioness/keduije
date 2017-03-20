@@ -17,24 +17,24 @@ html(lang='en')
       script(src='/time-spinner.js', type='text/babel')
       script(src='/lyric-editor.js', type='text/babel')
     script(type='text/babel').
-      var mediaType = KeduIje.mediaTypes.VIDEO;
+      var mediaType = "#{videoID}" ? KeduIje.mediaTypes.VIDEO : KeduIje.mediaTypes.AUDIO; //Improve
       var onYouTubeIframeAPIReady;
-      var src = 'http://www.youtube.com/embed/' + '#{videoID}' +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://' + '#{origin}' + '&playsinline=1&rel=0';
-      KeduIje.init("#{videoID}");
+      
+      KeduIje.init("#{songID}");
       
       var hi;
       function setCallback(component){
+        hi=component;
         if (mediaType == KeduIje.mediaTypes.AUDIO) return;
           
         onYouTubeIframeAPIReady = component.onYouTubeIframeAPIReady;
         $.getScript( "https://www.youtube.com/iframe_api" );
-        hi=component;
       }
       ReactDOM.render(
         <MediaPlayer 
           ref={setCallback}
           canEdit={#{canEdit}}
-          src={src}
+          src={"#{src}"}
           artworkSrc={"#{artwork_src}"}
           mediaType={mediaType}
         />,

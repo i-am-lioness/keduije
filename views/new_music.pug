@@ -15,6 +15,12 @@ html(lang='en')
               label(for="video-url-input") Video URL
               input#video-url-input.form-control.input-lg(name="video-url", placeholder="Youtube URL")
               input#video-id-input(name="videoID", type="hidden")
+            .form-group
+              label(for="video-url-input") MP3 URL
+              input#mp3-url-input.form-control.input-lg(name="mp3_url", placeholder="MP3 URL")
+            .form-group
+              label(for="art-url-input") Artwork URL
+              input#art-url-input.form-control.input-lg(name="img", placeholder="Artwork URL")
               
             button.btn.btn-default(type="submit") Add
             //button#search-btn.btn.btn-default(type="button") Search
@@ -38,6 +44,10 @@ html(lang='en')
         }*/
         $("#video-img").attr("src",tns.medium.url);
       }
+      
+      $("#art-url-input").change(function(){
+        $("#video-img").attr("src",$(this).val());
+      });
       
       
     script(src="https://apis.google.com/js/client.js?onload=googleApiClientReady")

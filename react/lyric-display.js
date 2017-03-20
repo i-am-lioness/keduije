@@ -25,7 +25,6 @@
           this.jumpTo = this.jumpTo.bind(this);
           this.showIcon = this.showIcon.bind(this);
           this.editLyric = this.editLyric.bind(this);
-          this.handleAddHeading = this.handleAddHeading.bind(this);
         }
 
         //responsively adjusts scroll position of lyrics during playback
@@ -68,10 +67,10 @@
           this.setState({hoveredLinkIdx: -1});
         }
 
-        editLyric (data, index, e){
+        editLyric (data, index, forHeader, e){
           e.stopPropagation();
           if ( (this.state.hoveredIdx == index) && this.props.editMode ){
-            if(data.forHeader)
+            if(forHeader)
               this.props.showEditHeaderDialog(data);
             else
               this.props.showEditDialog(data);
@@ -79,21 +78,11 @@
 
         }
 
-        handleAddHeading(idx, data){//todo: merge with above
-          if ( (this.state.hoveredLinkIdx==idx) && this.props.editMode ){
-            this.props.showEditHeaderDialog(data);
-          }
-
-        }
-
         eachLyric(ly, idx){
-
-          var headerData = $.extend({forHeader: true}, ly.data);
-
 
           if(ly.heading){
             return <h4 key={ly.key} onMouseEnter={this.showIcon.bind(this, idx)}>
-              <PencilIcon onClick={this.editLyric.bind(this, headerData, idx)} idx={idx} editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
+              <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, true)} idx={idx} editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
               {ly.heading}
             </h4>;
           }
@@ -109,7 +98,7 @@
                   href="#"
                   onMouseEnter={this.showBtn.bind(this, idx)}
                   onMouseLeave={this.hideBtn.bind(this)}
-                  onClick={this.handleAddHeading.bind(this, idx, ly.data)}
+                  onClick={this.editLyric.bind(this, ly.data, idx, true)}
                   style={{opacity: (this.props.editMode&&(this.state.hoveredLinkIdx == idx))? 1 : 0}}
                 >
                   <span className = "glyphicon glyphicon-plus" aria-hidden="true"></span>
@@ -127,7 +116,7 @@
                     onClick={this.jumpTo.bind(this,ly.data)}
                     onMouseEnter={this.showIcon.bind(this, idx)}
                     >
-                      <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx)} idx={idx}  editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
+                      <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, false)} idx={idx}  editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
 
                       <span>{ly.text}</span>
                       {a}

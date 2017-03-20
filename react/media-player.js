@@ -48,7 +48,7 @@ class Media { //todo: combine both classes
 class Audio {
   constructor(audio, playerReadyHandler, pausedHandler, resumeHandler) {
     this.audio = audio;
-    this.audio.onPlayerReady = playerReadyHandler;
+    this.audio.oncanplay = playerReadyHandler;
     this.audio.onpause = pausedHandler;
     this.audio.onplay = resumeHandler;
     this.audio.load();
@@ -353,7 +353,7 @@ class Audio {
 
           if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
             mediaElement = <audio ref={this.loadAudio.bind(this)}>
-              <source src="http://tooxclusive.com.ng/download/2016/03/Tmol_-_Ezinne_ft_Selebobo_tooxclusive.com.ng.mp3" type="audio/mpeg" />;
+              <source src={this.props.src} type="audio/mpeg" />;
             </audio>
           }else {
             mediaElement = <iframe ref={(iframe) => {this.iframe = iframe;}} className='embed-responsive-item' src={this.props.src} frameBorder='0' />;

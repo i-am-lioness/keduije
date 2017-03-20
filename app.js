@@ -151,10 +151,10 @@ function requireRole(role) {
     }
 }
 
-app.get('/lyrics/:videoID', function (req, res) {
+app.get('/lyrics/:songID', function (req, res) {
 
   database.collection('lyrics')
-    .find({ videoID: req.params.videoID } )
+    .find({ _id: ObjectId(req.params.songID) } )
     .nextObject(function(err, obj) {
 
       var lyrics = (obj&&obj.lyrics) ? obj.lyrics : [];
@@ -163,14 +163,19 @@ app.get('/lyrics/:videoID', function (req, res) {
     })
   });
 
-app.get('/music/id/:videoID', function (req, res) {
+app.get('/music/:title', function (req, res) {
 
-  var vidID = req.params.videoID;
+  var title = req.params.title;
   database.collection('lyrics')
-    .findOne({ videoID: vidID}, function(err, song){
+    .findOne({ title: title}, function(err, song){
 
       var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
-      var artwork_src = song.img ? song.img : youtube_thumbnail;
+      var artwork_src = song.img || youtube_thumbnail;
+
+      //do better
+      var src = song.videoID ? 'http://www.youtube.com/embed/' + song.videoID
+        +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://'
+         + req.headers.host + '&playsinline=1&rel=0' : song.mp3_url;
 
       var data = {
         title: song.title + " | " + res.locals.title,
@@ -178,7 +183,8 @@ app.get('/music/id/:videoID', function (req, res) {
         videoID: song.videoID,
         user: req.user || null,
         canEdit: !!(req.user && req.user.isAdmin),
-        origin: req.headers.host
+        src: src,
+        songID: song._id
       };
       //console.log(data);
         res.render('player', data);
@@ -197,12 +203,12 @@ app.get('/', function (req, res) {
 
 app.get('/carousel', function (req, res) {
 
-  database.collection('lyrics').find({},{videoID: 1, title: 1}).toArray(function(err, videos) {
+  database.collection('lyrics').find({},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
     res.render("carousel",{videos: videos, carouselIDquery: "#main-carousel"});
   });
 });
 
-app.get('/songs/all', function (req, res) {
+app.get('/videos/all', function (req, res) {
 
   database.collection('lyrics').find({},{videoID: 1}).toArray(function(err, results) {
     var videos = [];
@@ -215,17 +221,17 @@ app.get('/songs/all', function (req, res) {
   });
 });
 
-app.get( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
   res.render("new_music",{title: "New Music | " + res.locals.title});
 
   });
 
-  app.post( '/music/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+  app.post( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
         req.body["creator"] = req.user._id;
         //req.body["created"] = new Date(); // not necessary since included in id
 
         database.collection("lyrics").insertOne(req.body, function(){
-          res.redirect("/music/id/"+req.body.videoID); //todo: make bettter;
+          res.redirect("/music/"+req.body.title); //todo: make bettter;
         });
 
     });
@@ -264,7 +270,7 @@ function validate(lyric){
   return false;
 }
 
-app.post('/lyrics/:videoID/addline', function (req, res) {
+app.post('/lyrics/:songID/addline', function (req, res) {
 
   var obj = req.body;
   obj.lastEditBy = req.user._id;
@@ -275,7 +281,7 @@ app.post('/lyrics/:videoID/addline', function (req, res) {
   }
 
   database.collection('lyrics').findAndModify(
-     { videoID: req.params.videoID } ,
+     { _id: ObjectId(req.params.songID) } ,
      null,
      {
        $push: { lyrics: obj }
@@ -294,7 +300,7 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
   obj.lastEdit = new Date();
 
   database.collection('lyrics').findAndModify(
-     { videoID: req.params.videoID, "lyrics.id": req.params.lineID } ,
+     { _id: ObjectId(req.params.songID), "lyrics.id": req.params.lineID } ,
      null,
      { $set: { "lyrics.$" : obj }
       },
@@ -334,7 +340,7 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
 */
 
 
-app.post('/lyrics/:videoID/editline/:lineID', ensureLoggedIn(), function (req, res) {
+app.post('/lyrics/:songID/editline/:lineID', ensureLoggedIn(), function (req, res) {
 
   req.body.new.lastEditBy=req.user._id;
 
@@ -347,7 +353,7 @@ app.post('/lyrics/:videoID/editline/:lineID', ensureLoggedIn(), function (req, r
     req.body.new.revised = true; //todo: could be redundant
 
     var revision = req.body.original; //todo: get original record directly from db rather than from client
-    revision.songID = req.params.videoID;
+    revision.songID = req.params.songID;
     revision.user = revision.lastEditBy;
     delete revision.lastEditBy;
 
