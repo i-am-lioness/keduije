@@ -23,6 +23,7 @@ html(lang='en')
       var hi;
       function setCallback(component){
         onYouTubeIframeAPIReady = component.onYouTubeIframeAPIReady; //todo, move to keduije module
+        $.getScript( "https://www.youtube.com/iframe_api" );
         hi=component;
       }
       ReactDOM.render(
@@ -34,4 +35,3 @@ html(lang='en')
         />,
         document.getElementById('root')
       );
-    script(src='https://www.youtube.com/iframe_api', async='')
