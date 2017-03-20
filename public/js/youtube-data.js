@@ -3,11 +3,13 @@ function getIDFromURL(url){
   if(res){
     return res[1];
   }
-  alert("error with url provided");
+  return false;
+  //alert("error with url provided");
 }
 
 function getVideoInfo() {
   var q = getIDFromURL($(this).val());
+  if(!q) return;
   var request = gapi.client.youtube.videos.list({
     id: q,
     part: 'snippet'

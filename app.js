@@ -175,7 +175,7 @@ app.get('/music/:title', function (req, res) {
       //do better
       var src = song.videoID ? 'http://www.youtube.com/embed/' + song.videoID
         +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://'
-         + req.headers.host + '&playsinline=1&rel=0' : song.mp3_url;
+         + req.headers.host + '&playsinline=1&rel=0' : song.url;
 
       var data = {
         title: song.title + " | " + res.locals.title,
@@ -316,16 +316,15 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
 }
 
 /*temporary script */
-/*app.get('/temp',ensureLoggedIn(), function (req, res) {
+//todo: check the host that is requesting it
+/*app.get('/temp', function (req, res) {
 
   database.collection('lyrics').find().forEach(function (song){
     if(song.lyrics){
 
 
       song.lyrics.forEach(function(lyric){
-        //delete lyric.isHeading;
-        lyric.startTime = parseInt(lyric.startTime);
-        lyric.endTime = parseInt(lyric.endTime);
+        lyric.revised = false;
       });
 
 
