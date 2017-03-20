@@ -278,15 +278,19 @@ app.post('/lyrics/:videoID/addline', function (req, res) {
 
 function updateLyric(req, res, obj) { //todo: obj might be redundant
 
+  //'Cannot update \'lyrics.5\' and \'lyrics.5.lastEdit\' at the same time',
+  obj.lastEdit = new Date();
+  
   database.collection('lyrics').findAndModify(
      { videoID: req.params.videoID, "lyrics.id": req.params.lineID } ,
      null,
-     { $set: { "lyrics.$" : obj },
-       $currentDate: {"lyrics.$.lastEdit": true}
+     { $set: { "lyrics.$" : obj }
       },
       true,
      function(err, result) {
-       //console.log("result of update", result.value);
+       console.log("err", err);
+       console.log("result of update", result);
+       console.log("actual value", result.value);
        res.send(result.value.lyrics); //todo: error checking
      }
   );

@@ -1,26 +1,17 @@
 
       class LyricEditor extends React.Component {
         constructor(props) {
-          super(props); //holdTimeMarkers, displayed, originalText, editMode, mode, close, handleToggleEditMode, saveLyric
-          this.state = {
-            value: '',
-          };
+          super(props); //value, holdTimeMarkers, displayed, originalText, editMode, mode, close, handleToggleEditMode, saveLyric
 
           this.dialogWidth = 500;
-          this.handleChange = this.handleChange.bind(this);
           this.handleSubmit = this.handleSubmit.bind(this);
           this.calculateTail = this.calculateTail.bind(this);
 
         }
 
-        handleChange(event) {
-          this.setState({value: event.target.value});
-        }
-
         handleSubmit(event) {
           event.preventDefault();
-          this.props.saveLyric(this.state.value);
-          this.setState({value: ""}); //todo: use callback clear value only after saved
+          this.props.saveLyric();
         }
 
         calculateTail(){
@@ -47,7 +38,7 @@
           var dialog = this.props.displayed && <form id="lyricEditor" ref="lyricEditor" className="editor-bg-color" onSubmit={this.handleSubmit}><div className="row">
             <div className="col-md-12">
               {originalText}
-              <input id="lyric" type="text" placeholder="Transcibe Lyrics..." value={this.state.value} onChange={this.handleChange} />
+              <input id="lyric" type="text" placeholder="Transcibe Lyrics..." value={this.props.value} onChange={this.props.handleChange} />
             </div>
           </div>
           <div className="row">

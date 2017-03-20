@@ -67,6 +67,7 @@ class Audio {
             currentTime: 0,
             displayEditor: false,
             originalText: "",
+            text: "",
             editMode: false,
             editType: "add",
             lyrics: []
@@ -100,20 +101,35 @@ class Audio {
           this.jumpTo = this.jumpTo.bind(this);
           this.close = this.close.bind(this);
           this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
+          this.handleTextChange = this.handleTextChange.bind(this);
+          this.showEditHeaderDialog = this.showEditHeaderDialog.bind(this);
 
         }
 
-        saveLyric(text){
+        showEditHeaderDialog(idx, heading){
+          this.indexBeingModified = idx;
+          var headingText = prompt(heading ? "Update Heading" : "Please enter heading", heading || "[]");
+          this.saveLyric(headingText)
+        }
 
+        handleTextChange(event) {
+          this.setState({text: event.target.value});
+        }
+
+        saveLyric(headingText){
+          var text = this.state.text;
           if(this.indexBeingModified>-1){
 
 
               var oldLyricObj = this.state.lyrics[this.indexBeingModified];
               var newLyricObj = $.extend({}, oldLyricObj);
-              newLyricObj.text = text;
-              newLyricObj.startTime = this.state.segmentStart;
-              newLyricObj.endTime = this.state.segmentEnd;
-              //newLyricObj.heading = heading; //todo: finish this
+              if(headingText){
+                newLyricObj.heading = heading;
+              } else {
+                newLyricObj.text = text;
+                newLyricObj.startTime = this.state.segmentStart;
+                newLyricObj.endTime = this.state.segmentEnd;
+              }
 
             KeduIje.updateLyric(oldLyricObj, newLyricObj, this.loadLyrics);
 
@@ -132,17 +148,6 @@ class Audio {
 
         }
 
-        showEditDialog(i, startTime, endTime, text){
-          //todo: merge with show
-          this.show(text);
-          this.indexBeingModified = i;
-          this.setState({
-            segmentStart: startTime,
-            segmentEnd: endTime
-          });
-
-        }
-
         handleToggleEditMode(){
 
           this.setState((prevState, props) => ({
@@ -150,7 +155,9 @@ class Audio {
           }));
         }
 
-        show(text){
+        showEditDialog(i, startTime, endTime, text){
+          this.indexBeingModified = i;
+
           var mode = "add";
           var originalText = null;
           if(text){
@@ -158,10 +165,14 @@ class Audio {
             mode = "save";
             originalText = 'original: "' + text + '"';
           }
+
           this.setState({
             displayEditor: true,
             originalText: originalText,
-            editType: mode
+            editType: mode,
+            text: text,
+            segmentStart: startTime,
+            segmentEnd: endTime
           });
         }
 
@@ -178,7 +189,8 @@ class Audio {
         loadLyrics(lyrics){
           this.setState({
             lyrics: lyrics,
-            displayEditor: false
+            displayEditor: false,
+            text: ""
           });
         }
 
@@ -251,14 +263,9 @@ class Audio {
           this.saveStartTime = false; //turn off switch
           segmentEnd = Math.floor(this.media.getCurrentTime());
           this.setState({
-            segmentEnd: segmentEnd
+            segmentEnd: segmentEnd,
+            displayEditor: true
           });
-
-          if(this.state.editMode){
-            this.setState({
-              displayEditor: true
-            });
-          }
 
         }
 
@@ -373,13 +380,22 @@ class Audio {
               close = {this.close}
               handleToggleEditMode = {this.handleToggleEditMode}
               saveLyric = {this.saveLyric}
+              value = {this.state.text}
+              handleChange = {this.handleTextChange}
               />}
           </div>;
 
           return <div className="row">
             {videoColumn}
             <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
-              <LyricDisplay lyrics={this.state.lyrics} currentTime={this.state.currentTime} editMode={this.state.editMode} jumpTo={this.jumpTo}/>
+              <LyricDisplay
+                lyrics={this.state.lyrics}
+                currentTime={this.state.currentTime}
+                editMode={this.state.editMode}
+                jumpTo={this.jumpTo}
+                showEditDialog={this.showEditDialog}
+                showEditHeaderDialog={this.showEditHeaderDialog}
+                />
             </div>
           </div>;
 

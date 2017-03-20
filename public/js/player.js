@@ -4,68 +4,7 @@ var KeduIje = (function(ki){
 var songID = null;
 
 function loadLyrics(cb){
-  $.get("/lyrics/"+songID, cb || _loadLyrics);
-}
-
-function showEditHeaderDialog(idx){
-  var headingText = prompt("Update Heading", lyrics[idx].heading);
-  saveHeading(headingText, idx);
-}
-
-function displayLyrics(html){
-
-  $('#lyricsDisplay').html(html);
-  $('#lyricsDisplay p').click(jumpTo);
-  $('#lyricsDisplay p,#lyricsDisplay h4').hover(
-    function(){
-      if(editMode)
-        $(this).find(".glyphicon").css("opacity", "1");
-    },
-    function(){
-      $(this).find(".glyphicon").css("opacity", "0");
-    }
-  );
-  $('#lyricsDisplay .add-heading-btn').hover(
-    function(){
-      if(editMode)
-        $(this).css("opacity", "1");
-    },
-    function(){
-      $(this).css("opacity", "0");
-    }
-  )
-  .click(function(){
-    if ( $(this).css('opacity')=="1" && editMode ){
-      var index = $(this).data("index");
-      var headingText = prompt("Please enter heading", "[]");
-      saveHeading(headingText, index);
-    }
-
-  });
-
-  $('#lyricsDisplay span.glyphicon-pencil').click(function(event){
-    event.stopPropagation();
-    if ( $(this).css('opacity')=="1" && editMode ){
-      var startTime = $(this).data("start-time");
-      var endTime = $(this).data("end-time");
-      var index = $(this).data("index");
-      var text = $(this).data("text");
-      var isHeader = $(this).data("is-header");
-      if(isHeader)
-        showEditHeaderDialog(index);
-      else
-        showEditDialog(index, startTime, endTime, text);
-    }
-
-  });
-
-}
-
-
-function saveHeading(headingText, idx){
-
-  updateLyric(null, idx, headingText);
-
+  $.get("/lyrics/"+songID, cb);
 }
 
 function addLyric(newLyric, cb){
@@ -79,8 +18,9 @@ function updateLyric(oldLyricObj, newLyricObj, cb){
       new: newLyricObj,
       original: oldLyricObj
     };
-//todo: postdata should be validated
-  $.post("/lyrics/"+songID+"/editline/"+lyrics[idx].id, postData, cb);
+
+  //todo: postdata should be validated
+  $.post("/lyrics/"+songID+"/editline/"+oldLyricObj.id, postData, cb);
 
 }
 
@@ -99,6 +39,11 @@ function updateLyric(oldLyricObj, newLyricObj, cb){
 /*
 
 To do:
+
+URGENT: fix edit lyric bug
+--look at http://localhost:3000/music/id/kbVhw7muUnY
+--copy of ids 6 & 7
+
 --explore integrating LyricDisplay component into MediaPlayer
 -fully integrate audio
 --new music form
