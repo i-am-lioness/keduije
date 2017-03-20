@@ -159,11 +159,6 @@ app.get('/lyrics/:videoID', function (req, res) {
 
       var lyrics = (obj&&obj.lyrics) ? obj.lyrics : [];
 
-
-      lyrics.sort(function(a, b){
-        return a.endTime-b.endTime;
-      });
-
       res.send(lyrics);
     })
   });

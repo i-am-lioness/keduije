@@ -87,7 +87,7 @@
 
         eachLyric(ly, idx){
 
-          var headerData = $.extend({forHeader: true}, ly);
+          var headerData = $.extend({forHeader: true}, ly.data);
 
 
           if(ly.heading){
@@ -108,7 +108,7 @@
                   href="#"
                   onMouseEnter={this.showBtn.bind(this, idx)}
                   onMouseLeave={this.hideBtn.bind(this)}
-                  onClick={this.handleAddHeading.bind(this, idx, ly)}
+                  onClick={this.handleAddHeading.bind(this, idx, ly.data)}
                   style={{opacity: (this.props.editMode&&(this.state.hoveredLinkIdx == idx))? 1 : 0}}
                 >
                   <span className = "glyphicon glyphicon-plus" aria-hidden="true"></span>
@@ -123,10 +123,10 @@
           return <p
                     className={pClass}
                     key={ly.key}
-                    onClick={this.jumpTo.bind(this,ly)}
+                    onClick={this.jumpTo.bind(this,ly.data)}
                     onMouseEnter={this.showIcon.bind(this, idx)}
                     >
-                      <PencilIcon onClick={this.editLyric.bind(this, ly, idx)} idx={idx}  editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
+                      <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx)} idx={idx}  editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
 
                       <span>{ly.text}</span>
                       {a}
@@ -142,19 +142,21 @@
           //console.log(this.props.lyrics);
           for(var i = 0 ; i < this.props.lyrics.length; i++){
             curr=this.props.lyrics[i];
-            forDisplay = $.extend({}, curr);
+            delete curr.key;
+            forDisplay = $.extend({data: curr}, curr);
             if(curr.heading){
-              rows.push($.extend({key: curr.id+"-h"}, curr));
+              rows.push($.extend({key: curr.id+"-h", data: curr}, curr));
               forDisplay.heading=null;
               forDisplay.hasHeading= true;
             }
             forDisplay.key=curr.id;
+
             rows.push(forDisplay);
           }
 
           var rowDisplay = rows.map(this.eachLyric);
 
-          //console.log(rowDisplay);
+          //console.log(rows);
 
           return <div id="lyricsDisplay">
           {rowDisplay}

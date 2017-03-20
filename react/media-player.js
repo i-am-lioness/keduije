@@ -205,7 +205,7 @@ class Audio {
         loadLyrics(lyrics){
 
           lyrics.sort(function(a, b){
-            return a.endTime-b.endTime;
+            return parseInt(a.startTime)-parseInt(b.startTime);
           });
 
           this.setState({
