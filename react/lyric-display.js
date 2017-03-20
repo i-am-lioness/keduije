@@ -6,6 +6,7 @@
       className="glyphicon glyphicon-pencil"
       aria-hidden="true"
       style={{opacity: (this.props.editMode&&(this.props.hoveredIdx == this.props.idx))? 1 : 0}}
+      onClick={this.props.onClick}
       ></span>;
     }
   }
@@ -66,19 +67,20 @@
           this.setState({hoveredLinkIdx: -1});
         }
 
-        editLyric (data, index){
+        editLyric (data, index, e){
+          e.stopPropagation();
           if ( (this.state.hoveredIdx == index) && this.props.editMode ){
             if(data.forHeader)
-              this.props.showEditHeaderDialog(index, data.heading);
+              this.props.showEditHeaderDialog(data);
             else
-              this.props.showEditDialog(index, data.startTime, data.endTime, data.text);
+              this.props.showEditDialog(data);
           }
 
         }
 
-        handleAddHeading(idx){//todo: merge with above
+        handleAddHeading(idx, data){//todo: merge with above
           if ( (this.state.hoveredLinkIdx==idx) && this.props.editMode ){
-            this.props.showEditHeaderDialog(idx);
+            this.props.showEditHeaderDialog(data);
           }
 
         }
@@ -106,8 +108,7 @@
                   href="#"
                   onMouseEnter={this.showBtn.bind(this, idx)}
                   onMouseLeave={this.hideBtn.bind(this)}
-                  onClick={this.handleAddHeading.bind(this,idx)}
-                  data-index={idx}
+                  onClick={this.handleAddHeading.bind(this, idx, ly)}
                   style={{opacity: (this.props.editMode&&(this.state.hoveredLinkIdx == idx))? 1 : 0}}
                 >
                   <span className = "glyphicon glyphicon-plus" aria-hidden="true"></span>
@@ -122,9 +123,6 @@
           return <p
                     className={pClass}
                     key={ly.key}
-                    data-start-time={ly.startTime}
-                    data-end-time={ly.endTime}
-                    data-index={idx}
                     onClick={this.jumpTo.bind(this,ly)}
                     onMouseEnter={this.showIcon.bind(this, idx)}
                     >

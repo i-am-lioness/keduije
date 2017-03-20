@@ -44,15 +44,12 @@ var KeduIje = (function(ki){
 
 To do:
 
-URGENT: fix edit lyric bug
---look at http://localhost:3000/music/id/kbVhw7muUnY
---copy of ids 6 & 7
-
 -fully integrate audio
 --make smoother highlting flow
 --new music form
 --re-design data schema
 ---remove "isHeading" field from lyrics
+---make sure appropriate values are stored as integers
 
 
 

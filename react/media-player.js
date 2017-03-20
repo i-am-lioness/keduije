@@ -97,7 +97,7 @@ class Audio {
           this.saveStartTime=false; //accounts for "jumping" around, rename to "holdStartTime"
           this.timeMarksFrozen = false; //todo: make sure to unfreeze
           this.timer;
-          this.indexBeingModified = -1;
+          this.indexBeingModified = null;
 
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
           this.onPlayerReady = this.onPlayerReady.bind(this);
@@ -124,9 +124,9 @@ class Audio {
 
         }
 
-        showEditHeaderDialog(idx, heading){
-          this.indexBeingModified = idx;
-          var headingText = prompt(heading ? "Update Heading" : "Please enter heading", heading || "[]");
+        showEditHeaderDialog(data){
+          this.indexBeingModified = data;
+          var headingText = prompt(data.heading ? "Update Heading" : "Please enter heading", data.heading || "[]");
           this.saveLyric(headingText)
         }
 
@@ -135,16 +135,14 @@ class Audio {
         }
 
         saveLyric(headingText){
-          var text = this.state.text;
-          if(this.indexBeingModified>-1){
+          if(this.indexBeingModified){
 
-
-              var oldLyricObj = this.state.lyrics[this.indexBeingModified];
+              var oldLyricObj = this.indexBeingModified;
               var newLyricObj = $.extend({}, oldLyricObj);
               if(headingText){
-                newLyricObj.heading = heading;
+                newLyricObj.heading = headingText;
               } else {
-                newLyricObj.text = text;
+                newLyricObj.text = this.state.text;
                 newLyricObj.startTime = this.state.segmentStart;
                 newLyricObj.endTime = this.state.segmentEnd;
               }
@@ -153,7 +151,7 @@ class Audio {
 
           }else {
             var newLyric = {
-              text: text,
+              text: this.state.text,
               endTime: this.state.segmentEnd,
               deleted: false,
               id: this.state.lyrics.length,
@@ -162,7 +160,7 @@ class Audio {
             };
             KeduIje.addLyric(newLyric, this.loadLyrics);
           }
-          this.indexBeingModified = -1;
+          this.indexBeingModified = false;
 
         }
 
@@ -173,24 +171,24 @@ class Audio {
           }));
         }
 
-        showEditDialog(i, startTime, endTime, text){
-          this.indexBeingModified = i;
+        showEditDialog(data){
+          this.indexBeingModified = data;
 
           var mode = "add";
           var originalText = null;
-          if(text){
+          if(data.text){
             this.timeMarksFrozen = true;
             mode = "save";
-            originalText = 'original: "' + text + '"';
+            originalText = 'original: "' + data.text + '"';
           }
 
           this.setState({
             displayEditor: true,
             originalText: originalText,
             editType: mode,
-            text: text,
-            segmentStart: startTime,
-            segmentEnd: endTime
+            text: data.text,
+            segmentStart: parseInt(data.startTime),
+            segmentEnd: parseInt(data.endTime)
           });
         }
 
@@ -205,6 +203,11 @@ class Audio {
         }
 
         loadLyrics(lyrics){
+
+          lyrics.sort(function(a, b){
+            return a.endTime-b.endTime;
+          });
+
           this.setState({
             lyrics: lyrics,
             displayEditor: false,

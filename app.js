@@ -292,7 +292,7 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
      null,
      { $set: { "lyrics.$" : obj }
       },
-      true,
+      {new: true},
      function(err, result) {
        console.log("err", err);
        console.log("result of update", result);
