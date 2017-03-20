@@ -116,7 +116,7 @@
                 </a>
           }
 
-          if(!this.props.editMode && (ly.startTime<=this.props.currentTime)&&(this.props.currentTime<=ly.endTime)){
+          if(!this.props.editMode && (ly.startTime<=this.props.currentTime)&&(this.props.currentTime<=ly.displayEndTime)){
             pClass +=(" current");
           }
 
@@ -150,6 +150,7 @@
               forDisplay.hasHeading= true;
             }
             forDisplay.key=curr.id;
+            if(this.props.lyrics[i+1]) forDisplay.displayEndTime = this.props.lyrics[i+1].startTime;
 
             rows.push(forDisplay);
           }
