@@ -4,6 +4,9 @@ class MediaControls extends React.Component {
     this.followMouse = this.followMouse.bind(this);
     this.clearGuide = this.clearGuide.bind(this);
     this.seekTo = this.seekTo.bind(this);
+    this.handleTogglePlay = this.handleTogglePlay.bind(this);
+
+    this.state = {paused: true};
   }
 
   followMouse(e){
@@ -28,14 +31,24 @@ class MediaControls extends React.Component {
 
   }
 
+  handleTogglePlay(){
+    if(this.state.paused){
+      this.props.onPlay();
+    }else{
+      this.props.onPause();
+    }
+    this.setState((prevState, props) => ({
+      paused: !prevState.paused
+    }));
+  }
+
   render(){
 
-    return           <div className="controls">
-                <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.props.onPlay}>
-                  <span className="glyphicon glyphicon-play" aria-hidden="true"></span>
-                </button>
-                <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.props.onPause}>
-                  <span className="glyphicon glyphicon-pause" aria-hidden="true"></span>
+    var icon = this.state.paused? "play" : "pause";
+
+    return  <div className="controls">
+                <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.handleTogglePlay}>
+                  <span className={"glyphicon glyphicon-" + icon} aria-hidden="true"></span>
                 </button>
                 <div className="seeking btn btn-default" onMouseMove={this.followMouse} onMouseLeave={this.clearGuide}>
                   <div className="seeking-bar" ref={(element) => {this.seekerBar = element}} onClick={this.seekTo} >

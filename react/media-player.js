@@ -215,7 +215,9 @@ class Audio {
         }
 
         seekTo(percentage){
-          this.media.seekTo(percentage * this.maxTime);
+          var time = percentage * this.maxTime;
+          this.setState({currentTime: time});
+          this.media.seekTo(time);
         }
 
         onTimeout(){
