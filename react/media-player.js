@@ -36,10 +36,6 @@ class Media { //todo: combine both classes
     this.video.seekTo(pos, buffer);
   }
 
-  isPlaying(){
-    return (this.video.getPlayerState()==YT.PlayerState.PLAYING);
-  }
-
   getDuration(){
     return this.video.getDuration();
   }
@@ -68,10 +64,6 @@ class Audio {
     this.audio.currentTime = pos;
   }
 
-  isPlaying(){
-    return (!this.audio.paused);
-  }
-
   getDuration(){
     return this.audio.duration;
   }
@@ -98,12 +90,11 @@ class Audio {
           this.timeMarksFrozen = false; //todo: make sure to unfreeze
           this.timer;
           this.indexBeingModified = null;
+          this.stopAtSegmentEnd = false;
 
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
           this.onPlayerReady = this.onPlayerReady.bind(this);
           this.playSegment = this.playSegment.bind(this);
-          this.checkForSegmentEnd = this.checkForSegmentEnd.bind(this);
-          this.isPlaying = this.isPlaying.bind(this);
           this.getCurrentTime = this.getCurrentTime.bind(this);
           this.incrementTime = this.incrementTime.bind(this);
           this.decrementTime = this.decrementTime.bind(this);
@@ -198,7 +189,8 @@ class Audio {
           this.setState({
             displayEditor: false,
             originalText: null,
-            editType: "add"
+            editType: "add",
+            text: null
           });
 
           this.timeMarksFrozen = false;
@@ -230,7 +222,7 @@ class Audio {
           var relativePosition = e.pageX - seekerOffset;
           var percentage = relativePosition/($(this.seekerBar).width());
 
-          var time = percentage * this.media.getDuration();
+          var time = percentage * this.maxTime;
           console.log(time);
           this.media.seekTo(time);
 
@@ -254,11 +246,15 @@ class Audio {
           var currentTime = this.media.getCurrentTime();
           this.setState({currentTime: currentTime});
 
-          var percentage = 100 * currentTime/this.media.getDuration();
+          var percentage = 100 * currentTime/this.maxTime;
           $(this.seeker).css("width",percentage +"%"); //todo: change
 
-          if(this.media.isPlaying())
-            this.timer = setTimeout(this.onTimeout,1000);
+          //stop if playing a segment
+          if(this.stopAtSegmentEnd && (currentTime > this.state.segmentEnd)){
+            this.media.pause();
+            this.stopAtSegmentEnd = false;
+          }
+
         }
 
         onYouTubeIframeAPIReady() {
@@ -283,7 +279,7 @@ class Audio {
         }
 
         handlePaused(){
-          clearTimeout(this.timer);
+          clearInterval(this.timer);
           if(this.timeMarksFrozen) return; //revisit
 
           var segmentStart= this.state.segmentStart;
@@ -305,38 +301,25 @@ class Audio {
         }
 
         handleResume(){
-          this.timer = setTimeout(this.onTimeout,1000);
+          this.timer = setInterval(this.onTimeout,1000);
         }
 
         jumpTo(start, end){
 
           this.setState({
             segmentStart: start,
-            segmentEnd: this.state.editMode ? end : -1
+            segmentEnd: end
           }, this.playSegment);
 
         }
 
-        playSegment(){
+        playSegment(stopAtSegmentEnd){
           this.media.seekTo(this.state.segmentStart,true);
           this.media.play();
           this.saveStartTime = true;
-          if(this.state.segmentEnd>-1)
-            setTimeout(this.checkForSegmentEnd,1000);
+          this.stopAtSegmentEnd = stopAtSegmentEnd;
         }
 
-        checkForSegmentEnd(){
-          var currentTime = this.media.getCurrentTime();
-          if (currentTime > this.state.segmentEnd){
-            this.media.pause();
-          }else {
-            setTimeout(this.checkForSegmentEnd, 1000);
-          }
-        }
-
-        isPlaying(){
-          return (this.media.isPlaying());
-        }
         getCurrentTime(){
           var currentTime = this.media.getCurrentTime(); //extract method
           return currentTime;
@@ -400,7 +383,7 @@ class Audio {
               incrementTime={this.incrementTime}
               decrementTime={this.decrementTime}
               percentage={percentage || 0}
-              playLyric = {this.playSegment}
+              playLyric = {this.playSegment.bind(this, true)}
               displayed = {this.state.displayEditor}
               originalText = {this.state.originalText}
               editMode = {this.state.editMode}
