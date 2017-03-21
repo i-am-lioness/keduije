@@ -80,8 +80,13 @@
   width: 100%;
   z-index: 1000;
   position: fixed;
-  top: 60px;
+  top: 51px;
   background: #5D41AE;
+}
+@media (min-width: 768px) {
+.controls {
+    top: 61px;
+  }
 }
 
   .controls button {
@@ -94,6 +99,10 @@
     margin: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.50);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.50)
+  }
+
+  .controls button:focus {
+    outline: none;
   }
 
   .controls .seeking {

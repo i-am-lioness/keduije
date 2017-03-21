@@ -355,12 +355,13 @@ class Audio {
           </div>;
 
           return <div>
-            <MediaControls
-              onPlay={this.play}
-              onPause={this.pause}
-              onSeekTo={this.seekTo}
-              percentage={percentage}
-            />
+            <div className="controls row">
+              <MediaControls
+                onPlay={this.play}
+                onPause={this.pause}
+              />
+              <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
+            </div>
           <div className="row">
               {videoColumn}
               <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
