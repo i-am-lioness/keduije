@@ -121,6 +121,8 @@ class Audio {
           this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
           this.handleTextChange = this.handleTextChange.bind(this);
           this.showEditHeaderDialog = this.showEditHeaderDialog.bind(this);
+          this.followMouse = this.followMouse.bind(this);
+          this.clearGuide = this.clearGuide.bind(this);
 
         }
 
@@ -224,10 +226,9 @@ class Audio {
         }
 
         seekTo(e){
-          var seeker = $(e.target);
-          var barPosition = seeker.offset().left;
-          var relativePosition = e.pageX - barPosition;
-          var percentage = relativePosition/(seeker.width());
+          var seekerOffset = $(this.seekerBar).offset().left;
+          var relativePosition = e.pageX - seekerOffset;
+          var percentage = relativePosition/($(this.seekerBar).width());
 
           var time = percentage * this.media.getDuration();
           console.log(time);
@@ -235,12 +236,26 @@ class Audio {
 
         }
 
+
+        followMouse(e){
+
+            var seekerOffset = $(this.seekerBar).offset().left;
+            var relativePosition = e.pageX - seekerOffset;
+
+            $(".seeking-bar-guide").css("width", relativePosition);
+
+        }
+
+        clearGuide(){
+          $(".seeking-bar-guide").css("width", 0);
+        }
+
         onTimeout(){
           var currentTime = this.media.getCurrentTime();
           this.setState({currentTime: currentTime});
 
           var percentage = 100 * currentTime/this.media.getDuration();
-          $(this.refs.seeker).css("width",percentage +"%");
+          $(this.seeker).css("width",percentage +"%"); //todo: change
 
           if(this.media.isPlaying())
             this.timer = setTimeout(this.onTimeout,1000);
@@ -370,9 +385,10 @@ class Audio {
             <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.pause}>
               <span className="glyphicon glyphicon-pause" aria-hidden="true"></span>
             </button>
-            <div className="seeking btn btn-default">
-              <div className="seeking-bar" onClick={this.seekTo}>
-                <div className="seeking-bar-meter" ref="seeker"></div>
+            <div className="seeking btn btn-default" onMouseMove={this.followMouse} onMouseLeave={this.clearGuide}>
+              <div className="seeking-bar" ref={(element) => {this.seekerBar = element}} onClick={this.seekTo} >
+                <div className="seeking-bar-guide"></div>
+                <div className="seeking-bar-meter" ref={(element) => {this.seeker = element}}></div>
               </div>
             </div>
           </div>

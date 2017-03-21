@@ -95,6 +95,7 @@
       margin: 5px;
       height: 10px;
       cursor: pointer;
+      position: relative;
     }
 
       #video-column .controls .seeking .seeking-bar .seeking-bar-meter{
@@ -103,4 +104,16 @@
         width: 0%;
         background: #5D41AE;
         height: 100%;
+        opacity: .80;
+      }
+
+      #video-column .controls .seeking .seeking-bar .seeking-bar-guide{
+        margin: 0;
+        padding: 0;
+        width: 0;
+        background: #5D41AE;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        opacity: .5;
       }
