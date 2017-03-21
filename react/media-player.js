@@ -95,7 +95,6 @@ class Audio {
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
           this.onPlayerReady = this.onPlayerReady.bind(this);
           this.playSegment = this.playSegment.bind(this);
-          this.getCurrentTime = this.getCurrentTime.bind(this);
           this.incrementTime = this.incrementTime.bind(this);
           this.decrementTime = this.decrementTime.bind(this);
           this.play = this.play.bind(this);
@@ -112,8 +111,6 @@ class Audio {
           this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
           this.handleTextChange = this.handleTextChange.bind(this);
           this.showEditHeaderDialog = this.showEditHeaderDialog.bind(this);
-          this.followMouse = this.followMouse.bind(this);
-          this.clearGuide = this.clearGuide.bind(this);
 
         }
 
@@ -217,37 +214,13 @@ class Audio {
           this.media.pause();
         }
 
-        seekTo(e){
-          var seekerOffset = $(this.seekerBar).offset().left;
-          var relativePosition = e.pageX - seekerOffset;
-          var percentage = relativePosition/($(this.seekerBar).width());
-
-          var time = percentage * this.maxTime;
-          console.log(time);
-          this.media.seekTo(time);
-
-        }
-
-
-        followMouse(e){
-
-            var seekerOffset = $(this.seekerBar).offset().left;
-            var relativePosition = e.pageX - seekerOffset;
-
-            $(".seeking-bar-guide").css("width", relativePosition);
-
-        }
-
-        clearGuide(){
-          $(".seeking-bar-guide").css("width", 0);
+        seekTo(percentage){
+          this.media.seekTo(percentage * this.maxTime);
         }
 
         onTimeout(){
           var currentTime = this.media.getCurrentTime();
           this.setState({currentTime: currentTime});
-
-          var percentage = 100 * currentTime/this.maxTime;
-          $(this.seeker).css("width",percentage +"%"); //todo: change
 
           //stop if playing a segment
           if(this.stopAtSegmentEnd && (currentTime > this.state.segmentEnd)){
@@ -320,11 +293,6 @@ class Audio {
           this.stopAtSegmentEnd = stopAtSegmentEnd;
         }
 
-        getCurrentTime(){
-          var currentTime = this.media.getCurrentTime(); //extract method
-          return currentTime;
-        }
-
         decrementTime(variableName){
           if(this.state[variableName]>0){
             this.setState((prevState, props) => {
@@ -346,7 +314,7 @@ class Audio {
         }
 
         render () {
-          var percentage=this.state.segmentEnd/this.maxTime;
+          var percentage=this.state.currentTime/this.maxTime;
           var mediaElement;
 
           if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
@@ -361,20 +329,13 @@ class Audio {
           <div className='embed-responsive embed-responsive-4by3'>
             {mediaElement}
           </div>
-          <div className="controls">
-            <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.play}>
-              <span className="glyphicon glyphicon-play" aria-hidden="true"></span>
-            </button>
-            <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.pause}>
-              <span className="glyphicon glyphicon-pause" aria-hidden="true"></span>
-            </button>
-            <div className="seeking btn btn-default" onMouseMove={this.followMouse} onMouseLeave={this.clearGuide}>
-              <div className="seeking-bar" ref={(element) => {this.seekerBar = element}} onClick={this.seekTo} >
-                <div className="seeking-bar-guide"></div>
-                <div className="seeking-bar-meter" ref={(element) => {this.seeker = element}}></div>
-              </div>
-            </div>
-          </div>
+          <MediaControls
+            onPlay={this.play}
+            onPause={this.pause}
+            onSeekTo={this.seekTo}
+            percentage={percentage}
+            />
+
           {this.props.canEdit &&
             <LyricEditor
               ref={this.props.registerEditor}
