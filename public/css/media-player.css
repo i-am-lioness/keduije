@@ -5,7 +5,7 @@
 #video-column{
    position: fixed;
    padding: 0;
-   top: 60px;
+   top: 150px;
 }
 
 #lyric-column{
@@ -16,7 +16,7 @@
 
 
 #lyricsDisplay {
-  padding-top: 100px;
+  padding-top: 150px;
   color: #dcd9d9;
   background: rgba(0, 0, 0, 0.8);
 }
@@ -76,44 +76,58 @@
     weight: bold;
   }
 
-#video-column .controls button {
-  float: left;
+.controls {
+  width: 100%;
+  z-index: 1000;
+  position: fixed;
+  top: 60px;
+  background: #5D41AE;
 }
 
-  #video-column .controls .seeking {
+  .controls button {
+    /*float: left; */
+    height: 45px;
+    width: 45px;
+    border-radius: 50%;
+    border: white 2px solid;
+    background: none;
+    margin: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.50);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.50)
+  }
+
+  .controls .seeking {
     overflow: auto;
     display: block;
-    padding: 6px 6px;
-
-    border: 1px solid transparent;
-    border-radius: 4px;
+    /*padding: 6px 6px;*/
     background: White;
   }
 
-    #video-column .controls .seeking .seeking-bar{
+    .controls .seeking .seeking-bar{
       background: #f5f5f5;
-      margin: 5px;
+      /*margin: 5px;*/
       height: 10px;
       cursor: pointer;
       position: relative;
     }
 
-      #video-column .controls .seeking .seeking-bar .seeking-bar-meter{
+      .controls .seeking .seeking-bar .seeking-bar-meter{
         margin: 0;
         padding: 0;
         width: 0%;
         background: #5D41AE;
         height: 100%;
-        opacity: .80;
+        opacity: .7;
       }
 
-      #video-column .controls .seeking .seeking-bar .seeking-bar-guide{
+      .controls .seeking .seeking-bar .seeking-bar-guide{
         margin: 0;
         padding: 0;
         width: 0;
         background: #5D41AE;
+        /*background: #B8E986;*/
         height: 100%;
         position: absolute;
         top: 0;
-        opacity: .5;
+        opacity: 0.5;
       }

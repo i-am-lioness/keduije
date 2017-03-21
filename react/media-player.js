@@ -331,12 +331,7 @@ class Audio {
           <div className='embed-responsive embed-responsive-4by3'>
             {mediaElement}
           </div>
-          <MediaControls
-            onPlay={this.play}
-            onPause={this.pause}
-            onSeekTo={this.seekTo}
-            percentage={percentage}
-            />
+
 
           {this.props.canEdit &&
             <LyricEditor
@@ -359,19 +354,28 @@ class Audio {
               />}
           </div>;
 
-          return <div className="row">
-            {videoColumn}
-            <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
-              <LyricDisplay
-                lyrics={this.state.lyrics}
-                currentTime={this.state.currentTime}
-                editMode={this.state.editMode}
-                jumpTo={this.jumpTo}
-                showEditDialog={this.showEditDialog}
-                showEditHeaderDialog={this.showEditHeaderDialog}
-                />
+          return <div>
+            <MediaControls
+              onPlay={this.play}
+              onPause={this.pause}
+              onSeekTo={this.seekTo}
+              percentage={percentage}
+            />
+          <div className="row">
+              {videoColumn}
+              <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
+                <LyricDisplay
+                  lyrics={this.state.lyrics}
+                  currentTime={this.state.currentTime}
+                  editMode={this.state.editMode}
+                  jumpTo={this.jumpTo}
+                  showEditDialog={this.showEditDialog}
+                  showEditHeaderDialog={this.showEditHeaderDialog}
+                  />
+              </div>
             </div>
-          </div>;
+
+            </div>;
 
         }
       }

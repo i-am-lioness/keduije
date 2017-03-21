@@ -46,11 +46,11 @@ class MediaControls extends React.Component {
 
     var icon = this.state.paused? "play" : "pause";
 
-    return  <div className="controls">
-                <button type="button" className="btn btn-default" aria-label="Left Align" onClick={this.handleTogglePlay}>
+    return  <div className="controls row">
+                <button type="button" className="button" aria-label="Left Align" onClick={this.handleTogglePlay}>
                   <span className={"glyphicon glyphicon-" + icon} aria-hidden="true"></span>
                 </button>
-                <div className="seeking btn btn-default" onMouseMove={this.followMouse} onMouseLeave={this.clearGuide}>
+                <div className="seeking" onMouseMove={this.followMouse} onMouseLeave={this.clearGuide}>
                   <div className="seeking-bar" ref={(element) => {this.seekerBar = element}} onClick={this.seekTo} >
                     <div className="seeking-bar-guide"></div>
                     <div className="seeking-bar-meter" ref={(element) => {this.seeker = element}} style={{width: 100 * this.props.percentage + "%"}}></div>
