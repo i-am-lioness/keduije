@@ -87,12 +87,9 @@
             </h4>;
           }
 
-          var pClass = "";
+          var pClass = "lyric-line";
           var a = null;
-          if(ly.hasHeading){
-            pClass +=(" has-heading");
-
-          }else{
+          if(!ly.hasHeading){
             a = <a
                   className = "add-heading-btn"
                   href="#"
@@ -110,17 +107,18 @@
             pClass +=(" current");
           }
 
-          return <p
+          return <div
                     className={pClass}
                     key={ly.key}
                     onClick={this.jumpTo.bind(this,ly.data)}
                     onMouseEnter={this.showIcon.bind(this, idx)}
                     >
-                      <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, false)} idx={idx}  editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
-
-                      <span>{ly.text}</span>
                       {a}
-                    </p>;
+                      <p>
+                        <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, false)} idx={idx}  editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
+                        {ly.text}
+                      </p>
+                    </div>;
 
         }
 

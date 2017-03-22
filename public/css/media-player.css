@@ -14,38 +14,36 @@
    background-attachment: fixed;
 }
 
-
 #lyricsDisplay {
   padding-top: 150px;
   color: #dcd9d9;
   background: rgba(0, 0, 0, 0.8);
 }
 
-  #lyricsDisplay p {
-    padding: 1em 0.5em .1em;
+  #lyricsDisplay .lyric-line {
     cursor: pointer;
-  /*  white-space: nowrap; */
     font-size: 18px;
     margin: 0;
-    position: relative;
   }
 
-  #lyricsDisplay p:hover {
+  #lyricsDisplay .lyric-line:hover {
       background-color: rgba(93, 65, 174, 0.75);
     }
 
-      #lyricsDisplay p.has-heading {
-        padding-top: 0px;
-
-      }
+  #lyricsDisplay h4, #lyricsDisplay .lyric-line p {
+    padding-left: 25px;
+    position: relative;
+  }
 
   #lyricsDisplay h4 {
     margin-top: 1.4em;
-    padding-left: 0.5em;
   }
 
+    #lyricsDisplay .lyric-line p{
+      margin: 0;
+    }
+
   #lyricsDisplay .current {
-    color: black;
       color: #7ED321;
   }
 
@@ -54,10 +52,11 @@
     color: white;
     margin-right: 5px;
     cursor: pointer;
+    position: absolute;
+    left: 2px;
   }
 
   #lyricsDisplay .add-heading-btn{
-    position: absolute;
     top: 2px;
     font-size: 0.6em;
     opacity: 0;
@@ -66,6 +65,8 @@
     left: 0;
     text-align: center;
     text-decoration: none !important;
+    display: block;
+    padding: 0.4em;
   }
 
 
