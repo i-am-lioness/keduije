@@ -23,7 +23,7 @@
           this.eachLyric = this.eachLyric.bind(this);
           this.scrollIfOutOfView = this.scrollIfOutOfView.bind(this);
           this.jumpTo = this.jumpTo.bind(this);
-          this.showIcon = this.showIcon.bind(this);
+          this.hoverStart = this.hoverStart.bind(this);
           this.editLyric = this.editLyric.bind(this);
         }
 
@@ -47,7 +47,7 @@
         }
 
         jumpTo(data, e){
-
+          e.preventDefault();
           var currentLine = e.currentTarget;
           var currentLineStartTime = parseInt(data.startTime);
           var currentLineEndTime = parseInt(data.endTime);
@@ -57,7 +57,7 @@
 
         }
 
-        showIcon(idx){
+        hoverStart(idx, e){
           this.setState({hoveredIdx: idx});
         }
         showBtn(idx){
@@ -81,7 +81,7 @@
         eachLyric(ly, idx){
 
           if(ly.heading){
-            return <h4 key={ly.key} onMouseEnter={this.showIcon.bind(this, idx)}>
+            return <h4 key={ly.key} onMouseEnter={this.hoverStart.bind(this, idx)}>
               <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, true)} idx={idx} editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
               {ly.heading}
             </h4>;
@@ -107,11 +107,18 @@
             pClass +=(" current");
           }
 
+          if(this.state.hoveredIdx == idx){
+            pClass +=(" hovered");
+          }
+
+          var onClickorTouch=this.jumpTo.bind(this,ly.data);
+
           return <div
                     className={pClass}
                     key={ly.key}
-                    onClick={this.jumpTo.bind(this,ly.data)}
-                    onMouseEnter={this.showIcon.bind(this, idx)}
+                    onClick={onClickorTouch}
+                    onMouseEnter={this.hoverStart.bind(this, idx)}
+                    onTouchEnd={onClickorTouch}
                     >
                       {a}
                       <p>

@@ -26,12 +26,12 @@
     margin: 0;
   }
 
-  #lyricsDisplay .lyric-line:hover {
+  #lyricsDisplay .lyric-line.hovered {
       background-color: rgba(93, 65, 174, 0.75);
     }
 
   #lyricsDisplay h4, #lyricsDisplay .lyric-line p {
-    padding-left: 25px;
+    padding-left: 30px;
     position: relative;
   }
 
@@ -50,10 +50,10 @@
   #lyricsDisplay .glyphicon-pencil{
     opacity: 0;
     color: white;
-    margin-right: 5px;
     cursor: pointer;
     position: absolute;
-    left: 2px;
+    left: 8px;
+    top: 5px;
   }
 
   #lyricsDisplay .add-heading-btn{
