@@ -24,7 +24,7 @@
   #lyricsDisplay p {
     padding: 1em 0.5em .1em;
     cursor: pointer;
-    white-space: nowrap;
+  /*  white-space: nowrap; */
     font-size: 18px;
     margin: 0;
     position: relative;
@@ -80,17 +80,16 @@
   width: 100%;
   z-index: 1000;
   position: fixed;
-  top: 51px;
+  bottom: 0;
   background: #5D41AE;
 }
 @media (min-width: 768px) {
 .controls {
-    top: 61px;
+
   }
 }
 
   .controls button {
-    /*float: left; */
     height: 45px;
     width: 45px;
     border-radius: 50%;
@@ -98,7 +97,8 @@
     background: none;
     margin: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.50);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.50)
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.50);
+    font-size: 20px;
   }
 
   .controls button:focus {

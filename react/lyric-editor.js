@@ -83,7 +83,7 @@
           </svg></form>;
 
           return <div>
-          <button id="edit-mode-btn" type="button" className="btn btn-default btn-lg" onClick={this.props.handleToggleEditMode}>{editSwitchText}</button>
+
           {this.props.editMode && dialog}
           </div>;
 

@@ -347,7 +347,6 @@ class Audio {
               editMode = {this.state.editMode}
               mode = {this.state.editType}
               close = {this.close}
-              handleToggleEditMode = {this.handleToggleEditMode}
               saveLyric = {this.saveLyric}
               value = {this.state.text}
               handleChange = {this.handleTextChange}
@@ -356,11 +355,15 @@ class Audio {
 
           return <div>
             <div className="controls row">
+              <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
               <MediaControls
                 onPlay={this.play}
                 onPause={this.pause}
               />
-              <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
+              {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
+                <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span>
+              </button>}
+
             </div>
           <div className="row">
               {videoColumn}

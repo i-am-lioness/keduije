@@ -175,7 +175,7 @@ app.get('/music/:title', function (req, res) {
       //do better
       var src = song.videoID ? 'http://www.youtube.com/embed/' + song.videoID
         +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://'
-         + req.headers.host + '&playsinline=1&rel=0' : song.url;
+         + req.headers.host + '&playsinline=1&rel=0&controls=0' : song.url;
 
       var data = {
         title: song.title + " | " + res.locals.title,
@@ -306,9 +306,6 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
       },
       {new: true},
      function(err, result) {
-       console.log("err", err);
-       console.log("result of update", result);
-       console.log("actual value", result.value);
        res.send(result.value.lyrics); //todo: error checking
      }
   );
