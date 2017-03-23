@@ -1,4 +1,11 @@
 
+$.get("/horizontal", function(html){
+
+  $("#horizontal-slider").html(html);
+
+})
+
+
 $.get("/carousel", function(html){
 
   $("#main-carousel").html(html);

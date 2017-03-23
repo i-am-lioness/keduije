@@ -80,8 +80,8 @@
 .controls {
   width: 100%;
   z-index: 1000;
-  position: fixed;
-  bottom: 0;
+  position: sticky;
+  top: 0px;
   background: #5D41AE;
 }
 @media (min-width: 768px) {

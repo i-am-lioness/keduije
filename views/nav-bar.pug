@@ -2,26 +2,21 @@ nav.navbar.navbar-default
   .container-fluid
     .navbar-header
       a.navbar-brand(href='/')
-        | Kedu
-        span Ije
+        | Kezie
     #navbar.navbar-collapse.collapse
-      form.navbar-form.navbar-left
-        span.glyphicon.glyphicon-search(aria-hidden='true')
-        |
-        input.form-control(type='text', placeholder='Search Artists, Lyrics, and more...')
       ul.nav.navbar-nav.navbar-right
         if user
-          li
-            a.user(href="#")
+          li.dropdown
+            a#userDropdown.user(href="#",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false")
               div.user-avatar(style="background-image: url(" + user.photo + ");")
               span=user.displayName
-          li
-            a(href="/logout") Logout
+              span.glyphicon.glyphicon-menu-down(aria-hidden="true")
+            ul.dropdown-menu(aria-labelledby="userDropdown")
+              li
+                a(href="/logout") Logout
         else
           li
-            a(href="#loginModal",data-toggle="modal") Sign In
-          li
-            a(href="#about") Sign Up
+            a(href="#loginModal",data-toggle="modal") Login
         li
           a.accent(href="/new_music") Add Lyrics
 #loginModal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="myModalLabel")

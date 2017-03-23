@@ -2,6 +2,23 @@ doctype html
 html(lang='en')
   head
     include head.pug
+    style.
+      #horizontal-slider-container {
+        overflow-x:scroll;
+        height:200px;
+      }
+      #horizontal-slider {
+        width: 10000px;
+      }
+      #horizontal-slider > div {
+        width: 200px;
+        display: inline-block;
+      }
+      a.thumbnail {
+        height: 200px;
+        background: none;
+        margin: 5px;
+      }
   script(async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js")
   script.
     (adsbygoogle = window.adsbygoogle || []).push({
@@ -12,9 +29,12 @@ html(lang='en')
     include nav-bar.pug
     .container-fluid
       .row
+        .col-md-8.col-xs-12
+          #horizontal-slider-container
+            #horizontal-slider
+      .row
         .col-md-8.col-md-offset-2
           #main-carousel.carousel.slide(data-ride="carousel")
-      footer.footer
-        p &copy; 2017 KeduIje, Inc.
+    include footer.pug
     script(src='/js/ie10-viewport-bug-workaround.js')
     script(src='/js/home.js')

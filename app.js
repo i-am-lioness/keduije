@@ -208,6 +208,14 @@ app.get('/carousel', function (req, res) {
   });
 });
 
+
+app.get('/horizontal', function (req, res) {
+
+  database.collection('lyrics').find({},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
+    res.render("horizontal-slider",{videos: videos});
+  });
+});
+
 app.get('/videos/all', function (req, res) {
 
   database.collection('lyrics').find({},{videoID: 1}).toArray(function(err, results) {

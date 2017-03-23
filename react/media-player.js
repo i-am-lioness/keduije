@@ -354,20 +354,21 @@ class Audio {
           </div>;
 
           return <div>
-            <div className="controls row">
-              <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
-              <MediaControls
-                onPlay={this.play}
-                onPause={this.pause}
-              />
-              {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
-                <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span>
-              </button>}
 
-            </div>
           <div className="row">
               {videoColumn}
               <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
+              <div className="controls">
+                <MediaControls
+                  onPlay={this.play}
+                  onPause={this.pause}
+                />
+                {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
+                  <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span>
+                </button>}
+
+                <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
+              </div>
                 <LyricDisplay
                   lyrics={this.state.lyrics}
                   currentTime={this.state.currentTime}
