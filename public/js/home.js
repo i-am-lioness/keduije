@@ -1,12 +1,12 @@
 
-$.get("/horizontal", function(html){
+$.get("/api/list/audio", function(html){
 
   $("#horizontal-slider").html(html);
 
 })
 
 
-$.get("/carousel", function(html){
+$.get("/api/carousel", function(html){
 
   $("#main-carousel").html(html);
 

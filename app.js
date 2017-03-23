@@ -7,13 +7,13 @@ const bodyParser= require('body-parser');
 var cors = require('cors')
 var path = require('path');
 var passport = require('passport');
-var Strategy = require('passport-facebook').Strategy;
+var FacebookStrategy = require('passport-facebook').Strategy;
 var LocalStrategy = require('passport-local').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var ObjectId = require('mongodb').ObjectId;
 
-var database;
+var db;
 
 var twCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/twitter/return'
@@ -24,7 +24,7 @@ var fbCallbackURL = process.env.DEV ?
   : 'http://keduije1.herokuapp.com/login/facebook/return';
 
 function getTwitterUser(twitterProfile, cb){
-  database.collection('users').findAndModify(
+  db.collection('users').findAndModify(
     { twitterID: twitterProfile.id } ,
     { twitterID: -1 },
     { $setOnInsert:
@@ -46,7 +46,7 @@ function getTwitterUser(twitterProfile, cb){
 }
 
 function getFacebookUser(facebookProfile, cb){
-  database.collection('users').findAndModify(
+  db.collection('users').findAndModify(
      { facebookID: facebookProfile.id } ,
      { facebookID: -1 },
      { $setOnInsert: { facebookID: facebookProfile.id,
@@ -66,14 +66,14 @@ function getFacebookUser(facebookProfile, cb){
 }
 
 function getUser(userID, cb){
-  database.collection('users').findOne(
+  db.collection('users').findOne(
     { _id: new ObjectId(userID) },
     function (err, result){
       cb(err,result);
     });
 }
 
-passport.use(new Strategy({
+passport.use(new FacebookStrategy({
     clientID: process.env.FB_CLIENT_ID,
     clientSecret: process.env.FB_CLIENT_SECRET,
     callbackURL: fbCallbackURL
@@ -88,7 +88,7 @@ passport.use(new LocalStrategy(
     console.log("local strategy");
     console.log("username", username);
     if(username=="yc"){
-      database.collection('users').findAndModify(
+      db.collection('users').findAndModify(
          { username: "yc" } , null,
          {
            $set: {
@@ -207,9 +207,9 @@ function requireRole(role) {
 }
 
 app.get(
-  '/lyrics/:songID',
+  '/api/lyrics/:songID',
   function (req, res) {
-    database.collection('lyrics').find({ _id: ObjectId(req.params.songID) } )
+    db.collection('lyrics').find({ _id: ObjectId(req.params.songID) } )
       .nextObject(function(err, obj) {
         var lyrics = (obj&&obj.lyrics) ? obj.lyrics : [];
         res.send(lyrics);
@@ -222,7 +222,7 @@ app.get(
   function (req, res) {
     var title = req.params.title;
 
-    database.collection('lyrics')
+    db.collection('lyrics')
       .findAndModify(
         { title: title},
         null,
@@ -264,24 +264,24 @@ app.get('/', function (req, res) {
 });
 
 
-app.get('/carousel', function (req, res) {
+app.get('/api/carousel', function (req, res) {
 
-  database.collection('lyrics').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
-    res.render("carousel",{videos: videos, carouselIDquery: "#main-carousel"});
+  db.collection('lyrics').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
+    res.render("sub/carousel",{videos: videos, carouselIDquery: "#main-carousel"});
   });
 });
 
 
-app.get('/horizontal', function (req, res) {
+app.get('/api/list/audio', function (req, res) {
 
-  database.collection('lyrics').find({ img : { $exists: true }},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
-    res.render("horizontal-slider",{videos: videos});
+  db.collection('lyrics').find({ img : { $exists: true }},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
+    res.render("sub/horizontal-slider",{videos: videos});
   });
 });
 
 app.get('/videos/all', function (req, res) {
 
-  database.collection('lyrics').find({},{videoID: 1}).toArray(function(err, results) {
+  db.collection('lyrics').find({},{videoID: 1}).toArray(function(err, results) {
     var videos = [];
     results.forEach(function(obj){
       if(obj.videoID){
@@ -299,7 +299,7 @@ app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, re
 
 app.post( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
   req.body["creator"] = req.user._id;
-  database.collection("lyrics").insertOne(req.body, function(){
+  db.collection("lyrics").insertOne(req.body, function(){
     res.redirect("/music/"+req.body.title); //todo: make bettter;
   });
 });
@@ -343,7 +343,7 @@ function validate(lyric){
   return false;
 }
 
-app.post('/lyrics/:songID/addline', function (req, res) {
+app.post('/api/lyrics/:songID/addline', function (req, res) {
 
   var obj = req.body;
   obj.lastEditBy = req.user._id;
@@ -353,7 +353,7 @@ app.post('/lyrics/:songID/addline', function (req, res) {
     res.send("error validating");
   }
 
-  database.collection('lyrics').findAndModify(
+  db.collection('lyrics').findAndModify(
      { _id: ObjectId(req.params.songID) } ,
      null,
      {
@@ -372,7 +372,7 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
   //'Cannot update \'lyrics.5\' and \'lyrics.5.lastEdit\' at the same time',
   obj.lastEdit = new Date();
 
-  database.collection('lyrics').findAndModify(
+  db.collection('lyrics').findAndModify(
      { _id: ObjectId(req.params.songID), "lyrics.id": req.params.lineID } ,
      null,
      { $set: { "lyrics.$" : obj }
@@ -389,7 +389,7 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
 //todo: check the host that is requesting it
 /*app.get('/temp', function (req, res) {
 
-  database.collection('lyrics').find().forEach(function (song){
+  db.collection('lyrics').find().forEach(function (song){
     if(song.lyrics){
 
 
@@ -398,7 +398,7 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
       });
 
 
-      database.collection('lyrics').save(song);
+      db.collection('lyrics').save(song);
 
     }
   });
@@ -409,7 +409,7 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
 */
 
 
-app.post('/lyrics/:songID/editline/:lineID', ensureLoggedIn(), function (req, res) {
+app.post('/api/lyrics/:songID/editline/:lineID', ensureLoggedIn(), function (req, res) {
 
   req.body.new.lastEditBy=req.user._id;
 
@@ -427,7 +427,7 @@ app.post('/lyrics/:songID/editline/:lineID', ensureLoggedIn(), function (req, re
     delete revision.lastEditBy;
 
 
-    database.collection("revisions").insertOne(revision, function(err, results){
+    db.collection("revisions").insertOne(revision, function(err, results){
       updateLyric(req, res, req.body.new);
     });
 
@@ -438,10 +438,10 @@ app.post('/lyrics/:songID/editline/:lineID', ensureLoggedIn(), function (req, re
 
 });
 
-MongoClient.connect(process.env.DB_URL, function(err, db) {
+MongoClient.connect(process.env.DB_URL, function(err, _db) {
   assert.equal(null, err);
   console.log("Connected successfully to server");
-  database = db;
+  db = _db;
 
   var port = (process.env.PORT || 3000);
   app.listen(port, function () {
