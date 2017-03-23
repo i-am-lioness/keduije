@@ -13,39 +13,37 @@ var TwitterStrategy = require('passport-twitter').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var ObjectId = require('mongodb').ObjectId;
 
+var database;
 
 var twCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/twitter/return'
   : 'http://keduije1.herokuapp.com/login/twitter/return';
 
-  function getTwitterUser(twitterProfile, cb){
-    //console.log("twitterProfile", twitterProfile);
-
-    database.collection('users').findAndModify(
-       { twitterID: twitterProfile.id } ,
-       { twitterID: -1 },
-       { $setOnInsert: { twitterID: twitterProfile.id,
-                  displayName: twitterProfile.username,
-                  photo: twitterProfile.photos[0].value, //todo: make sure it exists
-                  role: "member"
-        },
-         $set: {
-           lastLogin: new Date(),
-         }
-       },
-       { upsert: true },
-       function(err, result) {
-         cb(err,result.value);
-       }
-    );
-  }
-
-
-
 var fbCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/facebook/return'
   : 'http://keduije1.herokuapp.com/login/facebook/return';
-var database;
+
+function getTwitterUser(twitterProfile, cb){
+  database.collection('users').findAndModify(
+    { twitterID: twitterProfile.id } ,
+    { twitterID: -1 },
+    { $setOnInsert:
+      {
+        twitterID: twitterProfile.id,
+        displayName: twitterProfile.username,
+        photo: twitterProfile.photos[0].value, //todo: make sure it exists
+        role: "member"
+      },
+    $set: {
+      lastLogin: new Date()
+      }
+    },
+    { upsert: true },
+    function(err, result) {
+      cb(err,result.value);
+    }
+  );
+}
 
 function getFacebookUser(facebookProfile, cb){
   database.collection('users').findAndModify(
@@ -108,6 +106,16 @@ passport.use(new LocalStrategy(
   }
 ));
 
+passport.use(new TwitterStrategy({
+    consumerKey: process.env.TWITTER_CONSUMER_KEY,
+    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+    callbackURL: twCallbackURL
+  },
+  function(token, tokenSecret, profile, cb) {
+    getTwitterUser(profile, cb);
+  }
+));
+
 passport.serializeUser(function(user, cb) {
   cb(null, user._id);
 });
@@ -131,7 +139,6 @@ app.use(express.static('react'));
 app.use(require('cookie-parser')());
 app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
 
-
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -142,30 +149,26 @@ app.use(function(req, res, next){
   next();
 });
 
-passport.use(new TwitterStrategy({
-    consumerKey: process.env.TWITTER_CONSUMER_KEY,
-    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-    callbackURL: twCallbackURL
-  },
-  function(token, tokenSecret, profile, cb) {
-    getTwitterUser(profile, cb);
-  }
-));
-
-app.get('/login/twitter',
+app.get(
+  '/login/twitter',
   function (req, res, next) {
     req.session.returnTo = req.session.returnTo || req.header('Referer');
     next()
   },
-  passport.authenticate('twitter'));
+  passport.authenticate('twitter')
+);
 
-app.get('/login/twitter/return',
+app.get(
+  '/login/twitter/return',
   passport.authenticate('twitter', { failureRedirect: '/login' }),
   function(req, res) {
     res.redirect(req.session.returnTo || "/");
-  });
+  }
+);
 
-  app.get('/login/yc', function(req,res){
+app.get(
+  '/login/yc',
+  function(req,res){
     var html = '<body onload="document.login.submit()"> \
     <form name="login" action="/login/yc" method="post" onload=""> \
     <div> \
@@ -179,69 +182,77 @@ app.get('/login/twitter/return',
     <div> \
         <input type="submit" value="Log In"/> \
     </div> \
-</form> \
-</body>';
+    </form> \
+    </body>';
 
-  res.send(html);
-  });
-
-  app.post('/login/yc',
-  passport.authenticate('local', { successRedirect: '/',
-                                   failureRedirect: '/login'})
+    res.send(html);
+  }
 );
 
-
+app.post(
+  '/login/yc',
+  passport.authenticate(
+    'local',
+    { successRedirect: '/', failureRedirect: '/login'}
+  )
+);
 
 function requireRole(role) {
-    return function(req, res, next) {
-
-        if(req.user && req.user.role === role)
-            next();
-        else
-            res.sendStatus(403);
+  return function(req, res, next) {
+    if(req.user && req.user.role === role)
+      next();
+    else
+      res.sendStatus(403);
     }
 }
 
-app.get('/lyrics/:songID', function (req, res) {
+app.get(
+  '/lyrics/:songID',
+  function (req, res) {
+    database.collection('lyrics').find({ _id: ObjectId(req.params.songID) } )
+      .nextObject(function(err, obj) {
+        var lyrics = (obj&&obj.lyrics) ? obj.lyrics : [];
+        res.send(lyrics);
+      })
+  }
+);
 
-  database.collection('lyrics')
-    .find({ _id: ObjectId(req.params.songID) } )
-    .nextObject(function(err, obj) {
+app.get(
+  '/music/:title',
+  function (req, res) {
+    var title = req.params.title;
 
-      var lyrics = (obj&&obj.lyrics) ? obj.lyrics : [];
+    database.collection('lyrics')
+      .findAndModify(
+        { title: title},
+        null,
+        {$inc: {views: 1}},
+        function(err, result){
+          var song = result.value;
 
-      res.send(lyrics);
-    })
-  });
+          var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
+          var artwork_src = song.img || youtube_thumbnail;
 
-app.get('/music/:title', function (req, res) {
+          //do better
+          var src = song.videoID ? 'http://www.youtube.com/embed/' + song.videoID
+            +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://'
+             + req.headers.host + '&playsinline=1&rel=0&controls=0' : song.url;
 
-  var title = req.params.title;
-  database.collection('lyrics')
-    .findAndModify({ title: title}, null, {$inc: {views: 1}}, function(err, result){
-      var song = result.value;
-
-      var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
-      var artwork_src = song.img || youtube_thumbnail;
-
-      //do better
-      var src = song.videoID ? 'http://www.youtube.com/embed/' + song.videoID
-        +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://'
-         + req.headers.host + '&playsinline=1&rel=0&controls=0' : song.url;
-
-      var data = {
-        title: song.title + " | " + res.locals.title,
-        artwork_src: artwork_src,
-        videoID: song.videoID,
-        user: req.user || null,
-        canEdit: !!(req.user && req.user.isAdmin),
-        src: src,
-        songID: song._id
-      };
-      //console.log(data);
-        res.render('player', data);
-    });
-});
+          var data = {
+            title: song.title + " | " + res.locals.title,
+            artwork_src: artwork_src,
+            videoID: song.videoID,
+            user: req.user || null,
+            canEdit: !!(req.user && req.user.isAdmin),
+            src: src,
+            songID: song._id
+          };
+          //console.log(data);
+          res.render('player', data);
+        }
+      );
+  }
+);
 
 app.get('/', function (req, res) {
 
@@ -286,42 +297,44 @@ app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, re
 
   });
 
-  app.post( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
-        req.body["creator"] = req.user._id;
-        //req.body["created"] = new Date(); // not necessary since included in id
-
-        database.collection("lyrics").insertOne(req.body, function(){
-          res.redirect("/music/"+req.body.title); //todo: make bettter;
-        });
-
-    });
-
-    app.get('/login',
-      function(req, res) {
-        //res.redirect("/login/facebook");
-        req.session.returnTo = req.session.returnTo || req.header('Referer');
-        res.send('<a href="/login/facebook">Login with Facebook</a><br/><a href="/login/twitter">Login with Twitter</a>');
-      });
-
-  app.get('/login/facebook',
-    function (req, res, next) {
-      req.session.returnTo = req.session.returnTo || req.header('Referer');
-      next()
-    },
-    passport.authenticate('facebook'));
-
-  app.get('/login/facebook/return',
-    passport.authenticate('facebook', { failureRedirect: '/login' }),
-    function(req, res) {
-      var returnTo = req.session.returnTo || "/";
-      req.session.returnTo=null;
-      res.redirect(returnTo);
-    });
-
-  app.get('/logout', function(req, res){
-    req.logout();
-    res.redirect(req.header('Referer') || '/');
+app.post( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+  req.body["creator"] = req.user._id;
+  database.collection("lyrics").insertOne(req.body, function(){
+    res.redirect("/music/"+req.body.title); //todo: make bettter;
   });
+});
+
+app.get(
+  '/login',
+  function(req, res) {
+    req.session.returnTo = req.session.returnTo || req.header('Referer');
+    res.send('<a href="/login/facebook">Login with Facebook</a><br/><a href="/login/twitter">Login with Twitter</a>');
+  }
+);
+
+app.get(
+  '/login/facebook',
+  function (req, res, next) {
+    req.session.returnTo = req.session.returnTo || req.header('Referer');
+    next()
+  },
+  passport.authenticate('facebook')
+);
+
+app.get(
+  '/login/facebook/return',
+  passport.authenticate('facebook', { failureRedirect: '/login' }),
+  function(req, res) {
+    var returnTo = req.session.returnTo || "/";
+    req.session.returnTo=null;
+    res.redirect(returnTo);
+  }
+);
+
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect(req.header('Referer') || '/');
+});
 
 //Todo: complete
 function validate(lyric){
