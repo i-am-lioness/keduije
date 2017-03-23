@@ -20,6 +20,10 @@ html(lang='en')
         margin: 5px;
         border: none;
       }
+      
+      #rankings img.media-object {
+        width: 100px;
+      }
   script(async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js")
   script.
     (adsbygoogle = window.adsbygoogle || []).push({
@@ -30,14 +34,19 @@ html(lang='en')
     include nav-bar.pug
     .container-fluid
       .row
-        .col-md-8.col-xs-12
-          h2 Latest Audio
-          #horizontal-slider-window
-            #horizontal-slider-meter
-              span#horizontal-slider
-      .row
+        #left.col-md-8.col-xs-12
+          .row
+            .col-md-12
+              h2 Latest Audio
+              #horizontal-slider-window
+                #horizontal-slider-meter
+                  span#horizontal-slider
+          .row
+            .col-md-6
+              #main-carousel.carousel.slide(data-ride="carousel")
         .col-md-4.col-xs-12
-          #main-carousel.carousel.slide(data-ride="carousel")
+          h2 Top Songs
+          #rankings
     include footer.pug
     script(src='/js/ie10-viewport-bug-workaround.js')
     script(src='/js/home.js')

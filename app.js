@@ -271,6 +271,12 @@ app.get('/api/carousel', function (req, res) {
   });
 });
 
+app.get('/api/rankings', function (req, res) {
+
+  db.collection('lyrics').find({ img : { $exists: false }}).sort({views: -1}).toArray(function(err, videos) {
+    res.render("sub/media_list",{videos: videos});
+  });
+});
 
 app.get('/api/list/audio', function (req, res) {
 

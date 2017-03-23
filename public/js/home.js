@@ -1,4 +1,11 @@
 
+
+$.get("/api/rankings", function(html){
+
+  $("#rankings").html(html);
+
+})
+
 $.get("/api/list/audio", function(html){
 
   $("#horizontal-slider").html(html);

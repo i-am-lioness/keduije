@@ -4,11 +4,11 @@ var KeduIje = (function(ki){
   var songID = null;
 
   function loadLyrics(cb){
-    $.get("/lyrics/"+songID, cb);
+    $.get("/api/lyrics/"+songID, cb);
   }
 
   function addLyric(newLyric, cb){
-    $.post("/lyrics/"+songID+"/addline", newLyric, cb);
+    $.post("/api/lyrics/"+songID+"/addline", newLyric, cb);
   }
 
   function updateLyric(oldLyricObj, newLyricObj, cb){
@@ -19,7 +19,7 @@ var KeduIje = (function(ki){
     };
 
     //todo: postdata should be validated
-    $.post("/lyrics/"+songID+"/editline/"+oldLyricObj.id, postData, cb);
+    $.post("/api/lyrics/"+songID+"/editline/"+oldLyricObj.id, postData, cb);
 
   }
 
@@ -44,20 +44,20 @@ var KeduIje = (function(ki){
 
 To do:
 
--fully integrate audio
---make smoother highlting flow
---new music form
---re-design data schema
----remove "isHeading" field from lyrics
----make sure appropriate values are stored as integers
-
-
+front page should feature lyrics of igbo amaka, w/ option to play
 
 ROADMAP:
 -UI design
---design controls
 
 -error handling
 -log visitors
 
+minor bugs
+-last line never gets highlighted
+-a line can be stuck highlighted during playback, such that 2 far apart lines can be highlighted at a time
+-sometimes scrolling gets stuck
+
+enhancements
+-store whether vid or aud in db
+-consider adding volume control
 */

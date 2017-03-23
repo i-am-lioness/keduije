@@ -1,5 +1,5 @@
-.media
-  each video in videos
+each video in videos
+  .media
     .media-left
       a(href="/music/"+video.title)
         img.media-object(src=(video.img||'https://i.ytimg.com/vi/'+ video.videoID + '/sddefault.jpg'),alt=video.title)
