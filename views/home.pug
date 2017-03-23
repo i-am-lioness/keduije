@@ -5,10 +5,10 @@ html(lang='en')
     style.
       #horizontal-slider-container {
         overflow-x:scroll;
-        height:200px;
+        height:216px;
       }
       #horizontal-slider {
-        width: 10000px;
+        width: 1000px;
       }
       #horizontal-slider > div {
         width: 200px;
@@ -18,6 +18,7 @@ html(lang='en')
         height: 200px;
         background: none;
         margin: 5px;
+        border: none;
       }
   script(async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js")
   script.
@@ -30,10 +31,11 @@ html(lang='en')
     .container-fluid
       .row
         .col-md-8.col-xs-12
+          h2 Latest Audio
           #horizontal-slider-container
             #horizontal-slider
       .row
-        .col-md-8.col-md-offset-2
+        .col-md-4
           #main-carousel.carousel.slide(data-ride="carousel")
     include footer.pug
     script(src='/js/ie10-viewport-bug-workaround.js')

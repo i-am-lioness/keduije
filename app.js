@@ -8,9 +8,11 @@ var cors = require('cors')
 var path = require('path');
 var passport = require('passport');
 var Strategy = require('passport-facebook').Strategy;
+var LocalStrategy = require('passport-local').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var ObjectId = require('mongodb').ObjectId;
+
 
 var twCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/twitter/return'
@@ -83,6 +85,29 @@ passport.use(new Strategy({
   }
 ));
 
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    console.log("local strategy");
+    console.log("username", username);
+    if(username=="yc"){
+      database.collection('users').findAndModify(
+         { username: "yc" } , null,
+         {
+           $set: {
+             lastLogin: new Date(),
+           }
+         },
+         null,
+         function(err, result) {
+           done(err,result.value);
+         }
+      );
+    }else{
+      return done(null, false, { message: 'Incorrect username.' });
+    }
+  }
+));
+
 passport.serializeUser(function(user, cb) {
   cb(null, user._id);
 });
@@ -139,6 +164,32 @@ app.get('/login/twitter/return',
   function(req, res) {
     res.redirect(req.session.returnTo || "/");
   });
+
+  app.get('/login/yc', function(req,res){
+    var html = '<body onload="document.login.submit()"> \
+    <form name="login" action="/login/yc" method="post" onload=""> \
+    <div> \
+        <label>Username:</label> \
+        <input type="text" name="username" value="yc"/> \
+    </div> \
+    <div> \
+        <label>Password:</label> \
+        <input type="password" name="password" value="pw"/> \
+    </div> \
+    <div> \
+        <input type="submit" value="Log In"/> \
+    </div> \
+</form> \
+</body>';
+
+  res.send(html);
+  });
+
+  app.post('/login/yc',
+  passport.authenticate('local', { successRedirect: '/',
+                                   failureRedirect: '/login'})
+);
+
 
 
 function requireRole(role) {
@@ -203,7 +254,7 @@ app.get('/', function (req, res) {
 
 app.get('/carousel', function (req, res) {
 
-  database.collection('lyrics').find({},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
+  database.collection('lyrics').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
     res.render("carousel",{videos: videos, carouselIDquery: "#main-carousel"});
   });
 });
@@ -211,7 +262,7 @@ app.get('/carousel', function (req, res) {
 
 app.get('/horizontal', function (req, res) {
 
-  database.collection('lyrics').find({},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
+  database.collection('lyrics').find({ img : { $exists: true }},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
     res.render("horizontal-slider",{videos: videos});
   });
 });
