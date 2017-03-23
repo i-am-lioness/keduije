@@ -1,7 +1,7 @@
 each video in videos
   .media
     .media-left
-      a(href="/music/"+video.title)
+      a(href="/music/"+video.slug)
         img.media-object(src=(video.img||'https://i.ytimg.com/vi/'+ video.videoID + '/sddefault.jpg'),alt=video.title)
     .media-body
         h4=video.title  

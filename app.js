@@ -12,6 +12,8 @@ var LocalStrategy = require('passport-local').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var ObjectId = require('mongodb').ObjectId;
+var slugify = require('slugify')
+
 
 var db;
 
@@ -218,13 +220,13 @@ app.get(
 );
 
 app.get(
-  '/music/:title',
+  '/music/:slug',
   function (req, res) {
-    var title = req.params.title;
+    var slug = req.params.slug;
 
     db.collection('lyrics')
       .findAndModify(
-        { title: title},
+        { slug: slug},
         null,
         {$inc: {views: 1}},
         function(err, result){
@@ -266,7 +268,7 @@ app.get('/', function (req, res) {
 
 app.get('/api/carousel', function (req, res) {
 
-  db.collection('lyrics').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
+  db.collection('lyrics').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1, slug: 1}).toArray(function(err, videos) {
     res.render("sub/carousel",{videos: videos, carouselIDquery: "#main-carousel"});
   });
 });
@@ -280,7 +282,7 @@ app.get('/api/rankings', function (req, res) {
 
 app.get('/api/list/audio', function (req, res) {
 
-  db.collection('lyrics').find({ img : { $exists: true }},{videoID: 1, title: 1, img: 1}).toArray(function(err, videos) {
+  db.collection('lyrics').find({ img : { $exists: true }},{slug: 1, title: 1, img: 1}).toArray(function(err, videos) {
     res.render("sub/horizontal-slider",{videos: videos});
   });
 });
@@ -399,14 +401,13 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
     if(song.lyrics){
 
 
-      song.lyrics.forEach(function(lyric){
-        lyric.revised = false;
-      });
-
-
-      db.collection('lyrics').save(song);
+//      song.lyrics.forEach(function(lyric){
+//        lyric.revised = false;
+//      });
 
     }
+    song.slug = slugify(song.title);
+    db.collection('lyrics').save(song);
   });
 
   res.send("done");

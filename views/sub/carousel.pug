@@ -4,7 +4,7 @@ ol.carousel-indicators
 .carousel-inner(role="listbox")
   each video in videos
     div.item
-      a(href="/music/"+video.title)
+      a(href="/music/"+video.slug)
         img(src=(video.img||'https://i.ytimg.com/vi/'+ video.videoID + '/sddefault.jpg'),alt=video.title)
         .carousel-caption
           h1=video.title  
