@@ -3,12 +3,12 @@ html(lang='en')
   head
     include head.pug
     style.
-      #horizontal-slider-container {
+      #horizontal-slider-window {
         overflow-x:scroll;
         height:216px;
       }
-      #horizontal-slider {
-        width: 1000px;
+      #horizontal-slider-meter {
+        width: 2000px;
       }
       #horizontal-slider > div {
         width: 200px;
@@ -32,10 +32,11 @@ html(lang='en')
       .row
         .col-md-8.col-xs-12
           h2 Latest Audio
-          #horizontal-slider-container
-            #horizontal-slider
+          #horizontal-slider-window
+            #horizontal-slider-meter
+              span#horizontal-slider
       .row
-        .col-md-4
+        .col-md-4.col-xs-12
           #main-carousel.carousel.slide(data-ride="carousel")
     include footer.pug
     script(src='/js/ie10-viewport-bug-workaround.js')

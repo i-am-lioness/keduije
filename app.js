@@ -218,7 +218,8 @@ app.get('/music/:title', function (req, res) {
 
   var title = req.params.title;
   database.collection('lyrics')
-    .findOne({ title: title}, function(err, song){
+    .findAndModify({ title: title}, null, {$inc: {views: 1}}, function(err, result){
+      var song = result.value;
 
       var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
       var artwork_src = song.img || youtube_thumbnail;
