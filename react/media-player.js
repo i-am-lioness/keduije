@@ -250,7 +250,7 @@ class Audio {
         }
 
         loadSongData(song){
-          this.loadLyrics(song.lyrics);
+          this.loadLyrics(song.lyrics || []);
           this.displaySongInfo(song);
         }
 
@@ -406,7 +406,7 @@ class Audio {
               </div>
                 <h1>{this.state.title}</h1>
                 <h2>{this.state.artist}</h2>
-                <a href="#" onClick={this.toggleSongInfoDialog}>(edit)</a>
+                {this.props.canEdit && <a href="#" onClick={this.toggleSongInfoDialog}>(edit)</a>}
                 <LyricDisplay
                   lyrics={this.state.lyrics}
                   currentTime={this.state.currentTime}

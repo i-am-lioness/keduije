@@ -5,3 +5,4 @@ each video in videos
         img.media-object(src=(video.img||'https://i.ytimg.com/vi/'+ video.videoID + '/sddefault.jpg'),alt=video.title)
     .media-body
         h4=video.title  
+        p=video.artist||""

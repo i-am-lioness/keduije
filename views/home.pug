@@ -43,9 +43,14 @@ html(lang='en')
                   span#horizontal-slider
           .row
             .col-md-6
+              h2 Latest Video
               #main-carousel.carousel.slide(data-ride="carousel")
+            .col-md-6
+              h2 Featured
+              div.embed-responsive.embed-responsive-4by3
+                iframe.embed-responsive-item(src="http://www.youtube.com/embed/cWx8tUtfdeE?enablejsapi=1&amp;amp;showinfo=0&amp;amp;color=white&amp;amp;modestbranding=1&amp;amp;origin=http://localhost:3000&amp;amp;playsinline=1&amp;amp;rel=0&amp;amp;controls=0" frameborder="0")
         .col-md-4.col-xs-12
-          h2 Top Songs
+          h2 Weekly Top Ten
           #rankings
     include footer.pug
     script(src='/js/ie10-viewport-bug-workaround.js')

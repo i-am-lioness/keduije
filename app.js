@@ -284,7 +284,7 @@ app.post("/api/song/edit", function (req, res){
 app.get('/api/carousel', function (req, res) {
 
   db.collection('lyrics').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1, slug: 1}).toArray(function(err, videos) {
-    res.render("sub/carousel",{videos: videos, carouselIDquery: "#main-carousel"});
+    res.render("sub/carousel",{videos: videos.slice(0,3), carouselIDquery: "#main-carousel"});
   });
 });
 

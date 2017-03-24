@@ -38,7 +38,7 @@
           var dialog = this.props.displayed && <form id="lyricEditor" ref="lyricEditor" className="editor-bg-color kezie-editor" onSubmit={this.handleSubmit}><div className="row">
             <div className="col-md-12">
               {originalText}
-              <input id="lyric" className"editor-input" type="text" placeholder="Transcibe Lyrics..." value={this.props.value} onChange={this.props.handleChange} />
+              <input id="lyric" className="editor-input" type="text" placeholder="Transcibe Lyrics..." value={this.props.value} onChange={this.props.handleChange} />
             </div>
           </div>
           <div className="row">
