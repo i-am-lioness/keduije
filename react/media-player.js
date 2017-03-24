@@ -81,7 +81,9 @@ class Audio {
             text: "",
             editMode: false,
             editType: "add",
-            lyrics: []
+            lyrics: [],
+            showEditDialog: false,
+            editDialogIsOpen: false
           };
 
           this.maxTime = null;
@@ -111,6 +113,11 @@ class Audio {
           this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
           this.handleTextChange = this.handleTextChange.bind(this);
           this.showEditHeaderDialog = this.showEditHeaderDialog.bind(this);
+          this.loadSongData = this.loadSongData.bind(this);
+          this.displaySongInfo = this.displaySongInfo.bind(this);
+          this.toggleSongInfoDialog = this.toggleSongInfoDialog.bind(this);
+          this.saveSongInfo = this.saveSongInfo.bind(this);
+          this.populateSongInfoForm = this.populateSongInfoForm.bind(this);
 
         }
 
@@ -242,8 +249,13 @@ class Audio {
           this.audioElement = audio;
         }
 
+        loadSongData(song){
+          this.loadLyrics(song.lyrics);
+          this.displaySongInfo(song);
+        }
+
         componentDidMount(){
-            KeduIje.loadLyrics(this.loadLyrics)
+            KeduIje.loadLyrics(this.loadSongData);
 
             if(this.props.mediaType!=KeduIje.mediaTypes.AUDIO) return; //todo: add sanity check here
             this.media = new Audio(this.audioElement, this.onPlayerReady, this.handlePaused, this.handleResume);
@@ -315,6 +327,29 @@ class Audio {
           }
         }
 
+        toggleSongInfoDialog(value){
+          this.setState({editDialogIsOpen: value? value : true }); //value
+        }
+
+        saveSongInfo(songInfo){
+          KeduIje.saveSongInfo(songInfo, this.displaySongInfo);
+        }
+
+        displaySongInfo(songInfo){
+          this.setState({
+            title: songInfo.title || "",
+            artist: songInfo.artist || "",
+            editDialogIsOpen: false
+          });
+        }
+
+        populateSongInfoForm(){
+          return {
+            title: this.state.title,
+            artist: this.state.artist
+          };
+        }
+
         render () {
           var percentage=this.state.currentTime/this.maxTime;
           var mediaElement;
@@ -369,6 +404,9 @@ class Audio {
 
                 <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
               </div>
+                <h1>{this.state.title}</h1>
+                <h2>{this.state.artist}</h2>
+                <a href="#" onClick={this.toggleSongInfoDialog}>(edit)</a>
                 <LyricDisplay
                   lyrics={this.state.lyrics}
                   currentTime={this.state.currentTime}
@@ -376,6 +414,14 @@ class Audio {
                   jumpTo={this.jumpTo}
                   showEditDialog={this.showEditDialog}
                   showEditHeaderDialog={this.showEditHeaderDialog}
+                  />
+                  <SongEditor
+                    isOpen={this.state.editDialogIsOpen}
+                    onSubmit={this.saveSongInfo}
+                    title={this.state.title}
+                    artist={this.state.artist}
+                    onCancel={this.toggleSongInfoDialog.bind(this, false)}
+                    populateSongInfoForm = {this.populateSongInfoForm}
                   />
               </div>
             </div>

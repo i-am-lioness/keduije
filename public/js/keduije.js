@@ -23,6 +23,11 @@ var KeduIje = (function(ki){
 
   }
 
+  function saveSongInfo(songInfo, cb){
+    songInfo.songID = songID;
+    $.post("/api/song/edit", songInfo, cb);
+  }
+
   ki.mediaTypes = {
     AUDIO: 0,
     VIDEO: 1
@@ -35,6 +40,7 @@ var KeduIje = (function(ki){
   ki.loadLyrics = loadLyrics;
   ki.updateLyric = updateLyric;
   ki.addLyric = addLyric;
+  ki.saveSongInfo = saveSongInfo;
 
   return ki;
 
@@ -44,7 +50,8 @@ var KeduIje = (function(ki){
 
 To do:
 
-front page should feature lyrics of igbo amaka, w/ option to play
+add artist info
+make prod vs dev
 
 ROADMAP:
 -UI design
@@ -58,6 +65,8 @@ minor bugs
 -sometimes scrolling gets stuck
 
 enhancements
+-front page should feature lyrics of igbo amaka, w/ option to play
+-look at "nku" graphic
 -store whether vid or aud in db
 -consider adding volume control
 */

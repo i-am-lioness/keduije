@@ -4,7 +4,7 @@
   fill: rgba(93, 65, 174, 0.8);
 }
 
-#lyricEditor {
+.kezie-editor {
   padding: 20px;
   /*display: none;*/
   position: absolute;
@@ -13,13 +13,13 @@
   width: 90%;
 }
 
-#lyricEditor button {
+.kezie-editor button {
   font-family: "Baloo";
   width: 100%;
     color: White;
 }
 
-  #lyricEditor a#playLyric {
+  .kezie-editor a#playLyric {
     background: none;
     border: none;
     color: white;
@@ -27,7 +27,7 @@
     font-size: 35px;
     }
 
-#lyricEditor #lyric{
+.kezie-editor .editor-input{
   background-color: #A087E7 !important;
   display: block;
   width: 100%;
@@ -38,12 +38,12 @@
   font-size: 18px;
 }
 
-#lyricEditor input::-webkit-input-placeholder{
+.kezie-editor input::-webkit-input-placeholder{
   color: rgba(93, 65, 174, 0.8);
   font-size: 18px;
 }
 
-#lyricEditor > form > div {
+.kezie-editor > form > div {
  margin: 10px 0;
 }
 
@@ -56,11 +56,11 @@
   border: White 3px solid;
 }
 
-#lyricEditor .spinner-container{
+.kezie-editor .spinner-container{
   margin: 10px 0;
 }
 
-#lyricEditor .label{
+.kezie-editor .label{
   color: White;
 font-family: "Baloo";
 border-bottom: White 5px solid;
@@ -73,13 +73,13 @@ vertical-align: middle;
 margin-bottom: 15px;
 }
 
-#lyricEditor .inner-spinner {
+.kezie-editor .inner-spinner {
   background: none;
   margin: 0 10px;
   border: none;
   display: inline-block;
 }
-  #lyricEditor .display {
+  .kezie-editor .display {
     color: White;
     font-family: "Baloo";
     font-size: 36px;
@@ -88,7 +88,7 @@ margin-bottom: 15px;
     padding-right: 10px;
   }
 
-  #lyricEditor a.spinner-button{
+  .kezie-editor a.spinner-button{
     background: none;
     border: none;
     position: absolute;
@@ -99,12 +99,12 @@ margin-bottom: 15px;
 
   }
 
-#lyricEditor .originalText {
+.kezie-editor .originalText {
   color: Yellow;
   font-style: italic;
 }
 
-#lyricEditor #tail {
+.kezie-editor #tail {
     position: absolute;
     top: 100%;
     width: 100%;

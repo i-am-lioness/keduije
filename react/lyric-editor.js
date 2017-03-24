@@ -35,10 +35,10 @@
           var btnText = (this.props.mode=="add") ? "Add" : "Update";
           var originalText = this.props.originalText ? <div className="originalText">{this.props.originalText}</div> : null;
           var editSwitchText = (this.props.editMode) ? "Done Editing" : "Edit";
-          var dialog = this.props.displayed && <form id="lyricEditor" ref="lyricEditor" className="editor-bg-color" onSubmit={this.handleSubmit}><div className="row">
+          var dialog = this.props.displayed && <form id="lyricEditor" ref="lyricEditor" className="editor-bg-color kezie-editor" onSubmit={this.handleSubmit}><div className="row">
             <div className="col-md-12">
               {originalText}
-              <input id="lyric" type="text" placeholder="Transcibe Lyrics..." value={this.props.value} onChange={this.props.handleChange} />
+              <input id="lyric" className"editor-input" type="text" placeholder="Transcibe Lyrics..." value={this.props.value} onChange={this.props.handleChange} />
             </div>
           </div>
           <div className="row">

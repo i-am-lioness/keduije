@@ -214,7 +214,8 @@ app.get(
     db.collection('lyrics').find({ _id: ObjectId(req.params.songID) } )
       .nextObject(function(err, obj) {
         var lyrics = (obj&&obj.lyrics) ? obj.lyrics : [];
-        res.send(lyrics);
+        //res.send(lyrics);
+        res.send(obj);
       })
   }
 );
@@ -265,7 +266,21 @@ app.get('/', function (req, res) {
 
 });
 
-
+app.post("/api/song/edit", function (req, res){
+  db.collection('lyrics').findAndModify(
+    {_id: ObjectId(req.body.songID)},
+    null,
+    {$set: {
+      title: req.body.title,
+      artist: req.body.artist, //todo, only update if changed
+      slug: slugify(req.body.title)
+    }},
+    {new: true},
+     function (err, result){
+      res.send(result.value);
+    }
+  )
+});
 app.get('/api/carousel', function (req, res) {
 
   db.collection('lyrics').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1, slug: 1}).toArray(function(err, videos) {
