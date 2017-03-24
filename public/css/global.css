@@ -14,6 +14,9 @@ h1, h2, h3, h4, strong {
     letter-spacing: 0.5px;
     font-size: 12px;
     margin-bottom: 0;
+    background: none;
+    border: none;
+
 }
 
 .navbar-nav>li>a.user {

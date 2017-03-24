@@ -15,10 +15,14 @@
 }
 
 #lyricsDisplay {
-  padding-top: 150px;
+  padding-top: 50px;
   color: #dcd9d9;
   background: rgba(0, 0, 0, 0.8);
 }
+
+  #lyricsDisplay .song-info {
+    margin: 20px;
+  }
 
   #lyricsDisplay .lyric-line {
     cursor: pointer;
@@ -80,7 +84,7 @@
 .controls {
   width: 100%;
   z-index: 1000;
-  position: sticky;
+  /*position: sticky;*/
   top: 0px;
   background: #5D41AE;
 }

@@ -366,6 +366,17 @@ class Audio {
           <div className='embed-responsive embed-responsive-4by3'>
             {mediaElement}
           </div>
+          <div className="controls">
+            <MediaControls
+              onPlay={this.play}
+              onPause={this.pause}
+            />
+            {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
+              <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span>
+            </button>}
+
+            <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
+          </div>
 
 
           {this.props.canEdit &&
@@ -393,21 +404,11 @@ class Audio {
           <div className="row">
               {videoColumn}
               <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
-              <div className="controls">
-                <MediaControls
-                  onPlay={this.play}
-                  onPause={this.pause}
-                />
-                {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
-                  <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span>
-                </button>}
 
-                <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
-              </div>
-                <h1>{this.state.title}</h1>
-                <h2>{this.state.artist}</h2>
-                {this.props.canEdit && <a href="#" onClick={this.toggleSongInfoDialog}>(edit)</a>}
                 <LyricDisplay
+                  title={this.state.title}
+                  artist={this.state.artist}
+                  toggleSongInfoDialog={this.toggleSongInfoDialog.bind(this, true)}
                   lyrics={this.state.lyrics}
                   currentTime={this.state.currentTime}
                   editMode={this.state.editMode}

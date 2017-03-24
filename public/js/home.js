@@ -10,6 +10,12 @@ $.get("/api/list/audio", function(html){
 
   $("#horizontal-slider").html(html);
 
+  var len = $("a.thumbnail").length;
+  var last = $("a.thumbnail")[len-1];
+  var end = $(last).position().left + $(last).width();
+  $("#horizontal-slider").css("width", end+10);
+
+
 })
 
 
