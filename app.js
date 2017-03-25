@@ -169,14 +169,15 @@ app.get(
 );
 
 function logUser(req){
-  db.collection("logs").insert({message: "yc login", from: req.connection.remoteAddress}, date: new Date());
+  db.collection("logs").insertOne({message: "yc login", from: req.connection.remoteAddress, date: new Date()});
 }
 
 app.get(
   '/login/yc',
   function(req,res){
+    logUser(req);
     var html = '<body onload="document.login.submit()"> \
-    <form name="login" action="/login/yc" method="post" onload=""> \
+    <form name="login" action="/login/yc" method="post" onload="" style="display: none"> \
     <div> \
         <label>Username:</label> \
         <input type="text" name="username" value="yc"/> \
