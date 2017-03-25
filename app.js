@@ -130,6 +130,8 @@ passport.deserializeUser(function(id, cb) {
 app.set('views', __dirname + '/views');
 app.set('view engine', 'pug')
 
+app.enable('trust proxy');
+
 
 app.use(bodyParser.urlencoded({
   extended: true
@@ -174,6 +176,7 @@ app.get(
 function logUser(req){
   if(req.ip == "::1") return; //do not log local requests
   if(req.xhr) return; //do not log ajax requests
+  if(req.path.startsWith("/logout")) return;
   if(req.path.startsWith("/login")){
     if(req.path!="/login/yc") return;
   }
