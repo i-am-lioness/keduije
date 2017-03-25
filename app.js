@@ -265,7 +265,7 @@ app.get(
 app.get('/', function (req, res) {
 
   res.render('home', {
-    title: "hello",
+    title: "Nno! Kezie.com",
     user: req.user || null,
   });
 
@@ -327,8 +327,9 @@ app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, re
 
 app.post( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
   req.body["creator"] = req.user._id;
+  req.body["slug"] = slugify(req.body.title)
   db.collection("lyrics").insertOne(req.body, function(){
-    res.redirect("/music/"+req.body.title); //todo: make bettter;
+    res.redirect("/music/"+req.body.slug); //todo: make bettter;
   });
 });
 

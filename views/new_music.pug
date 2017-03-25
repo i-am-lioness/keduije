@@ -12,6 +12,9 @@ html(lang='en')
               label(for="title-input") Title
               input#title-input.form-control.input-lg(name="title", placeholder="Title")
             .form-group
+              label(for="artist-input") Artist
+              input#artist-input.form-control.input-lg(name="artist", placeholder="Artist")
+            .form-group
               label(for="video-url-input") Song URL
               input#video-url-input.form-control.input-lg(name="url", placeholder="Link to an mp3 file or youtube video")
               input#video-id-input(name="videoID", type="hidden")
@@ -27,6 +30,9 @@ html(lang='en')
         #results
     script(src="/js/youtube-data.js")
     script.
+    
+      var index = 0;
+      var images;
       $("#video-url-input").change(getVideoInfo);
 
       function displayVideoInfo(res){
@@ -45,6 +51,27 @@ html(lang='en')
       $("#art-url-input").change(function(){
         $("#video-img").attr("src",$(this).val());
       });
+      
+      $("#title-input").change(function(){
+        $.get("https://api.spotify.com/v1/search", {type: "track", "q": $(this).val()},function(data){
+            console.log(data);
+            index=0;
+            
+            images = data.tracks.items.map(function (el){
+              return el.album.images[0].url;
+              }); 
+              
+            $("#video-img").attr("src", images[index++]);
+            $("#art-url-input").val(images[index])
+          
+          })
+      });
+      
+      $("#video-img").click(function(){
+        
+        $(this).attr("src", images[++index]);
+          $("#art-url-input").val(images[index])
+        });
       
       
     script(src="https://apis.google.com/js/client.js?onload=googleApiClientReady")
