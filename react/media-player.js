@@ -350,6 +350,11 @@ class Audio {
           };
         }
 
+        /* //this strangely stops the lyrics from displaying
+        componentDidMount(){
+          //$(this.controls).affix();
+        }*/
+
         render () {
           var percentage=this.state.currentTime/this.maxTime;
           var mediaElement;
@@ -363,54 +368,29 @@ class Audio {
           }
 
           var videoColumn = <div>
-          <div className='embed-responsive embed-responsive-4by3'>
-            {mediaElement}
-          </div>
-          <div className="controls">
-            <MediaControls
-              onPlay={this.play}
-              onPause={this.pause}
-            />
+
             {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
               <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span>
             </button>}
 
-            <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
-          </div>
+
+          </div>;
 
 
-          {this.props.canEdit &&
-            <LyricEditor
-              ref={this.props.registerEditor}
-              segmentStart={this.state.segmentStart}
-              segmentEnd={this.state.segmentEnd}
-              incrementTime={this.incrementTime}
-              decrementTime={this.decrementTime}
-              percentage={percentage || 0}
-              playLyric = {this.playSegment.bind(this, true)}
-              displayed = {this.state.displayEditor}
-              originalText = {this.state.originalText}
-              editMode = {this.state.editMode}
-              mode = {this.state.editType}
-              close = {this.close}
-              saveLyric = {this.saveLyric}
-              value = {this.state.text}
-              handleChange = {this.handleTextChange}
-              />}</div>;
+
 
           return <div className="row">
-            <div id="video-column" className="col-md-6 col-xs-12">
-              {videoColumn}
-              <SongEditor
-                isOpen={this.state.editDialogIsOpen}
-                onSubmit={this.saveSongInfo}
-                title={this.state.title}
-                artist={this.state.artist}
-                onCancel={this.toggleSongInfoDialog.bind(this, false)}
-                populateSongInfoForm = {this.populateSongInfoForm}
-              />
-            </div>
-            <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
+            <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
+              <div className='embed-responsive embed-responsive-4by3'>
+                {mediaElement}
+              </div>
+              <div className="controls" ref={(el) => {$(el).affix({offset: {top: 500}});}}>
+                <MediaControls
+                  onPlay={this.play}
+                  onPause={this.pause}
+                />
+                <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
+              </div>
               <LyricDisplay
                 title={this.state.title}
                 artist={this.state.artist}
@@ -422,6 +402,32 @@ class Audio {
                 showEditDialog={this.showEditDialog}
                 showEditHeaderDialog={this.showEditHeaderDialog}
                 />
+                <SongEditor
+                  isOpen={this.state.editDialogIsOpen}
+                  onSubmit={this.saveSongInfo}
+                  title={this.state.title}
+                  artist={this.state.artist}
+                  onCancel={this.toggleSongInfoDialog.bind(this, false)}
+                  populateSongInfoForm = {this.populateSongInfoForm}
+                />
+                {this.props.canEdit &&
+                  <LyricEditor
+                    ref={this.props.registerEditor}
+                    segmentStart={this.state.segmentStart}
+                    segmentEnd={this.state.segmentEnd}
+                    incrementTime={this.incrementTime}
+                    decrementTime={this.decrementTime}
+                    percentage={percentage || 0}
+                    playLyric = {this.playSegment.bind(this, true)}
+                    displayed = {this.state.displayEditor}
+                    originalText = {this.state.originalText}
+                    editMode = {this.state.editMode}
+                    mode = {this.state.editType}
+                    close = {this.close}
+                    saveLyric = {this.saveLyric}
+                    value = {this.state.text}
+                    handleChange = {this.handleTextChange}
+                    />}
             </div>
           </div>;
 

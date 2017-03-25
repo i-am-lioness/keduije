@@ -81,10 +81,19 @@
 .controls {
   width: 100%;
   z-index: 1000;
-  /*position: sticky;*/
-  top: 0px;
   background: #5D41AE;
 }
+
+.affix-top {
+  visibility: hidden;
+  position: absolute;
+}
+
+.affix {
+    top: 0;
+    left: 0;
+}
+
 @media (min-width: 768px) {
 .controls {
 
