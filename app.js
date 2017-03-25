@@ -148,6 +148,9 @@ app.use(function(req, res, next){
   res.locals.user = req.user;
   res.locals.title = "KeduIje?"
   //res.locals.authenticated = ! req.user.anonymous;
+
+  logUser(req);
+
   next();
 });
 
@@ -169,13 +172,23 @@ app.get(
 );
 
 function logUser(req){
-  db.collection("logs").insertOne({message: "yc login", from: req.connection.remoteAddress, date: new Date()});
+  if(req.ip == "::1") return; //do not log local requests
+  if(req.xhr) return; //do not log ajax requests
+
+  var user = (req.user)? req.user.displayName : "anonymous";
+  if (user=="Nnenna Ude") return;
+
+  db.collection("logs").insertOne({
+    user: user,
+    path: req.path,
+    from: req.ip,
+    date: (new Date().toString())
+  });
 }
 
 app.get(
   '/login/yc',
   function(req,res){
-    logUser(req);
     var html = '<body onload="document.login.submit()"> \
     <form name="login" action="/login/yc" method="post" onload="" style="display: none"> \
     <div> \
@@ -237,6 +250,11 @@ app.get(
         {$inc: {views: 1}},
         function(err, result){
           var song = result.value;
+
+          if(!song){
+            res.send("not found"); //improve
+            return;
+          }
 
           var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
           var artwork_src = song.img || youtube_thumbnail;
