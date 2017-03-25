@@ -362,7 +362,7 @@ class Audio {
             mediaElement = <iframe ref={(iframe) => {this.iframe = iframe;}} className='embed-responsive-item' src={this.props.src} frameBorder='0' />;
           }
 
-          var videoColumn =  <div id="video-column" className="col-md-6 col-xs-12">
+          var videoColumn = <div>
           <div className='embed-responsive embed-responsive-4by3'>
             {mediaElement}
           </div>
@@ -396,38 +396,34 @@ class Audio {
               saveLyric = {this.saveLyric}
               value = {this.state.text}
               handleChange = {this.handleTextChange}
-              />}
-          </div>;
+              />}</div>;
 
-          return <div>
-
-          <div className="row">
+          return <div className="row">
+            <div id="video-column" className="col-md-6 col-xs-12">
               {videoColumn}
-              <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
-
-                <LyricDisplay
-                  title={this.state.title}
-                  artist={this.state.artist}
-                  toggleSongInfoDialog={this.toggleSongInfoDialog.bind(this, true)}
-                  lyrics={this.state.lyrics}
-                  currentTime={this.state.currentTime}
-                  editMode={this.state.editMode}
-                  jumpTo={this.jumpTo}
-                  showEditDialog={this.showEditDialog}
-                  showEditHeaderDialog={this.showEditHeaderDialog}
-                  />
-                  <SongEditor
-                    isOpen={this.state.editDialogIsOpen}
-                    onSubmit={this.saveSongInfo}
-                    title={this.state.title}
-                    artist={this.state.artist}
-                    onCancel={this.toggleSongInfoDialog.bind(this, false)}
-                    populateSongInfoForm = {this.populateSongInfoForm}
-                  />
-              </div>
+              <SongEditor
+                isOpen={this.state.editDialogIsOpen}
+                onSubmit={this.saveSongInfo}
+                title={this.state.title}
+                artist={this.state.artist}
+                onCancel={this.toggleSongInfoDialog.bind(this, false)}
+                populateSongInfoForm = {this.populateSongInfoForm}
+              />
             </div>
-
-            </div>;
+            <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-6" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
+              <LyricDisplay
+                title={this.state.title}
+                artist={this.state.artist}
+                toggleSongInfoDialog={this.toggleSongInfoDialog.bind(this, true)}
+                lyrics={this.state.lyrics}
+                currentTime={this.state.currentTime}
+                editMode={this.state.editMode}
+                jumpTo={this.jumpTo}
+                showEditDialog={this.showEditDialog}
+                showEditHeaderDialog={this.showEditHeaderDialog}
+                />
+            </div>
+          </div>;
 
         }
       }

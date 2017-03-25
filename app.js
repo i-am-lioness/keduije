@@ -168,6 +168,10 @@ app.get(
   }
 );
 
+function logUser(req){
+  db.collection("logs").insert({message: "yc login", from: req.connection.remoteAddress}, date: new Date());
+}
+
 app.get(
   '/login/yc',
   function(req,res){
@@ -195,7 +199,7 @@ app.post(
   '/login/yc',
   passport.authenticate(
     'local',
-    { successRedirect: '/', failureRedirect: '/login'}
+    { successRedirect: '/music/E-sure-for-me-(Olisa-Doo)', failureRedirect: '/login'}
   )
 );
 
