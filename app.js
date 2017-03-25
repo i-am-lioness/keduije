@@ -187,7 +187,7 @@ function logUser(req){
   db.collection("logs").insertOne({
     user: user,
     path: req.path,
-    from: req.ip,
+    from: req.ips,
     date: (new Date().toString())
   });
 }
