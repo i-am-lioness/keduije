@@ -174,6 +174,9 @@ app.get(
 function logUser(req){
   if(req.ip == "::1") return; //do not log local requests
   if(req.xhr) return; //do not log ajax requests
+  if(req.path.startsWith("/login")){
+    if(req.path!="/login/yc") return;
+  }
 
   var user = (req.user)? req.user.displayName : "anonymous";
   if (user=="Nnenna Ude") return;
