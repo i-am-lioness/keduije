@@ -362,7 +362,7 @@ class Audio {
 
           if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
             mediaElement = <div className="row">
-                <div className="col-md-6 col-md-offset-3">
+                <div className="col-md-8 col-md-offset-2">
                   <div className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
                     <PlayControl
                       togglePlayState={this.togglePlayState}

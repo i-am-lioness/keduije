@@ -92,15 +92,21 @@
     border: none;
     background-color: rgba(0, 0, 0, 0.5);
     font-size: 100px;
-    opacity: 0;
     position: absolute;
     top: 0;
     left: 0;
     outline: none !important;
   }
 
-    .artwork button.hover {
-      opacity: 1;
+
+
+    @media (min-width: 768px) {
+      .artwork button {
+        opacity: 0;
+      }
+      .artwork button:hover {
+        opacity: 1;
+      }
     }
 
 .affix-top{

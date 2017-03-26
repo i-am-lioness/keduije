@@ -45,30 +45,22 @@ class ProgressBar extends React.Component {
 class PlayControl extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      hover: false
-    };
 
   }
 
   handleClick(e){
     $(e.currentTarget).blur();
-    this.setState({hover: false}); //for touch screens
     this.props.togglePlayState();
   }
 
   render(){
 
-    var hover = this.state.hover? "hover" : "";
     var icon = this.props.isPlaying? "pause" : "play";
 
     return  <button type="button"
-      className={hover}
-      aria-label="Left Align"
-      onClick={this.handleClick.bind(this)}
-      onMouseEnter = {this.setState.bind(this, {hover: true}, null)}
-      onMouseLeave = {this.setState.bind(this, {hover: false}, null)}
-      >
+        aria-label="Left Align"
+        onClick={this.handleClick.bind(this)}
+        >
         <span className={"glyphicon glyphicon-" + icon} aria-hidden="true"></span>
       </button>;
   }
