@@ -361,17 +361,23 @@ class Audio {
           var mediaElement;
 
           if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
-            mediaElement = <div className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
-              <PlayControl
-                togglePlayState={this.togglePlayState}
-                isPlaying={this.state.isPlaying}
-              />
-              <audio ref={this.loadAudio.bind(this)}>
-                <source src={this.props.src} type="audio/mpeg" />;
-              </audio>
-            </div>
+            mediaElement = <div className="row">
+                <div className="col-md-6 col-md-offset-3">
+                  <div className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
+                    <PlayControl
+                      togglePlayState={this.togglePlayState}
+                      isPlaying={this.state.isPlaying}
+                    />
+                    <audio ref={this.loadAudio.bind(this)}>
+                      <source src={this.props.src} type="audio/mpeg" />;
+                    </audio>
+                  </div>
+                </div>
+              </div>;
           }else {
-            mediaElement = <iframe ref={(iframe) => {this.iframe = iframe;}} className='embed-responsive-item' src={this.props.src} frameBorder='0' />;
+            mediaElement = <div className='embed-responsive embed-responsive-16by9'>
+              <iframe ref={(iframe) => {this.iframe = iframe;}} className='embed-responsive-item' src={this.props.src} frameBorder='0' />
+              </div>;
           }
 
           var videoColumn = <div>
@@ -390,9 +396,7 @@ class Audio {
                 <p className="artist">{this.state.artist}</p>
                 {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
               </div>
-              <div className='embed-responsive embed-responsive-16by9'>
-                {mediaElement}
-              </div>
+              {mediaElement}
               <div className="controls" ref={(el)=>{this.controls = el;}} >
                 <PlayControl
                   togglePlayState={this.togglePlayState}
