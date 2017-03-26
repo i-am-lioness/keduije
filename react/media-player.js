@@ -254,11 +254,17 @@ class Audio {
           this.displaySongInfo(song);
         }
 
+
         componentDidMount(){
             KeduIje.loadLyrics(this.loadSongData);
 
+            KeduIje.animations.affix(this.songInfoDiv);
+            KeduIje.animations.affix(this.controls);
+
+
             if(this.props.mediaType!=KeduIje.mediaTypes.AUDIO) return; //todo: add sanity check here
             this.media = new Audio(this.audioElement, this.onPlayerReady, this.handlePaused, this.handleResume);
+
         }
 
         onPlayerReady(event) {
@@ -350,11 +356,6 @@ class Audio {
           };
         }
 
-        /* //this strangely stops the lyrics from displaying
-        componentDidMount(){
-          //$(this.controls).affix();
-        }*/
-
         render () {
           var percentage=this.state.currentTime/this.maxTime;
           var mediaElement;
@@ -377,28 +378,22 @@ class Audio {
 
           </div>;
 
-
-
-
           return <div className="row">
             <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3">
+              <div className="song-info" ref={(el)=>{this.songInfoDiv = el;}}>
+                <h1 className="title">{this.state.title}</h1>
+                <h3 className="artist">{this.state.artist}</h3>
+                {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
+              </div>
               <div className='embed-responsive embed-responsive-16by9'>
                 {mediaElement}
               </div>
-              <div className="song-heading" ref={(el) => {$(el).affix({offset: {top: 500}});}}>
-                <div className="controls" >
-                  <MediaControls
-                    onPlay={this.play}
-                    onPause={this.pause}
-                  />
-                  <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
-                </div>
-
-                <div className="song-info">
-                  <h1 className="title">{this.state.title}</h1>
-                  <h3 className="artist">{this.state.artist}</h3>
-                  {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
-                </div>
+              <div className="controls" ref={(el)=>{this.controls = el;}} >
+                <MediaControls
+                  onPlay={this.play}
+                  onPause={this.pause}
+                />
+                <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
               </div>
               <LyricDisplay
                 lyrics={this.state.lyrics}

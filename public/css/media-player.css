@@ -14,6 +14,7 @@
 #lyricsDisplay {
   /*padding-top: 50px; */
   color: #dcd9d9;
+  position: relative;
 /*  background: rgba(0, 0, 0, 0.8); */
 }
 
@@ -79,31 +80,31 @@
   }
 
 
-.song-heading {
-    width: 100%;
-    z-index: 10;
-}
-
 .controls {
   width: 100%;
-  background: #5D41AE;
+  z-index: 20;
 }
 
-.affix-top .controls{
-  visibility: hidden;
-  position: absolute;
-}
+  .affix-top.controls{
+    visibility: hidden;
+    position: absolute;
+
+  }
 
 .affix {
-    top: 0;
+    top: -80px;
     left: 0;
 }
 
-.affix .song-info {
-    top: 0;
-    position: absolute;
+.affix.song-info {
+    top: -80px;
     width: 100%;
     text-align: center;
+    z-index: 10;
+    background: #5D41AE;
+    display: inline-block;
+    height: 80px;
+
 }
 
   .affix .title{
