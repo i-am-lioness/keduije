@@ -155,11 +155,6 @@
           //console.log(rows);
 
           return <div id="lyricsDisplay">
-            <div className="song-info">
-              <h1>{this.props.title}</h1>
-              <h3>{this.props.artist}</h3>
-              {this.props.editMode && <a href="#" onClick={this.props.toggleSongInfoDialog}>(edit)</a>}
-            </div>
             {rowDisplay}
           </div>;
 

@@ -12,9 +12,9 @@
 }
 
 #lyricsDisplay {
-  padding-top: 50px;
+  /*padding-top: 50px; */
   color: #dcd9d9;
-  background: rgba(0, 0, 0, 0.8);
+/*  background: rgba(0, 0, 0, 0.8); */
 }
 
   #lyricsDisplay .song-info {
@@ -78,13 +78,18 @@
     weight: bold;
   }
 
+
+.song-heading {
+    width: 100%;
+    z-index: 10;
+}
+
 .controls {
   width: 100%;
-  z-index: 1000;
   background: #5D41AE;
 }
 
-.affix-top {
+.affix-top .controls{
   visibility: hidden;
   position: absolute;
 }
@@ -93,6 +98,24 @@
     top: 0;
     left: 0;
 }
+
+.affix .song-info {
+    top: 0;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+}
+
+  .affix .title{
+    font-size: 20px;
+    margin-bottom: 0;
+  }
+
+  .affix .artist{
+    font-size: 18px;
+    font-family: 'Lato', sans-serif;
+    margin-top: 0;
+  }
 
 @media (min-width: 768px) {
 .controls {

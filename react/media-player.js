@@ -362,6 +362,7 @@ class Audio {
           if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
             mediaElement = <audio ref={this.loadAudio.bind(this)}>
               <source src={this.props.src} type="audio/mpeg" />;
+              <img src={this.props.artworkSrc} />
             </audio>
           }else {
             mediaElement = <iframe ref={(iframe) => {this.iframe = iframe;}} className='embed-responsive-item' src={this.props.src} frameBorder='0' />;
@@ -380,21 +381,26 @@ class Audio {
 
 
           return <div className="row">
-            <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3" style={{backgroundImage: 'url('+ this.props.artworkSrc +')'}}>
-              <div className='embed-responsive embed-responsive-4by3'>
+            <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3">
+              <div className='embed-responsive embed-responsive-16by9'>
                 {mediaElement}
               </div>
-              <div className="controls" ref={(el) => {$(el).affix({offset: {top: 500}});}}>
-                <MediaControls
-                  onPlay={this.play}
-                  onPause={this.pause}
-                />
-                <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
+              <div className="song-heading" ref={(el) => {$(el).affix({offset: {top: 500}});}}>
+                <div className="controls" >
+                  <MediaControls
+                    onPlay={this.play}
+                    onPause={this.pause}
+                  />
+                  <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
+                </div>
+
+                <div className="song-info">
+                  <h1 className="title">{this.state.title}</h1>
+                  <h3 className="artist">{this.state.artist}</h3>
+                  {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
+                </div>
               </div>
               <LyricDisplay
-                title={this.state.title}
-                artist={this.state.artist}
-                toggleSongInfoDialog={this.toggleSongInfoDialog.bind(this, true)}
                 lyrics={this.state.lyrics}
                 currentTime={this.state.currentTime}
                 editMode={this.state.editMode}
