@@ -83,7 +83,8 @@ class Audio {
             editType: "add",
             lyrics: [],
             showEditDialog: false,
-            editDialogIsOpen: false
+            editDialogIsOpen: false,
+            isPlaying: false
           };
 
           this.maxTime = null;
@@ -99,8 +100,6 @@ class Audio {
           this.playSegment = this.playSegment.bind(this);
           this.incrementTime = this.incrementTime.bind(this);
           this.decrementTime = this.decrementTime.bind(this);
-          this.play = this.play.bind(this);
-          this.pause = this.pause.bind(this);
           this.handlePaused = this.handlePaused.bind(this);
           this.seekTo = this.seekTo.bind(this);
           this.onTimeout = this.onTimeout.bind(this);
@@ -118,6 +117,7 @@ class Audio {
           this.toggleSongInfoDialog = this.toggleSongInfoDialog.bind(this);
           this.saveSongInfo = this.saveSongInfo.bind(this);
           this.populateSongInfoForm = this.populateSongInfoForm.bind(this);
+          this.togglePlayState = this.togglePlayState.bind(this);
 
         }
 
@@ -213,12 +213,8 @@ class Audio {
           });
         }
 
-        play(){
-          this.media.play();
-        }
-
-        pause(){
-          this.media.pause();
+        togglePlayState(){
+          (this.state.isPlaying) ? this.media.pause() : this.media.play();
         }
 
         seekTo(percentage){
@@ -258,8 +254,10 @@ class Audio {
         componentDidMount(){
             KeduIje.loadLyrics(this.loadSongData);
 
-            KeduIje.animations.affix(this.infoBar);
-            KeduIje.animations.affix(this.controls);
+            var affixStart = $(ReactDOM.findDOMNode(this.lyricDisplay)).offset().top;
+            console.log(affixStart);
+            KeduIje.animations.affix(this.infoBar, affixStart);
+            KeduIje.animations.affix(this.controls, affixStart);
 
 
             if(this.props.mediaType!=KeduIje.mediaTypes.AUDIO) return; //todo: add sanity check here
@@ -273,6 +271,7 @@ class Audio {
 
         handlePaused(){
           clearInterval(this.timer);
+          this.setState({isPlaying: false});
           if(this.timeMarksFrozen) return; //revisit
 
           var segmentStart= this.state.segmentStart;
@@ -295,6 +294,7 @@ class Audio {
 
         handleResume(){
           this.timer = setInterval(this.onTimeout,1000);
+          this.setState({isPlaying: true});
         }
 
         jumpTo(start, end){
@@ -361,10 +361,12 @@ class Audio {
           var mediaElement;
 
           if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
-            mediaElement = <audio ref={this.loadAudio.bind(this)}>
-              <source src={this.props.src} type="audio/mpeg" />;
+            mediaElement = <div>
               <img src={this.props.artworkSrc} />
-            </audio>
+              <audio ref={this.loadAudio.bind(this)}>
+                <source src={this.props.src} type="audio/mpeg" />;
+              </audio>
+            </div>
           }else {
             mediaElement = <iframe ref={(iframe) => {this.iframe = iframe;}} className='embed-responsive-item' src={this.props.src} frameBorder='0' />;
           }
@@ -390,8 +392,8 @@ class Audio {
               </div>
               <div className="controls" ref={(el)=>{this.controls = el;}} >
                 <MediaControls
-                  onPlay={this.play}
-                  onPause={this.pause}
+                  togglePlayState={this.togglePlayState}
+                  isPlaying={this.state.isPlaying}
                 />
                 <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
               </div>
@@ -400,6 +402,7 @@ class Audio {
                 <p className="artist">{this.state.artist}</p>
               </div>
               <LyricDisplay
+                ref = {(el)=>{this.lyricDisplay = el}}
                 lyrics={this.state.lyrics}
                 currentTime={this.state.currentTime}
                 editMode={this.state.editMode}

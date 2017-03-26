@@ -51,7 +51,6 @@ var KeduIje = (function(ki){
       $(el).animate({top: 0});
     });
     $(el).on("affix-top.bs.affix", (e)=>{
-      //$(el).css("top", "");
       $(el).addClass("transition");
     });
     $(el).on("affixed-top.bs.affix", (e)=>{
@@ -59,7 +58,6 @@ var KeduIje = (function(ki){
         $(el).css("top", "");
         $(el).removeClass("transition");
       });
-
     });
 
   }
@@ -75,6 +73,11 @@ var KeduIje = (function(ki){
 /*
 
 To do:
+
+-design graphic control
+-design nav bar
+-design control bar
+--fix play button on iphone issue
 
 -make audio control graphic/button
 -UI design (http://www.billboard.com/charts/hot-100)

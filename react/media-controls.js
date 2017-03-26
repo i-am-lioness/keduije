@@ -45,28 +45,18 @@ class ProgressBar extends React.Component {
 class MediaControls extends React.Component {
   constructor(props) {
     super(props);
-    this.handleTogglePlay = this.handleTogglePlay.bind(this);
-
-    this.state = {paused: true};
   }
 
-  handleTogglePlay(e){
+  handleClick(e){
     $(e.currentTarget).blur();
-    if(this.state.paused){
-      this.props.onPlay();
-    }else{
-      this.props.onPause();
-    }
-    this.setState((prevState, props) => ({
-      paused: !prevState.paused
-    }));
+    this.props.togglePlayState();
   }
 
   render(){
 
-    var icon = this.state.paused? "play" : "pause";
+    var icon = this.props.isPlaying? "pause" : "play";
 
-    return  <button type="button" className="button" aria-label="Left Align" onClick={this.handleTogglePlay}>
+    return  <button type="button" className="button" aria-label="Left Align" onClick={this.handleClick.bind(this)}>
                 <span className={"glyphicon glyphicon-" + icon} aria-hidden="true"></span>
               </button>;
   }
