@@ -42,7 +42,7 @@ class ProgressBar extends React.Component {
 }
 
 
-class MediaControls extends React.Component {
+class PlayControl extends React.Component {
   constructor(props) {
     super(props);
   }

@@ -361,8 +361,11 @@ class Audio {
           var mediaElement;
 
           if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
-            mediaElement = <div>
-              <img src={this.props.artworkSrc} />
+            mediaElement = <div className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
+              <PlayControl
+                togglePlayState={this.togglePlayState}
+                isPlaying={this.state.isPlaying}
+              />
               <audio ref={this.loadAudio.bind(this)}>
                 <source src={this.props.src} type="audio/mpeg" />;
               </audio>
@@ -391,7 +394,7 @@ class Audio {
                 {mediaElement}
               </div>
               <div className="controls" ref={(el)=>{this.controls = el;}} >
-                <MediaControls
+                <PlayControl
                   togglePlayState={this.togglePlayState}
                   isPlaying={this.state.isPlaying}
                 />
