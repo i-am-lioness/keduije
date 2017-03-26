@@ -46,10 +46,22 @@ var KeduIje = (function(ki){
 
   function makeAffixed(el){
     $(el).affix({offset: {top: 500}});
+
     $(el).on("affixed.bs.affix", (e)=>{
       $(el).animate({top: 0});
-      //console.log(this);
-    })
+    });
+    $(el).on("affix-top.bs.affix", (e)=>{
+      //$(el).css("top", "");
+      $(el).addClass("transition");
+    });
+    $(el).on("affixed-top.bs.affix", (e)=>{
+      $(el).animate({top: "-80px"}, ()=>{
+        $(el).css("top", "");
+        $(el).removeClass("transition");
+      });
+
+    });
+
   }
 
   animations = {};
@@ -61,12 +73,6 @@ var KeduIje = (function(ki){
 })({});
 
 /*
-
-ref={(el) => {this.controls=el;}}
-
-componentDidMount(){
-  $(this.controls).affix();
-}
 
 To do:
 

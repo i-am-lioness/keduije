@@ -1,8 +1,6 @@
 
-#video-column{
-   position: fixed;
-   padding: 0;
-   top: 150px;
+.embed-responsive{
+  margin-top: 50px;
 }
 
 #lyric-column{
@@ -80,39 +78,42 @@
   }
 
 
+.affix-top{
+  visibility: hidden;
+  position: absolute;
+}
+
+.affix{
+  left: 0;
+  top: -80px;
+  visibility: visible;
+}
+
+.affix-top.transition{
+  position: fixed;
+  visibility: visible;
+  left: 0;
+}
+
 .controls {
   width: 100%;
   z-index: 20;
 }
 
-  .affix-top.controls{
-    visibility: hidden;
-    position: absolute;
-
-  }
-
-.affix {
-    top: -80px;
-    left: 0;
+.info-bar {
+  width: 100%;
+  text-align: center;
+  z-index: 10;
+  background: #5D41AE;
+  height: 80px;
 }
 
-.affix.song-info {
-    top: -80px;
-    width: 100%;
-    text-align: center;
-    z-index: 10;
-    background: #5D41AE;
-    display: inline-block;
-    height: 80px;
-
-}
-
-  .affix .title{
+  .info-bar .title{
     font-size: 20px;
     margin-bottom: 0;
   }
 
-  .affix .artist{
+  .info-bar .artist{
     font-size: 18px;
     font-family: 'Lato', sans-serif;
     margin-top: 0;

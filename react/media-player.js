@@ -258,7 +258,7 @@ class Audio {
         componentDidMount(){
             KeduIje.loadLyrics(this.loadSongData);
 
-            KeduIje.animations.affix(this.songInfoDiv);
+            KeduIje.animations.affix(this.infoBar);
             KeduIje.animations.affix(this.controls);
 
 
@@ -380,9 +380,9 @@ class Audio {
 
           return <div className="row">
             <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3">
-              <div className="song-info" ref={(el)=>{this.songInfoDiv = el;}}>
+              <div className="song-info">
                 <h1 className="title">{this.state.title}</h1>
-                <h3 className="artist">{this.state.artist}</h3>
+                <p className="artist">{this.state.artist}</p>
                 {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
               </div>
               <div className='embed-responsive embed-responsive-16by9'>
@@ -394,6 +394,10 @@ class Audio {
                   onPause={this.pause}
                 />
                 <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
+              </div>
+              <div className="info-bar" ref={(el)=>{this.infoBar = el;}}>
+                <p className="title">{this.state.title}</p>
+                <p className="artist">{this.state.artist}</p>
               </div>
               <LyricDisplay
                 lyrics={this.state.lyrics}
