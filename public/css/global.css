@@ -32,10 +32,11 @@ h1, h2, h3, h4, strong {
     margin-bottom: 0;
     border: none;
     height: 50px;
-    box-shadow: 0 2px 2px Black;
     color: #3B3355;
     background-color: White;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.44);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.44);
+    z-index: 50;
+
 }
 
 

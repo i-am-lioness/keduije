@@ -44,7 +44,7 @@
   }
 
   #lyricsDisplay .lyric-line.hovered {
-      background-color: rgba(93, 65, 174, 0.75);
+      background-color: rgba(126, 211, 33, 0.25);
     }
 
   #lyricsDisplay h4, #lyricsDisplay .lyric-line p {
@@ -243,7 +243,7 @@ width: 100%;
       margin: 0;
       padding: 0;
       width: 0%;
-      background: #5D41AE;
+      background: #7ed321;
       height: 100%;
       opacity: .7;
     }
@@ -252,8 +252,7 @@ width: 100%;
       margin: 0;
       padding: 0;
       width: 0;
-      background: #5D41AE;
-      /*background: #B8E986;*/
+      background: #f5bb00;
       height: 100%;
       position: absolute;
       top: 0;

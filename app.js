@@ -174,7 +174,7 @@ app.get(
 );
 
 function logUser(req){
-  if(req.ip == "::1") return; //do not log local requests
+  if(req.ip == process.env.DEVELOPER_IP) return; //do not log local requests
   if(req.xhr) return; //do not log ajax requests
   if(req.path.startsWith("/logout")) return;
   if(req.path.startsWith("/login")){
