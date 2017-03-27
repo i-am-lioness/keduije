@@ -13,7 +13,7 @@ var TwitterStrategy = require('passport-twitter').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var ObjectId = require('mongodb').ObjectId;
 var slugify = require('slugify')
-
+var nodemailer = require('nodemailer');
 
 var db;
 
@@ -24,6 +24,23 @@ var twCallbackURL = process.env.DEV ?
 var fbCallbackURL = process.env.DEV ?
   'http://localhost:3000/login/facebook/return'
   : 'http://keduije1.herokuapp.com/login/facebook/return';
+
+var transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: process.env.EMAIL_ADDRESS,
+            pass: process.env.EMAIL_PASSWORD,
+        }
+    });
+
+var mailOptions = {
+    from: process.env.EMAIL_ADDRESS, // sender address
+    to: process.env.EMAIL_ADDRESS, // list of receivers
+    subject: 'Web activity', // Subject line
+    text: "someone accessed" //, // plaintext body
+    // html: '<b>Hello world ✔</b>' // You can choose to send an HTML body instead
+};
+
 
 function getTwitterUser(twitterProfile, cb){
   db.collection('users').findAndModify(
@@ -151,9 +168,9 @@ app.use(function(req, res, next){
   res.locals.title = "KeduIje?"
   //res.locals.authenticated = ! req.user.anonymous;
 
-  logUser(req);
-
   next();
+
+  logUser(req);
 });
 
 app.get(
@@ -174,7 +191,6 @@ app.get(
 );
 
 function logUser(req){
-  if(req.ip == process.env.DEVELOPER_IP) return; //do not log local requests
   if(req.xhr) return; //do not log ajax requests
   if(req.path.startsWith("/logout")) return;
   if(req.path.startsWith("/login")){
@@ -183,13 +199,29 @@ function logUser(req){
 
   var user = (req.user)? req.user.displayName : "anonymous";
   if (user=="Nnenna Ude") return;
+  if ((user!="yc")&&(req.ip == process.env.DEVELOPER_IP)) return; //do not log local requests
 
-  db.collection("logs").insertOne({
+  var record = {
     user: user,
+    host: req.hostname,
     path: req.path,
     from: req.ip,
     date: (new Date().toString())
-  });
+  };
+
+  db.collection("logs").insertOne(record);
+
+  mailOptions.text = JSON.stringify(record);
+
+  transporter.sendMail(mailOptions, function(error, info){
+    if(error){
+        console.log(error);
+        res.json({yo: 'error'});
+    }else{
+        console.log('Message sent: ' + info.response);
+        res.json({yo: info.response});
+    };
+});
 }
 
 app.get(

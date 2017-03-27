@@ -223,6 +223,10 @@
   line-height: 45px;
 }
 
+  .play-button .glyphicon{
+    top: 0;
+  }
+
 
 .seeking {
   overflow: auto;
