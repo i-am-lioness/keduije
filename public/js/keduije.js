@@ -69,34 +69,3 @@ var KeduIje = (function(ki){
   return ki;
 
 })({});
-
-/*
-
-To do:
-
---fix play button on iphone issue
-
--track revisions of song info
--notify
--image loading/editing interface
-
-ROADMAP:
--error handling
-
-
-minor bugs
--not able to scroll up on touch screen with out triggering play
--last line never gets highlighted
--a line can be stuck highlighted during playback, such that 2 far apart lines can be highlighted at a time
--sometimes scrolling gets stuck
--in ogene: "Encountered two children with the same key, `3`. Child keys must be unique;"
-
-enhancements
--edit mode UI
-- should allow italicize, also should clean up text input before inserting, to avoid hacking
--front page should feature lyrics of igbo amaka, w/ option to play
--look at "nku" graphic
--store whether vid or aud in db
--consider adding volume control
--rankings should be reset periodically
-*/

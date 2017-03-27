@@ -57,13 +57,13 @@ class PlayControl extends React.Component {
 
     var icon = this.props.isPlaying? "pause" : "play";
 
-    return  <button type="button"
+    return  <div type="button"
         aria-label="Left Align"
         className="play-button"
         onClick={this.handleClick.bind(this)}
         >
         <span className={"glyphicon glyphicon-" + icon} aria-hidden="true"></span>
-      </button>;
+      </div>;
   }
 
 }
