@@ -18,6 +18,7 @@
 
 .embed-responsive{
   /*margin-top: 50px;*/
+  position: absolute; /*for now */
 }
 
 #lyric-column{
