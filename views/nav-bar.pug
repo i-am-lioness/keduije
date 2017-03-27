@@ -2,23 +2,24 @@ nav.navbar.navbar-default
   .container-fluid
     .navbar-header
       a.navbar-brand(href='/')
-        | Kezie
+        | kezie
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav.navbar-right
+        li
+          a.accent(href="/new_music") Add Lyrics
         if user
           li.dropdown
             a#userDropdown.user(href="#",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false")
               div.user-avatar(style="background-image: url(" + user.photo + ");")
-              span=user.displayName
               span.glyphicon.glyphicon-menu-down(aria-hidden="true")
             ul.dropdown-menu(aria-labelledby="userDropdown")
+              li
+                a(href="#") #{user.displayName}
               li
                 a(href="/logout") Logout
         else
           li
             a(href="#loginModal",data-toggle="modal") Login
-        li
-          a.accent(href="/new_music") Add Lyrics
 #loginModal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="myModalLabel")
   .modal-dialog(role="document")
     .modal-content

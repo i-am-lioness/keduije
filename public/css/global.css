@@ -1,6 +1,23 @@
+.color1 {
+  background-color: #5d41ae; /* purple */
+}
+.color2 {
+  background-color: #7ed321; /* green */
+}
+.color3 {
+  background-color: #000505; /* black */
+}
+.color4 {
+  background-color: #3B3355; /* grayish indigo */
+}
+.color5 {
+  background-color: #f5bb00; /* gold */
+}
+
+
 body {
-  background-color: Black;
-  color: White;
+  background-color: White;
+  color: #3B3355;
   font-family: 'Lato', sans-serif;
 }
 
@@ -10,14 +27,18 @@ h1, h2, h3, h4, strong {
 
 .navbar{
     border-radius: 0;
-    text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 12px;
     margin-bottom: 0;
-    background: none;
     border: none;
-
+    height: 50px;
+    box-shadow: 0 2px 2px Black;
+    color: #3B3355;
+    background-color: White;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.44);
 }
+
+
 
 .navbar-nav>li>a.user {
   padding-left: 50px;
@@ -34,7 +55,17 @@ h1, h2, h3, h4, strong {
     position: absolute;
     left: 15px;
     top: 10px;
+    border: 1px solid white;
+    box-shadow: 1px 1px 2px black;
 
+
+}
+
+.navbar li{
+  text-transform: uppercase;
+  font-size: 16px;
+  color: #3B3355; /* grayish indigo */
+  border-left: 1px solid #e4dfdf;
 }
 
 #navbar .navbar-nav>li>a.accent {
@@ -43,19 +74,21 @@ h1, h2, h3, h4, strong {
 }
 
 #navbar .navbar-nav>li>a:hover {
-  background-color: #d9e4cd;
+  background-color: #e7e7e7;
 }
 
 .navbar .navbar-brand {
     padding: 0px 40px;
     font-family: 'Baloo';
     line-height: 61px;
-    font-size: 28px;
-    color: #5D41AE;
-}
-.navbar .navbar-brand span {
-    color: #7ED321;
-}
+    font-size: 60px;
+    letter-spacing: -4px;
+    /*text-shadow: 1px 1px 2px black;*/
+    color: #5d41ae;
+  }
+  .navbar .navbar-brand:hover {
+      color: #3B3355;
+  }
 
 input[type="text"], textarea {
 outline: none;
@@ -66,3 +99,14 @@ border:0px solid #ccc;
 nav .glyphicon {
   margin-left: 5px;
 }
+
+.footer {
+  background-color: #f5bb00; /* grayish indigo */
+  color: #000505;
+  padding: 15px;
+text-align: center;
+}
+
+  .footer a {
+    color: #3B3355;
+  }

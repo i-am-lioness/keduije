@@ -1,4 +1,9 @@
 
+
+.song-info {
+  margin: 5px 25px;
+}
+
 .embed-responsive{
   margin-top: 50px;
 }
@@ -6,7 +11,10 @@
 #lyric-column{
    padding-left: 0px;
    padding-right: 0px;
-   background-attachment: fixed;
+   background-color: Black;
+   box-shadow: 2px 0px 5px black;
+/*  border: 1px solid white;
+  border-width: 0 3px; */
 }
 
 #lyricsDisplay {
@@ -15,10 +23,6 @@
   position: relative;
 /*  background: rgba(0, 0, 0, 0.8); */
 }
-
-  #lyricsDisplay .song-info {
-    margin: 20px;
-  }
 
   #lyricsDisplay .lyric-line {
     cursor: pointer;
