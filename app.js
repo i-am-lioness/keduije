@@ -17,13 +17,9 @@ var nodemailer = require('nodemailer');
 
 var db;
 
-var twCallbackURL = process.env.DEV ?
-  'http://localhost:3000/login/twitter/return'
-  : 'http://keduije1.herokuapp.com/login/twitter/return';
 
-var fbCallbackURL = process.env.DEV ?
-  'http://localhost:3000/login/facebook/return'
-  : 'http://keduije1.herokuapp.com/login/facebook/return';
+var twCallbackURL = process.env.HOST + "/login/twitter/return";
+var fbCallbackURL = process.env.HOST + "/login/facebook/return";
 
 var transporter = nodemailer.createTransport({
         service: 'Gmail',
