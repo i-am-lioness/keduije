@@ -59,6 +59,7 @@ class PlayControl extends React.Component {
 
     return  <button type="button"
         aria-label="Left Align"
+        className="play-button"
         onClick={this.handleClick.bind(this)}
         >
         <span className={"glyphicon glyphicon-" + icon} aria-hidden="true"></span>

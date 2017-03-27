@@ -255,9 +255,7 @@ class Audio {
             KeduIje.loadLyrics(this.loadSongData);
 
             var affixStart = $(ReactDOM.findDOMNode(this.lyricDisplay)).offset().top;
-            console.log(affixStart);
             KeduIje.animations.affix(this.infoBar, affixStart);
-            KeduIje.animations.affix(this.controls, affixStart);
 
 
             if(this.props.mediaType!=KeduIje.mediaTypes.AUDIO) return; //todo: add sanity check here
@@ -361,52 +359,44 @@ class Audio {
           var mediaElement;
 
           if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
-            mediaElement = <div className="row">
-                <div className="col-md-8 col-md-offset-2">
-                  <div className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
-                    <PlayControl
-                      togglePlayState={this.togglePlayState}
-                      isPlaying={this.state.isPlaying}
-                    />
-                    <audio ref={this.loadAudio.bind(this)}>
-                      <source src={this.props.src} type="audio/mpeg" />;
-                    </audio>
-                  </div>
-                </div>
-              </div>;
+            mediaElement = <audio ref={this.loadAudio.bind(this)}>
+              <source src={this.props.src} type="audio/mpeg" />;
+            </audio>
+                  ;
           }else {
             mediaElement = <div className='embed-responsive embed-responsive-16by9'>
               <iframe ref={(iframe) => {this.iframe = iframe;}} className='embed-responsive-item' src={this.props.src} frameBorder='0' />
               </div>;
           }
 
-          var videoColumn = <div>
-
-            {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
-              <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span>
-            </button>}
-
-
-          </div>;
-
           return <div className="row">
             <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3">
-              <div className="song-info">
-                <h1 className="title">{this.state.title}</h1>
-                <p className="artist">{this.state.artist}</p>
-                {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
+              <div className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
+                <div className="gradient"></div>
+                <PlayControl
+                  togglePlayState={this.togglePlayState}
+                  isPlaying={this.state.isPlaying}
+                />
+                {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
+                  <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span> Edit
+                </button>}
+                <div className="song-info">
+                  <p className="artist">{this.state.artist}</p>
+                  <h1 className="title">{this.state.title}</h1>
+
+                  {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
+                </div>
               </div>
               {mediaElement}
-              <div className="controls" ref={(el)=>{this.controls = el;}} >
+
+              <div className="info-bar" ref={(el)=>{this.infoBar = el;}}>
+                <p className="title">{this.state.title}</p>
+                <p className="artist">{this.state.artist}</p>
                 <PlayControl
                   togglePlayState={this.togglePlayState}
                   isPlaying={this.state.isPlaying}
                 />
                 <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
-              </div>
-              <div className="info-bar" ref={(el)=>{this.infoBar = el;}}>
-                <p className="title">{this.state.title}</p>
-                <p className="artist">{this.state.artist}</p>
               </div>
               <LyricDisplay
                 ref = {(el)=>{this.lyricDisplay = el}}
