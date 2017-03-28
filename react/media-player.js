@@ -15,7 +15,8 @@
             lyrics: [],
             showEditDialog: false,
             editDialogIsOpen: false,
-            isPlaying: false
+            isPlaying: false,
+            videoPlaybackMode: false
           };
 
           this.maxTime = null;
@@ -224,6 +225,8 @@
         handleResume(){
           this.timer = setInterval(this.onTimeout,1000);
           this.setState({isPlaying: true});
+          if((!this.state.videoPlaybackMode)&&(this.props.mediaType == KeduIje.mediaTypes.VIDEO))
+            this.setState({videoPlaybackMode: true});
         }
 
         jumpTo(start, end){
@@ -293,6 +296,16 @@
             mediaElement = <audio ref={this.loadAudio.bind(this)}>
               <source src={this.props.src} type="audio/mpeg" />
             </audio>;
+          }else{
+            var iframeClass = this.state.videoPlaybackMode ?  "" : " hidden-video";
+            mediaElement = <div className={'embed-responsive embed-responsive-16by9' + iframeClass}>
+              <iframe
+                ref={(iframe) => {this.iframe = iframe;}}
+                className='embed-responsive-item'
+                src={this.props.src}
+                frameBorder='0'
+              />
+            </div>
           }
 
           var infoBar = <div className="info-bar" ref={(el)=>{this.infoBar = el;}}>
@@ -356,19 +369,12 @@
 
           var videoPlaybackView = <div>
             {infoBar}
-            <div className='embed-responsive embed-responsive-16by9'>
-              <iframe
-                ref={(iframe) => {this.iframe = iframe;}}
-                className='embed-responsive-item'
-                src={this.props.src}
-                frameBorder='0'
-              />
-            </div>
+            {mediaElement}
           </div>;
 
           return <div className="row">
             <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3">
-                {readingView}
+                {this.state.videoPlaybackMode ? videoPlaybackView : readingView}
                 <LyricDisplay
                   lyrics={this.state.lyrics}
                   currentTime={this.state.currentTime}
@@ -376,6 +382,7 @@
                   jumpTo={this.jumpTo}
                   showEditDialog={this.showEditDialog}
                   showEditHeaderDialog={this.showEditHeaderDialog}
+                  videoIsPlaying={this.state.videoPlaybackMode}
                   />
                 {editors}
             </div>

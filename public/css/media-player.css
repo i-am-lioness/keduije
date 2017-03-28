@@ -16,8 +16,8 @@
     margin: 0;
   }
 
-.embed-responsive{
-  /* position: absolute; */
+.embed-responsive.hidden-video{
+  position: absolute;
 }
 
 #lyric-column{
@@ -151,7 +151,7 @@
 
 .affix-top{
   visibility: hidden;
-  position: absolute;
+  position: absolute !important;
 }
 
 .affix{
@@ -175,6 +175,7 @@
   color: white;
   padding-top: 5px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.50);
+  position: relative;
 }
 
   .info-bar .title{

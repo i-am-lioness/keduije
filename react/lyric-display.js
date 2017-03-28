@@ -122,24 +122,38 @@
           var rows=[];
           var curr=null;
           var forDisplay=null;
+          var rowDisplay = null;
 
-          for(var i = 0 ; i < this.props.lyrics.length; i++){
-            curr=this.props.lyrics[i];
-            delete curr.key;
-            forDisplay = $.extend({data: curr}, curr);
-            if(curr.heading){
-              rows.push($.extend({key: curr.id+"-h", data: curr}, curr));
-              forDisplay.heading=null;
-              forDisplay.hasHeading= true;
+          if (this.props.videoIsPlaying){
+            for(var i = 0 ; i < this.props.lyrics.length; i++){
+              curr=this.props.lyrics[i];
+              var displayEndTime = (this.props.lyrics[i+1])? this.props.lyrics[i+1].startTime : curr.endTime;
+              if((curr.startTime<=this.props.currentTime)&&(this.props.currentTime<=displayEndTime)){
+                rowDisplay = <span>{curr.text}</span>;
+                break;
+              }
             }
-            forDisplay.key=curr.id;
-            forDisplay.displayEndTime = (this.props.lyrics[i+1])? this.props.lyrics[i+1].startTime : forDisplay.endTime;
 
-            rows.push(forDisplay);
+          }else {
+
+            for(var i = 0 ; i < this.props.lyrics.length; i++){
+              curr=this.props.lyrics[i];
+              delete curr.key;
+              forDisplay = $.extend({data: curr}, curr);
+              if(curr.heading){
+                rows.push($.extend({key: curr.id+"-h", data: curr}, curr));
+                forDisplay.heading=null;
+                forDisplay.hasHeading= true;
+              }
+              forDisplay.key=curr.id;
+              forDisplay.displayEndTime = (this.props.lyrics[i+1])? this.props.lyrics[i+1].startTime : forDisplay.endTime;
+
+              rows.push(forDisplay);
+            }
+
+            this.currentLine = null;
+            rowDisplay = rows.map(this.eachLyric);
           }
-
-          this.currentLine = null;
-          var rowDisplay = rows.map(this.eachLyric);
 
           return <div id="lyricsDisplay">
             {rowDisplay}
