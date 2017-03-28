@@ -48,6 +48,7 @@
 
         jumpTo(data, e){
           e.preventDefault();
+          this.setState({hoveredIdx: -1}); //in case touch screen triggered hover setting
           var currentLine = e.currentTarget;
           var currentLineStartTime = parseInt(data.startTime);
           var currentLineEndTime = parseInt(data.endTime);
@@ -111,16 +112,13 @@
             pClass +=(" hovered");
           }
 
-          var onClickorTouch=this.jumpTo.bind(this,ly.data);
-
           return <div
                     className={pClass}
                     key={ly.key}
-                    onClick={onClickorTouch}
+                    onClick={this.jumpTo.bind(this,ly.data)}
                     onMouseEnter={this.hoverStart.bind(this, idx)}
-                    onTouchEnd={onClickorTouch}
                     >
-                      {a}
+                      {this.props.editMode && a}
                       <p>
                         <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, false)} idx={idx}  editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
                         {ly.text}
@@ -134,7 +132,7 @@
           var rows=[];
           var curr=null;
           var forDisplay=null;
-          //console.log(this.props.lyrics);
+
           for(var i = 0 ; i < this.props.lyrics.length; i++){
             curr=this.props.lyrics[i];
             delete curr.key;
@@ -145,14 +143,12 @@
               forDisplay.hasHeading= true;
             }
             forDisplay.key=curr.id;
-            if(this.props.lyrics[i+1]) forDisplay.displayEndTime = this.props.lyrics[i+1].startTime;
+            forDisplay.displayEndTime = (this.props.lyrics[i+1])? this.props.lyrics[i+1].startTime : forDisplay.endTime;
 
             rows.push(forDisplay);
           }
 
           var rowDisplay = rows.map(this.eachLyric);
-
-          //console.log(rows);
 
           return <div id="lyricsDisplay">
             {rowDisplay}

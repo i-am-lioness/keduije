@@ -41,7 +41,7 @@ var mailOptions = {
 function getTwitterUser(twitterProfile, cb){
   db.collection('users').findAndModify(
     { twitterID: twitterProfile.id } ,
-    { twitterID: -1 },
+    null,
     { $setOnInsert:
       {
         twitterID: twitterProfile.id,
@@ -63,7 +63,7 @@ function getTwitterUser(twitterProfile, cb){
 function getFacebookUser(facebookProfile, cb){
   db.collection('users').findAndModify(
      { facebookID: facebookProfile.id } ,
-     { facebookID: -1 },
+     null,
      { $setOnInsert: { facebookID: facebookProfile.id,
                 displayName: facebookProfile.displayName,
                 role: "member",
@@ -161,7 +161,7 @@ app.use(passport.session());
 
 app.use(function(req, res, next){
   res.locals.user = req.user;
-  res.locals.title = "KeduIje?"
+  res.locals.title = "Kezie"
   //res.locals.authenticated = ! req.user.anonymous;
 
   next();
