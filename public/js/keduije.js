@@ -28,11 +28,6 @@ var KeduIje = (function(ki){
     $.post("/api/song/edit", songInfo, cb);
   }
 
-  ki.mediaTypes = {
-    AUDIO: 0,
-    VIDEO: 1
-  };
-
   ki.init = function (_songID){
     songID = _songID;
   };

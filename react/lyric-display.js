@@ -40,9 +40,8 @@
 
         componentDidUpdate(prevProps, prevState){
           if(prevProps.currentTime==this.props.currentTime) return;
-          var currentLine= $(".current")[0];
-          if(currentLine){ //todo: consider using ref
-            this.scrollIfOutOfView(currentLine);
+          if(this.currentLine){
+            this.scrollIfOutOfView(this.currentLine);
           }
         }
 
@@ -104,8 +103,10 @@
                 </a>
           }
 
+          var isTheCurrentLine = false;
           if(!this.props.editMode && (ly.startTime<=this.props.currentTime)&&(this.props.currentTime<=ly.displayEndTime)){
             pClass +=(" current");
+            isTheCurrentLine = true;
           }
 
           if(this.state.hoveredIdx == idx){
@@ -117,6 +118,7 @@
                     key={ly.key}
                     onClick={this.jumpTo.bind(this,ly.data)}
                     onMouseEnter={this.hoverStart.bind(this, idx)}
+                    ref={(el)=>{if (isTheCurrentLine) this.currentLine = el;}}
                     >
                       {this.props.editMode && a}
                       <p>
@@ -148,6 +150,7 @@
             rows.push(forDisplay);
           }
 
+          this.currentLine = null;
           var rowDisplay = rows.map(this.eachLyric);
 
           return <div id="lyricsDisplay">

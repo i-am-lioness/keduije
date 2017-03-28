@@ -1,73 +1,4 @@
 
-class Media { //todo: combine both classes
-  constructor(iframe, onPlayerReady, handlePaused, handleResume) {
-    this.video = new YT.Player(iframe, {
-      events: {
-        'onReady': onPlayerReady,
-        'onStateChange': this._onPlayerStateChange.bind(this)
-      }
-    });
-
-    this.handlePaused = handlePaused;
-    this.handleResume = handleResume;
-
-  }
-  _onPlayerStateChange(event) {
-
-    if (event.data == YT.PlayerState.PAUSED) {
-      this.handlePaused();
-    }else if (event.data == YT.PlayerState.PLAYING) {
-      this.handleResume();
-    }
-  }
-
-  play(){
-    this.video.playVideo();
-  }
-  pause(){
-    this.video.pauseVideo();
-  }
-
-  getCurrentTime(){
-    return this.video.getCurrentTime();
-  }
-
-  seekTo(pos, buffer){
-    this.video.seekTo(pos, buffer);
-  }
-
-  getDuration(){
-    return this.video.getDuration();
-  }
-}
-
-class Audio {
-  constructor(audio, playerReadyHandler, pausedHandler, resumeHandler) {
-    this.audio = audio;
-    this.audio.oncanplay = playerReadyHandler;
-    this.audio.onpause = pausedHandler;
-    this.audio.onplay = resumeHandler;
-    this.audio.load();
-  }
-  play(){
-    this.audio.play();
-  }
-  pause(){
-    this.audio.pause();
-  }
-
-  getCurrentTime(){
-    return this.audio.currentTime;
-  }
-
-  seekTo(pos, buffer){
-    this.audio.currentTime = pos;
-  }
-
-  getDuration(){
-    return this.audio.duration;
-  }
-}
 
       class MediaPlayer extends React.Component {
         constructor(props) {
@@ -238,7 +169,7 @@ class Audio {
         onYouTubeIframeAPIReady() {
           if(this.props.mediaType!=KeduIje.mediaTypes.VIDEO) return; //todo: add sanity check here
 
-          this.media= new Media(this.iframe, this.onPlayerReady, this.handlePaused, this.handleResume);
+          this.media= new KeduIje.Media(this.iframe, this.onPlayerReady, this.handlePaused, this.handleResume);
         }
 
         loadAudio(audio){
@@ -259,7 +190,7 @@ class Audio {
 
 
             if(this.props.mediaType!=KeduIje.mediaTypes.AUDIO) return; //todo: add sanity check here
-            this.media = new Audio(this.audioElement, this.onPlayerReady, this.handlePaused, this.handleResume);
+            this.media = new KeduIje.Audio(this.audioElement, this.onPlayerReady, this.handlePaused, this.handleResume);
 
         }
 
@@ -364,8 +295,15 @@ class Audio {
             </audio>
                   ;
           }else {
-            mediaElement = <div className='embed-responsive embed-responsive-16by9'>
-              <iframe ref={(iframe) => {this.iframe = iframe;}} className='embed-responsive-item' src={this.props.src} frameBorder='0' />
+            mediaElement = <div className = "show-on-play">
+                <div className='embed-responsive embed-responsive-16by9'>
+                  <iframe
+                    ref={(iframe) => {this.iframe = iframe;}}
+                    className='embed-responsive-item'
+                    src={this.props.src}
+                    frameBorder='0'
+                  />
+                </div>
               </div>;
           }
 
