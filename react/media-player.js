@@ -254,7 +254,7 @@ class Audio {
         componentDidMount(){
             KeduIje.loadLyrics(this.loadSongData);
 
-            var affixStart = $(ReactDOM.findDOMNode(this.lyricDisplay)).offset().top;
+            var affixStart = $(this.infoBar).offset().top;
             KeduIje.animations.affix(this.infoBar, affixStart);
 
 
@@ -399,7 +399,6 @@ class Audio {
                 <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
               </div>
               <LyricDisplay
-                ref = {(el)=>{this.lyricDisplay = el}}
                 lyrics={this.state.lyrics}
                 currentTime={this.state.currentTime}
                 editMode={this.state.editMode}
