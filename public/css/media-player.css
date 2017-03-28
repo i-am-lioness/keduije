@@ -16,8 +16,11 @@
     margin: 0;
   }
 
+.embed-responsive{
+  transition: padding-bottom 2s;
+}
 .embed-responsive.hidden-video{
-  position: absolute;
+  padding-bottom: 0%;
 }
 
 #lyric-column{
@@ -26,8 +29,6 @@
    background-color: white;
    box-shadow: 2px 0px 5px black;
    color: #3B3355;
-/*  border: 1px solid white;
-  border-width: 0 3px; */
 }
 
 #lyricsDisplay {
@@ -36,6 +37,14 @@
   position: relative;
 /*  background: rgba(0, 0, 0, 0.8); */
 }
+  #lyricsDisplay .subtitles {
+      background: black;
+      padding: 10px;
+      font-size: 18px;
+      color: #f5bb00;
+      text-align: center;
+      margin: 0;
+  }
 
   #lyricsDisplay .lyric-line {
     cursor: pointer;

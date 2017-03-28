@@ -129,7 +129,7 @@
               curr=this.props.lyrics[i];
               var displayEndTime = (this.props.lyrics[i+1])? this.props.lyrics[i+1].startTime : curr.endTime;
               if((curr.startTime<=this.props.currentTime)&&(this.props.currentTime<=displayEndTime)){
-                rowDisplay = <span>{curr.text}</span>;
+                rowDisplay = <p className="subtitles">{curr.text}</p>;
                 break;
               }
             }
