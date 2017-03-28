@@ -144,8 +144,6 @@
     line-height: 100px;
   }
 
-
-
     @media (min-width: 768px) {
       .artwork button:hover {
         background-color: rgba(0, 0, 0, 0.5);
@@ -167,12 +165,6 @@
   position: fixed;
   visibility: visible;
   left: 0;
-}
-
-.controls {
-  width: 100%;
-  z-index: 20;
-      color: white;
 }
 
 .info-bar {
@@ -197,6 +189,14 @@
     font-family: 'Lato', sans-serif;
     margin-top: 0;
   }
+
+.info-bar.video-playback {
+  background: rgba(93, 65, 174, 1);
+  z-index: 55;
+  top: 0px;
+  visibility: visible;
+  position: fixed;
+}
 
 @media (min-width: 768px) {
 .controls {

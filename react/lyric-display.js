@@ -21,27 +21,15 @@
           };
 
           this.eachLyric = this.eachLyric.bind(this);
-          this.scrollIfOutOfView = this.scrollIfOutOfView.bind(this);
           this.jumpTo = this.jumpTo.bind(this);
           this.hoverStart = this.hoverStart.bind(this);
           this.editLyric = this.editLyric.bind(this);
         }
 
-        //responsively adjusts scroll position of lyrics during playback
-        scrollIfOutOfView(element){
-          var position = $(element).offset().top;
-          var windowTop = $(window).scrollTop();
-          var height = $(window).height();
-          var windowBottom = windowTop + height * 0.7;
-
-          if ((position<windowTop) || (position > windowBottom))
-            $("html,body").animate({scrollTop: position-height*0.2}, 800);
-        }
-
         componentDidUpdate(prevProps, prevState){
           if(prevProps.currentTime==this.props.currentTime) return;
           if(this.currentLine){
-            this.scrollIfOutOfView(this.currentLine);
+            KeduIje.scrollIfOutOfView(this.currentLine);
           }
         }
 
