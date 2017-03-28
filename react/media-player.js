@@ -287,89 +287,97 @@
 
         render () {
           var percentage=this.state.currentTime/this.maxTime;
-          var mediaElement;
+          var mediaElement = null;
 
           if(this.props.mediaType==KeduIje.mediaTypes.AUDIO){
             mediaElement = <audio ref={this.loadAudio.bind(this)}>
-              <source src={this.props.src} type="audio/mpeg" />;
-            </audio>
-                  ;
-          }else {
-            mediaElement = <div className = "show-on-play">
-                <div className='embed-responsive embed-responsive-16by9'>
-                  <iframe
-                    ref={(iframe) => {this.iframe = iframe;}}
-                    className='embed-responsive-item'
-                    src={this.props.src}
-                    frameBorder='0'
-                  />
-                </div>
-              </div>;
+              <source src={this.props.src} type="audio/mpeg" />
+            </audio>;
           }
+
+          var infoBar = <div className="info-bar" ref={(el)=>{this.infoBar = el;}}>
+                        <p className="title">{this.state.title}</p>
+                        <p className="artist">{this.state.artist}</p>
+                        <PlayControl
+                          togglePlayState={this.togglePlayState}
+                          isPlaying={this.state.isPlaying}
+                        />
+                        <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
+                      </div>
+
+          var readingView = <div>
+            <div className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
+              <div className="gradient"></div>
+              <PlayControl
+                togglePlayState={this.togglePlayState}
+                isPlaying={this.state.isPlaying}
+              />
+              {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
+                <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span> Edit
+              </button>}
+              <div className="song-info">
+                <p className="artist">{this.state.artist}</p>
+                <h1 className="title">{this.state.title}</h1>
+
+                {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
+              </div>
+            </div>
+            {mediaElement}
+            {infoBar}
+          </div>;
+
+          var editors = this.props.canEdit && <div>
+            <SongEditor
+              isOpen={this.state.editDialogIsOpen}
+              onSubmit={this.saveSongInfo}
+              title={this.state.title}
+              artist={this.state.artist}
+              onCancel={this.toggleSongInfoDialog.bind(this, false)}
+              populateSongInfoForm = {this.populateSongInfoForm}
+            />
+            <LyricEditor
+              ref={this.props.registerEditor}
+              segmentStart={this.state.segmentStart}
+              segmentEnd={this.state.segmentEnd}
+              incrementTime={this.incrementTime}
+              decrementTime={this.decrementTime}
+              percentage={percentage || 0}
+              playLyric = {this.playSegment.bind(this, true)}
+              displayed = {this.state.displayEditor}
+              originalText = {this.state.originalText}
+              editMode = {this.state.editMode}
+              mode = {this.state.editType}
+              close = {this.close}
+              saveLyric = {this.saveLyric}
+              value = {this.state.text}
+              handleChange = {this.handleTextChange}
+              />
+            </div>;
+
+          var videoPlaybackView = <div>
+            {infoBar}
+            <div className='embed-responsive embed-responsive-16by9'>
+              <iframe
+                ref={(iframe) => {this.iframe = iframe;}}
+                className='embed-responsive-item'
+                src={this.props.src}
+                frameBorder='0'
+              />
+            </div>
+          </div>;
 
           return <div className="row">
             <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3">
-              <div className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
-                <div className="gradient"></div>
-                <PlayControl
-                  togglePlayState={this.togglePlayState}
-                  isPlaying={this.state.isPlaying}
-                />
-                {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
-                  <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span> Edit
-                </button>}
-                <div className="song-info">
-                  <p className="artist">{this.state.artist}</p>
-                  <h1 className="title">{this.state.title}</h1>
-
-                  {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
-                </div>
-              </div>
-              {mediaElement}
-
-              <div className="info-bar" ref={(el)=>{this.infoBar = el;}}>
-                <p className="title">{this.state.title}</p>
-                <p className="artist">{this.state.artist}</p>
-                <PlayControl
-                  togglePlayState={this.togglePlayState}
-                  isPlaying={this.state.isPlaying}
-                />
-                <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
-              </div>
-              <LyricDisplay
-                lyrics={this.state.lyrics}
-                currentTime={this.state.currentTime}
-                editMode={this.state.editMode}
-                jumpTo={this.jumpTo}
-                showEditDialog={this.showEditDialog}
-                showEditHeaderDialog={this.showEditHeaderDialog}
-                />
-                <SongEditor
-                  isOpen={this.state.editDialogIsOpen}
-                  onSubmit={this.saveSongInfo}
-                  title={this.state.title}
-                  artist={this.state.artist}
-                  onCancel={this.toggleSongInfoDialog.bind(this, false)}
-                  populateSongInfoForm = {this.populateSongInfoForm}
-                />
-                {this.props.canEdit &&
-                  <LyricEditor
-                    ref={this.props.registerEditor}
-                    segmentStart={this.state.segmentStart}
-                    segmentEnd={this.state.segmentEnd}
-                    incrementTime={this.incrementTime}
-                    decrementTime={this.decrementTime}
-                    percentage={percentage || 0}
-                    playLyric = {this.playSegment.bind(this, true)}
-                    displayed = {this.state.displayEditor}
-                    originalText = {this.state.originalText}
-                    editMode = {this.state.editMode}
-                    mode = {this.state.editType}
-                    close = {this.close}
-                    saveLyric = {this.saveLyric}
-                    value = {this.state.text}
-                    handleChange = {this.handleTextChange}
-                    />}
+                {readingView}
+                <LyricDisplay
+                  lyrics={this.state.lyrics}
+                  currentTime={this.state.currentTime}
+                  editMode={this.state.editMode}
+                  jumpTo={this.jumpTo}
+                  showEditDialog={this.showEditDialog}
+                  showEditHeaderDialog={this.showEditHeaderDialog}
+                  />
+                {editors}
             </div>
           </div>;
 
