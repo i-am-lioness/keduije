@@ -9,6 +9,11 @@
 
         }
 
+        componentDidUpdate(prevProps, prevState){
+          if((!prevProps.displayed)&&(this.props.displayed))
+            $( this.lyricEditor ).draggable();
+        }
+
         handleSubmit(event) {
           event.preventDefault();
           this.props.saveLyric();
@@ -16,7 +21,7 @@
 
         calculateTail(){
           var tailWidth = 30;
-          this.dialogWidth = $(this.refs.lyricEditor).outerWidth() || this.dialogWidth || 500;
+          this.dialogWidth = $(this.lyricEditor).outerWidth() || this.dialogWidth || 500;
           var offset = this.dialogWidth * this.props.percentage;
           var rightX = offset;
           var leftX =  offset + tailWidth;
@@ -35,7 +40,7 @@
           var btnText = (this.props.mode=="add") ? "Add" : "Update";
           var originalText = this.props.originalText ? <div className="originalText">{this.props.originalText}</div> : null;
           var editSwitchText = (this.props.editMode) ? "Done Editing" : "Edit";
-          var dialog = this.props.displayed && <form id="lyricEditor" ref="lyricEditor" className="editor-bg-color kezie-editor" onSubmit={this.handleSubmit}><div className="row">
+          var dialog = this.props.displayed && <form id="lyricEditor" ref={(el)=> {this.lyricEditor = el}} className="editor-bg-color kezie-editor" onSubmit={this.handleSubmit}><div className="row">
             <div className="col-md-12">
               {originalText}
               <input id="lyric" className="editor-input" type="text" placeholder="Transcibe Lyrics..." value={this.props.value} onChange={this.props.handleChange} />

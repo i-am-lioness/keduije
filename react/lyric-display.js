@@ -123,6 +123,7 @@
           var curr=null;
           var forDisplay=null;
           var rowDisplay = null;
+          var subTitle = null
 
           if (this.props.videoIsPlaying){
             for(var i = 0 ; i < this.props.lyrics.length; i++){
@@ -130,10 +131,18 @@
               var displayStartTime = curr.startTime - 1;
               var displayEndTime = (this.props.lyrics[i+1])? this.props.lyrics[i+1].startTime -1 : curr.endTime;
               if((displayStartTime<=this.props.currentTime)&&(this.props.currentTime<=displayEndTime)){
-                rowDisplay = <p className="subtitles" key={curr.id}>{curr.text}</p>;
+                subTitle = <p className="subtitles" key={curr.id}>{curr.text}</p>;
                 break;
               }
             }
+
+            rowDisplay= <ReactCSSTransitionGroup
+              transitionName="example"
+              transitionEnterTimeout={500}
+              transitionLeaveTimeout={300}
+            >
+              {subTitle}
+            </ReactCSSTransitionGroup>;
 
           }else {
 
@@ -157,13 +166,9 @@
           }
 
           return <div id="lyricsDisplay" className={this.props.videoIsPlaying? "video-lyrics" : ""}>
-            <ReactCSSTransitionGroup
-              transitionName="example"
-              transitionEnterTimeout={500}
-              transitionLeaveTimeout={300}
-            >
+
               {rowDisplay}
-            </ReactCSSTransitionGroup>
+
 
           </div>;
 

@@ -1,5 +1,5 @@
 
-var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup; 
+var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
 
       class MediaPlayer extends React.Component {
@@ -228,8 +228,11 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
         handleResume(){
           this.timer = setInterval(this.onTimeout,1000);
           this.setState({isPlaying: true});
-          if((!this.state.videoPlaybackMode)&&(this.props.mediaType == KeduIje.mediaTypes.VIDEO))
+          if((!this.state.videoPlaybackMode)&&(this.props.mediaType == KeduIje.mediaTypes.VIDEO)){
             this.setState({videoPlaybackMode: true});
+            $(window).off('.affix');
+            $(this.infoBar).removeData('bs.affix').removeClass('affix affix-top affix-bottom').addClass('hold');
+          }
         }
 
         jumpTo(start, end){
@@ -318,28 +321,32 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
                           togglePlayState={this.togglePlayState}
                           isPlaying={this.state.isPlaying}
                         />
+                        {this.props.canEdit && <div
+                          type="button"
+                          className="play-button"
+                          onClick={this.handleToggleEditMode}
+                          style={{left: "initial", right: 0}}
+                          >
+                          <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span>
+                        </div>}
                         <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
                       </div>
 
-          var readingView = <div>
-            <div className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
-              <div className="gradient"></div>
-              <PlayControl
-                togglePlayState={this.togglePlayState}
-                isPlaying={this.state.isPlaying}
-              />
-              {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
-                <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span> Edit
-              </button>}
-              <div className="song-info">
-                <p className="artist">{this.state.artist}</p>
-                <h1 className="title">{this.state.title}</h1>
+          var artwork = <div key="artwork" className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
+            <div className="gradient"></div>
+            <PlayControl
+              togglePlayState={this.togglePlayState}
+              isPlaying={this.state.isPlaying}
+            />
+            {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
+              <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span> Edit
+            </button>}
+            <div className="song-info">
+              <p className="artist">{this.state.artist}</p>
+              <h1 className="title">{this.state.title}</h1>
 
-                {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
-              </div>
+              {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
             </div>
-            {mediaElement}
-            {infoBar}
           </div>;
 
           var editors = this.props.canEdit && <div>
@@ -371,13 +378,14 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
             </div>;
 
           var videoPlaybackView = <div>
-            {infoBar}
-            {mediaElement}
+
           </div>;
 
           return <div className="row">
             <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3">
-                {this.state.videoPlaybackMode ? videoPlaybackView : readingView}
+
+                {this.state.videoPlaybackMode || artwork}
+                {mediaElement}
                 <LyricDisplay
                   lyrics={this.state.lyrics}
                   currentTime={this.state.currentTime}
@@ -387,6 +395,7 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
                   showEditHeaderDialog={this.showEditHeaderDialog}
                   videoIsPlaying={this.state.videoPlaybackMode}
                   />
+                  {infoBar}
                 {editors}
             </div>
           </div>;

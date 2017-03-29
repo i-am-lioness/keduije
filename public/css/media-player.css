@@ -17,7 +17,7 @@
   }
 
 .embed-responsive{
-  transition: padding-bottom 2s;
+  transition: padding-bottom 1s;
 }
 .embed-responsive.hidden-video{
   padding-bottom: 0%;
@@ -33,9 +33,8 @@
 
 #lyricsDisplay {
   color: #3B3355;
-  position: relative;
   min-height: 50px;
-/*  background: rgba(0, 0, 0, 0.8); */
+  position: relative;
 }
 
   #lyricsDisplay.video-lyrics {
@@ -43,7 +42,6 @@
   }
 
   #lyricsDisplay .subtitles {
-      background: black;
       padding: 10px;
       font-size: 18px;
       color: #f5bb00;
@@ -168,8 +166,7 @@
 
 
 .affix-top{
-  position: fixed !important;;
-  top: -80px;
+  position: fixed;
 }
 
 
@@ -177,21 +174,36 @@
   left: 0;
   visibility: visible;
   top: 0px !important;
-  position: fixed !important;
 }
 
 .info-bar {
   width: 100%;
   text-align: center;
-  z-index: 10;
+  z-index: 60;
   background: rgba(93, 65, 174, 0.75);
   height: 80px;
   color: white;
   padding-top: 5px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.50);
-  position: relative;
-  transition: top 1s;
+  position: fixed;
+  transition: top 1s, background-color 1s;
+  top: -80px;
 }
+  .info-bar.hold{
+    bottom: 0;
+    background: rgba(93, 65, 174, 1);
+    position: relative;
+    padding-top: 20px;
+    top: initial;
+  }
+    .info-bar.hold .seeking{
+      top: 0;
+      bottom: initial;
+    }
+    .info-bar.hold .play-button{
+      top: initial;
+      bottom: 0;
+    }
 
   .info-bar .title{
     font-size: 20px;
@@ -283,19 +295,21 @@ width: 100%;
 
 
 .example-enter {
-  left: 100%;
+  transform: scale(1,0);
 }
 
 .example-enter.example-enter-active {
-  left: 0;
-  transition: left 500ms ease-in;
+  transform: scale(1,1);
+  transition: transform 500ms ease-in;
 }
 
 .example-leave {
-  right: 0;
+  transform: scale(1,1);
+  opacity: 1;
 }
 
 .example-leave.example-leave-active {
-  right: 100%;
-  transition: right 300ms ease-in;
+  transform: scale(2,2);
+  opacity: 0;
+  transition: all 300ms ease-in;
 }
