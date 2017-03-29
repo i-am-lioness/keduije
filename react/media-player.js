@@ -1,4 +1,6 @@
 
+var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup; 
+
 
       class MediaPlayer extends React.Component {
         constructor(props) {
