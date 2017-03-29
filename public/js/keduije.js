@@ -52,20 +52,6 @@ var KeduIje = (function(ki){
 
   function makeAffixed(el, affixFrom){
     $(el).affix({offset: {top: affixFrom}});
-
-    $(el).on("affixed.bs.affix", (e)=>{
-      $(el).animate({top: 0});
-    });
-    $(el).on("affix-top.bs.affix", (e)=>{
-      $(el).addClass("transition");
-    });
-    $(el).on("affixed-top.bs.affix", (e)=>{
-      $(el).animate({top: "-80px"}, ()=>{
-        $(el).css("top", "");
-        $(el).removeClass("transition");
-      });
-    });
-
   }
 
   animations = {};

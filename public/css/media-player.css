@@ -158,21 +158,18 @@
       }
     }
 
+
 .affix-top{
-  visibility: hidden;
-  position: absolute !important;
+  position: fixed !important;;
+  top: -80px;
 }
+
 
 .affix{
   left: 0;
-  top: -80px;
   visibility: visible;
-}
-
-.affix-top.transition{
-  position: fixed;
-  visibility: visible;
-  left: 0;
+  top: 0px !important;
+  position: fixed !important;
 }
 
 .info-bar {
@@ -185,6 +182,7 @@
   padding-top: 5px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.50);
   position: relative;
+  transition: top 1s;
 }
 
   .info-bar .title{

@@ -187,6 +187,7 @@
             KeduIje.loadLyrics(this.loadSongData);
 
             var affixStart = $(this.infoBar).offset().top;
+            affixStart=300; //to do: hard coded for now, use lyric display element
             KeduIje.animations.affix(this.infoBar, affixStart);
 
 
