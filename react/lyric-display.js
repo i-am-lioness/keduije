@@ -165,7 +165,7 @@
             rowDisplay = rows.map(this.eachLyric);
           }
 
-          return <div id="lyricsDisplay" className={this.props.videoIsPlaying? "video-lyrics" : ""}>
+          return <div id="lyricsDisplay">
 
               {rowDisplay}
 

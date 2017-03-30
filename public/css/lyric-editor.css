@@ -6,10 +6,10 @@
 
 .kezie-editor {
   padding: 20px;
-  /*display: none;*/
   position: absolute;
-  bottom: 30%;
-  left: 5%;
+  /* bottom: 30%; */
+  left: -5%;
+  top: 10%;
   width: 90%;
 }
 

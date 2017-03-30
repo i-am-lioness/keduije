@@ -36,10 +36,9 @@ h1, h2, h3, h4, strong {
     background-color: White;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.44);
     z-index: 50;
-
+    position: absolute;
+    width: 100%;
 }
-
-
 
 .navbar-nav>li>a.user {
   padding-left: 50px;
@@ -99,6 +98,11 @@ border:0px solid #ccc;
 
 nav .glyphicon {
   margin-left: 5px;
+}
+
+body > .container-fluid{
+  padding-top: 50px;
+  min-height: 100vh;
 }
 
 .footer {

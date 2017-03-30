@@ -1,4 +1,7 @@
 
+body > .container-fluid{
+  padding-top: initial; /*necessary for info bar at bottom */
+}
 
 .song-info {
   margin: 5px 25px;
@@ -29,7 +32,13 @@
    background-color: white;
    box-shadow: 2px 0px 5px black;
    color: #3B3355;
+   min-height: 100vh;
+    padding-top: 50px;
 }
+
+#lyric-column.video-lyrics {
+    background-color: Black;
+  }
 
 #lyricsDisplay {
   color: #3B3355;
@@ -37,9 +46,6 @@
   position: relative;
 }
 
-  #lyricsDisplay.video-lyrics {
-    background-color: Black;
-  }
 
   #lyricsDisplay .subtitles {
       padding: 10px;
@@ -188,11 +194,12 @@
   position: fixed;
   transition: top 1s, background-color 1s;
   top: -80px;
+  left: 0;
 }
   .info-bar.hold{
     bottom: 0;
     background: rgba(93, 65, 174, 1);
-    position: relative;
+    position: absolute;
     padding-top: 20px;
     top: initial;
   }

@@ -377,12 +377,9 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
               />
             </div>;
 
-          var videoPlaybackView = <div>
-
-          </div>;
-
+            var classIfVideo = (this.state.videoPlaybackMode)? " video-lyrics" : "";
           return <div className="row">
-            <div id="lyric-column" className="col-md-6 col-xs-12 col-md-offset-3">
+            <div id="lyric-column" className={"col-md-6 col-xs-12 col-md-offset-3" + classIfVideo}>
 
                 {this.state.videoPlaybackMode || artwork}
                 {mediaElement}
