@@ -40,6 +40,33 @@ h1, h2, h3, h4, strong {
     width: 100%;
 }
 
+#nav-mobile-menu {
+  float: right;
+  margin: 10px;
+}
+
+
+  #nav-mobile-menu .dropdown-menu{
+    width: 70%;
+    height: 100vh;
+    left: 100%;
+    display: block;
+    transition: left 1s;
+  }
+
+    #nav-mobile-menu.open>.dropdown-menu {
+        left: 30% ;
+    }
+
+  #nav-mobile-menu .user-avatar{
+    margin: 10px auto;
+    height: 100px;
+    width: 100px;
+    position: initial;
+    display: block;
+
+  }
+
 .navbar-nav>li>a.user {
   padding-left: 50px;
 }
