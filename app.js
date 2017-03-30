@@ -14,6 +14,8 @@ var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var ObjectId = require('mongodb').ObjectId;
 var slugify = require('slugify')
 var nodemailer = require('nodemailer');
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
 
 var db;
 
@@ -154,7 +156,12 @@ app.use(express.static('public'));
 app.use(express.static('react'));
 
 app.use(require('cookie-parser')());
-app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
+app.use(session({
+  secret: 'keyboard cat',
+  resave: true,
+  saveUninitialized: true,
+  store: new MongoStore({ url: process.env.DB_URL })
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());
