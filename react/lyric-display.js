@@ -23,6 +23,7 @@
           this.eachLyric = this.eachLyric.bind(this);
           this.jumpTo = this.jumpTo.bind(this);
           this.hoverStart = this.hoverStart.bind(this);
+          this.hoverEnd = this.hoverEnd.bind(this);
           this.editLyric = this.editLyric.bind(this);
         }
 
@@ -48,6 +49,11 @@
         hoverStart(idx, e){
           this.setState({hoveredIdx: idx});
         }
+
+        hoverEnd(){
+          this.setState({hoveredIdx: -1});
+        }
+
         showBtn(idx){
           this.setState({hoveredLinkIdx: idx});
         }
@@ -165,11 +171,8 @@
             rowDisplay = rows.map(this.eachLyric);
           }
 
-          return <div id="lyricsDisplay">
-
+          return <div id="lyricsDisplay" onMouseLeave={this.hoverEnd}>
               {rowDisplay}
-
-
           </div>;
 
         }

@@ -347,7 +347,7 @@ app.get('/api/carousel', function (req, res) {
 
 app.get('/api/rankings', function (req, res) {
 
-  db.collection('lyrics').find({ img : { $exists: false }}).sort({views: -1}).toArray(function(err, videos) {
+  db.collection('lyrics').find({ img : { $exists: false }}).sort({totalViews: -1}).toArray(function(err, videos) {
     res.render("sub/media_list",{videos: videos});
   });
 });
@@ -467,19 +467,22 @@ function updateLyric(req, res, obj) { //todo: obj might be redundant
 }
 
 /*temporary script */
-//todo: check the host that is requesting it
-/*app.get('/temp', function (req, res) {
+/*
+app.get('/temp', function (req, res) {
+
+  if(req.ip != process.env.DEVELOPER_IP){
+    res.send("Forbidden IP");
+    return;
+  }
 
   db.collection('lyrics').find().forEach(function (song){
+    console.log(song.title);
     if(song.lyrics){
-
-
 //      song.lyrics.forEach(function(lyric){
 //        lyric.revised = false;
 //      });
-
     }
-    song.slug = slugify(song.title);
+
     db.collection('lyrics').save(song);
   });
 
