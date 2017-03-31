@@ -57,8 +57,10 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
         showEditHeaderDialog(data){
           this.indexBeingModified = data;
-          var headingText = prompt(data.heading ? "Update Heading" : "Please enter heading", data.heading || "[]");
-          this.saveLyric(headingText)
+          var defaultValue = "[]";
+          var headingText = prompt(data.heading ? "Update Heading" : "Please enter heading", data.heading || defaultValue);
+          if(headingText && (headingText!=defaultValue))
+            this.saveLyric(headingText)
         }
 
         handleTextChange(event) {
@@ -128,7 +130,7 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
             displayEditor: false,
             originalText: null,
             editType: "add",
-            text: null
+            text: ""
           });
 
           this.timeMarksFrozen = false;

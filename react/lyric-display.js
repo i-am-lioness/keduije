@@ -2,10 +2,10 @@
   class PencilIcon extends React.Component {
 
     render(){
+      var hoveredClass = (this.props.hoveredIdx == this.props.idx)? " hover" : "";
     return <span
-      className="glyphicon glyphicon-pencil"
+      className={"glyphicon glyphicon-pencil "+ hoveredClass}
       aria-hidden="true"
-      style={{opacity: (this.props.editMode&&(this.props.hoveredIdx == this.props.idx))? 1 : 0}}
       onClick={this.props.onClick}
       ></span>;
     }
@@ -76,7 +76,7 @@
 
           if(ly.heading){
             return <h4 key={ly.key} onMouseEnter={this.hoverStart.bind(this, idx)}>
-              <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, true)} idx={idx} editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
+              {this.props.editMode && <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, true)} idx={idx} hoveredIdx={this.state.hoveredIdx}/>}
               {ly.heading}
             </h4>;
           }
@@ -116,7 +116,7 @@
                     >
                       {this.props.editMode && a}
                       <p>
-                        <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, false)} idx={idx}  editMode={this.props.editMode} hoveredIdx={this.state.hoveredIdx}/>
+                        {this.props.editMode && <PencilIcon onClick={this.editLyric.bind(this, ly.data, idx, false)} idx={idx} hoveredIdx={this.state.hoveredIdx}/>}
                         {ly.text}
                       </p>
                     </div>;

@@ -87,13 +87,21 @@ body > .container-fluid{
   }
 
   #lyricsDisplay .glyphicon-pencil{
-    opacity: 0;
-    color: white;
     cursor: pointer;
     position: absolute;
     left: 8px;
     top: 5px;
   }
+
+    @media only screen and (min-width: 768px) {
+      /* For desktop: */
+      #lyricsDisplay .glyphicon-pencil{
+        opacity: 0;
+      }
+      #lyricsDisplay .glyphicon-pencil.hover{
+        opacity: 1;
+      }
+    }
 
   #lyricsDisplay .add-heading-btn{
     top: 2px;

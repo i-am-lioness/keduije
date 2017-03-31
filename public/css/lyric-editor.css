@@ -6,12 +6,18 @@
 
 .kezie-editor {
   padding: 20px;
-  position: absolute;
-  /* bottom: 30%; */
-  left: -5%;
-  top: 10%;
-  width: 90%;
+
 }
+
+  @media only screen and (min-width: 768px) {
+      /* For desktop: */
+      .kezie-editor {
+        position: absolute;
+        left: -5%;
+        top: 10%;
+        width: 90%;
+      }
+    }
 
 .kezie-editor button {
   font-family: "Baloo";
@@ -25,6 +31,10 @@
     color: white;
     text-shadow: 0px 2px 4px black;
     font-size: 35px;
+    }
+
+    .kezie-editor .hidden-xs a#playLyric > span{
+      margin: 15px;
     }
 
 .kezie-editor .editor-input{
@@ -105,9 +115,18 @@ margin-bottom: 15px;
 }
 
 .kezie-editor #tail {
-    position: absolute;
-    top: 100%;
-    width: 100%;
-    right: 0;
-    height: 55px;
+    display: none;
 }
+
+
+  @media only screen and (min-width: 768px) {
+      /* For desktop: */
+      .kezie-editor #tail {
+          position: absolute;
+          top: 100%;
+          width: 100%;
+          right: 0;
+          height: 55px;
+          display: initial;
+      }
+    }
