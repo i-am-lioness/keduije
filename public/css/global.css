@@ -47,15 +47,21 @@ h1, h2, h3, h4, strong {
 
 
   #nav-mobile-menu .dropdown-menu{
-    width: 70%;
     height: 100vh;
     left: 100%;
-    display: block;
+    right: 0;
+    overflow-x: hidden;
     transition: left 1s;
+    display: block;
+    min-width: inherit;
   }
 
     #nav-mobile-menu.open>.dropdown-menu {
         left: 30% ;
+    }
+
+    #nav-mobile-menu .dropdown-menu ul{
+      width: 70vw;
     }
 
   #nav-mobile-menu .user-avatar{

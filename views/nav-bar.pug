@@ -6,17 +6,18 @@ nav.navbar.navbar-default
       #nav-mobile-menu.visible-xs-block
         button#menuDropDown(href="#",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false")
           span.glyphicon.glyphicon-menu-hamburger(aria-hidden="true")
-        ul.dropdown-menu(aria-labelledby="menuDropDown")
-          if user
-            li.login-info
-                a(href="#") #{user.displayName}
-                div.user-avatar(style="background-image: url(" + user.photo + ");")
-                a(href="/logout") Logout
-          else
+        .dropdown-menu(aria-labelledby="menuDropDown")
+          ul
+            if user
+              li.login-info
+                  a(href="#") #{user.displayName}
+                  div.user-avatar(style="background-image: url(" + user.photo + ");")
+                  a(href="/logout") Logout
+            else
+              li
+                a(href="#loginModal",data-toggle="modal") Login
             li
-              a(href="#loginModal",data-toggle="modal") Login
-          li
-            a.accent(href="/new_music") Add Lyrics
+              a.accent(href="/new_music") Add Lyrics
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav.navbar-right
         li
