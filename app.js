@@ -330,7 +330,8 @@ app.get('/', function (req, res) {
 
 });
 
-app.post("/api/song/edit", function (req, res){
+function updateSongInfo(req, res){
+  req.body.lastEditBy=req.user._id;
   db.collection('lyrics').findAndModify(
     {_id: ObjectId(req.body.songID)},
     null,
@@ -344,8 +345,22 @@ app.post("/api/song/edit", function (req, res){
      function (err, result){
       res.send(result.value);
     }
-  )
+  );
+}
+
+app.post("/api/song/edit", function (req, res){
+
+  var revision = Object.assign({}, req.body);
+  revision.user = req.user._id;
+
+
+
+  db.collection("revisions").insertOne(revision, function(err, results){
+    updateSongInfo(req, res);
+  });
+
 });
+
 app.get('/api/carousel', function (req, res) {
 
   db.collection('lyrics').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1, slug: 1}).toArray(function(err, videos) {
@@ -355,8 +370,8 @@ app.get('/api/carousel', function (req, res) {
 
 app.get('/api/rankings', function (req, res) {
 
-  db.collection('lyrics').find({ img : { $exists: false }}).sort({totalViews: -1}).toArray(function(err, videos) {
-    res.render("sub/media_list",{videos: videos});
+  db.collection('lyrics').find().sort({totalViews: -1}).toArray(function(err, videos) {
+    res.render("sub/media_list",{videos: videos.slice(0,10)});
   });
 });
 
@@ -516,6 +531,7 @@ app.post('/api/lyrics/:songID/editline/:lineID', ensureLoggedIn(), function (req
     revision.songID = req.params.songID;
     revision.user = revision.lastEditBy;
     delete revision.lastEditBy;
+    delete revision.revised;
 
 
     db.collection("revisions").insertOne(revision, function(err, results){

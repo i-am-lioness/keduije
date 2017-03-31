@@ -60,7 +60,10 @@
         }
 
         search(e){
-          $.get("https://api.spotify.com/v1/search", {type: "track", "q": e.currentTarget.value},function(data){
+          var q = e.currentTarget.value;
+          if(!q) return;
+
+          $.get("https://api.spotify.com/v1/search", {type: "track", "q": q},function(data){
               console.log(data);
 
               var images = data.tracks.items.map(function (el){

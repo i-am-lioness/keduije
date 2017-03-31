@@ -3,13 +3,18 @@ html(lang='en')
   head
     include head.pug
     style.
+    
+      .thumbnail img, .media img {
+        box-shadow: black 2px 2px 4px;
+      }
+      
       #horizontal-slider-window {
         overflow-x:scroll;
         height:216px;
         overflow-y: hidden;
       }
       #horizontal-slider {
-        width: 2000px;
+        width: 3000px; /*todo: need to make sure it never grows past this size */
       }
       #horizontal-slider > div {
         width: 200px;
