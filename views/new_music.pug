@@ -2,76 +2,29 @@ doctype html
 html(lang='en')
   head
     include head.pug
+    style.
+      .thumbnail{
+        display: inline-block;
+      }
+      
+      .thumbnail.selected {
+        border: 2px #f5bb00 solid;
+      }
+      .thumbnail>img {
+        height: 200px;
+      }
   body
     include nav-bar.pug
     .container-fluid
       .row
-        .col-md-8
-          form#new-song-form(method="post")
-            .form-group
-              label(for="title-input") Title
-              input#title-input.form-control.input-lg(name="title", placeholder="Title")
-            .form-group
-              label(for="artist-input") Artist
-              input#artist-input.form-control.input-lg(name="artist", placeholder="Artist")
-            .form-group
-              label(for="video-url-input") Song URL
-              input#video-url-input.form-control.input-lg(name="url", placeholder="Link to an mp3 file or youtube video")
-              input#video-id-input(name="videoID", type="hidden")
-            .form-group
-              label(for="art-url-input") Artwork URL
-              input#art-url-input.form-control.input-lg(name="img", placeholder="Artwork URL")
-              
-            button.btn.btn-default(type="submit") Add
-            //button#search-btn.btn.btn-default(type="button") Search
-        .col-md-4
-          img#video-img.img-rounded
-      .row
-        #results
+        .col-md-12#root
     script(src="/js/youtube-data.js")
-    script.
-    
-      var index = 0;
-      var images;
-      $("#video-url-input").change(getVideoInfo);
-
-      function displayVideoInfo(res){
-        var video = res.snippet;
-        $("#title-input").val(video.title);
-        $("#video-id-input").val(res.id);
-        
-        var tns=video.thumbnails;
-        /*for(var tn in tns){
-          var src = tns[tn].url;
-          $("<img />").attr("src",src).appendTo("#results");
-        }*/
-        $("#video-img").attr("src",tns.medium.url);
-      }
-      
-      $("#art-url-input").change(function(){
-        $("#video-img").attr("src",$(this).val());
-      });
-      
-      $("#title-input").change(function(){
-        $.get("https://api.spotify.com/v1/search", {type: "track", "q": $(this).val()},function(data){
-            console.log(data);
-            index=0;
-            
-            images = data.tracks.items.map(function (el){
-              return el.album.images[0].url;
-              }); 
-              
-            $("#video-img").attr("src", images[index++]);
-            $("#art-url-input").val(images[index])
-          
-          })
-      });
-      
-      $("#video-img").click(function(){
-        
-        $(this).attr("src", images[++index]);
-          $("#art-url-input").val(images[index])
-        });
-      
-      
+    script(src='/song-info-form.js', type='text/babel')
+    script(type='text/babel').
+      ReactDOM.render(
+        <SongInfoForm 
+          ref={(component) => {window.hi = component}}
+        />,
+        document.getElementById('root')
+      );  
     script(src="https://apis.google.com/js/client.js?onload=googleApiClientReady")
