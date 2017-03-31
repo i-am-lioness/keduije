@@ -15,6 +15,18 @@
           this.queryYoutube = this.queryYoutube.bind(this);
           this.displayVideoInfo = this.displayVideoInfo.bind(this);
           this.handleInput = this.handleInput.bind(this);
+          this.handleSubmit = this.handleSubmit.bind(this);
+        }
+
+        handleSubmit(e){
+          if(this.props.newSong){
+            e.target.submit();
+          }else{
+            this.props.onSubmit({
+              title: this.state.title,
+              artist: this.state.artist
+            });
+          }
         }
 
         handleClick(src){
@@ -90,21 +102,32 @@
 
           return <div>
 
-            <form id="new-song-form" className="editor-bg-color kezie-editor" method="post">
-              <div className="form-group">
-                <input onChange={this.handleInput} value={this.state.url} onBlur={this.queryYoutube} className="form-control input-lg" name="url" placeholder="Link to youtube video" />
-                <input value={this.state.videoID} id="video-id-input" name="videoID" type="hidden" />
+            <form id="new-song-form" className="editor-bg-color kezie-editor" method="post" onSubmit={this.handleSubmit}>
+              <div className="row">
+                <div className="col-md-12">
+                  {this.props.newSong &&<div className="form-group">
+                    <input onChange={this.handleInput} value={this.state.url} onBlur={this.queryYoutube} className="form-control input-lg" name="url" placeholder="Link to youtube video" />
+                    <input value={this.state.videoID} id="video-id-input" name="videoID" type="hidden" />
+                  </div>}
+                  <div className="form-group">
+                    <input onChange={this.handleInput} value={this.state.title}  className="form-control input-lg" onBlur={this.search} id="title-input" name="title" placeholder="Title"/>
+                  </div>
+                  <div className="form-group">
+                    <input onChange={this.handleInput} value={this.state.artist}  className="form-control input-lg" onBlur={this.search} id="artist-input" name="artist" placeholder="Artist" />
+                  </div>
+                  <div className="form-group">
+                    <input type="hidden" onChange={this.handleInput}value={this.state.img}  className="form-control input-lg" id="art-url-input" name="img" placeholder="Artwork URL" />
+                  </div>
+                </div>
               </div>
-              <div className="form-group">
-                <input onChange={this.handleInput} value={this.state.title}  className="form-control input-lg" onBlur={this.search} id="title-input" name="title" placeholder="Title"/>
+              <div className="row">
+                <div className="col-md-3">
+                  <button id="cancel-dialog-btn" className="btn btn-default btn-lg" type="reset" onClick={this.props.onCancel}>Cancel</button>
+                </div>
+                <div className="col-md-9">
+                  <button id="save-lyric-btn" className="btn btn-default btn-lg" type="submit" onClick={this.handleSubmit}>Save</button>
+                </div>
               </div>
-              <div className="form-group">
-                <input onChange={this.handleInput} value={this.state.artist}  className="form-control input-lg" onBlur={this.search} id="artist-input" name="artist" placeholder="Artist" />
-              </div>
-              <div className="form-group">
-                <input  onChange={this.handleInput}value={this.state.img}  className="form-control input-lg" id="art-url-input" name="img" placeholder="Artwork URL" />
-              </div>
-              <button className="btn btn-default" type="submit">Add</button>
             </form>
 
             <div className="images-container">{Array.from(this.state.images).map(this.eachImage)}</div>
