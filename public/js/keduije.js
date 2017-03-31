@@ -3,6 +3,15 @@ var KeduIje = (function(ki){
 
   var songID = null;
 
+  window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
+
+      var msg = 'Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber
+      + ' Column: ' + column + ' StackTrace: ' +  errorObj;
+
+      $.post("/api/logError",{ width: screen.width, height: screen.height, msg: msg });
+  }
+
+
   function loadLyrics(cb){
     $.get("/api/lyrics/"+songID, cb);
   }

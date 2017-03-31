@@ -348,6 +348,37 @@ function updateSongInfo(req, res){
   );
 }
 
+app.post("/api/logError", function (req, res){
+
+  var error = {
+    agent: req.headers['user-agent'], // User Agent we get from headers
+    referrer: req.headers['referrer'], //  Likewise for referrer
+    ip: req.ip,
+    screen: { // Get screen info that we passed in url post data
+      width: req.body.width,
+      height: req.body.height
+    },
+    msg: req.body.msg
+  };
+
+  console.log(error);
+  db.collection("errors").insertOne(error); //todo: log instead
+
+  mailOptions.text = JSON.stringify(error);
+  mailOptions.subject = "client error";
+
+  transporter.sendMail(mailOptions, function(error, info){
+    if(error){
+        console.log(error);
+        res.json({yo: 'error'});
+    }else{
+        console.log('Message sent: ' + info.response);
+        res.json({yo: info.response});
+    };
+  });
+
+});
+
 app.post("/api/song/edit", function (req, res){
 
   var revision = Object.assign({}, req.body);
