@@ -51,6 +51,7 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
           this.toggleSongInfoDialog = this.toggleSongInfoDialog.bind(this);
           this.saveSongInfo = this.saveSongInfo.bind(this);
           this.togglePlayState = this.togglePlayState.bind(this);
+          this.onKeyUp = this.onKeyUp.bind(this);
 
         }
 
@@ -185,6 +186,9 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
           this.displaySongInfo(song);
         }
 
+        componentWillMount(){
+          window.onkeyup = this.onKeyUp;
+         }
 
         componentDidMount(){
             KeduIje.loadLyrics(this.loadSongData);
@@ -286,6 +290,12 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
             artist: songInfo.artist || "",
             editDialogIsOpen: false
           });
+        }
+
+        onKeyUp(e) {
+          console.log(e.code); //todo: hook "ArrowRight"
+          if ((e.code == "Space")&&(this.state.editMode)&&(!this.state.displayEditor))
+            this.togglePlayState();
         }
 
         render () {

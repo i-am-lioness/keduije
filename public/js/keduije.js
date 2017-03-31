@@ -5,6 +5,8 @@ var KeduIje = (function(ki){
 
   window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
 
+    if(window.location=="localhost") return;
+
       var msg = 'Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber
       + ' Column: ' + column + ' StackTrace: ' +  errorObj;
 
