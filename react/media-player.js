@@ -50,7 +50,6 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
           this.displaySongInfo = this.displaySongInfo.bind(this);
           this.toggleSongInfoDialog = this.toggleSongInfoDialog.bind(this);
           this.saveSongInfo = this.saveSongInfo.bind(this);
-          this.populateSongInfoForm = this.populateSongInfoForm.bind(this);
           this.togglePlayState = this.togglePlayState.bind(this);
 
         }
@@ -289,13 +288,6 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
           });
         }
 
-        populateSongInfoForm(){
-          return {
-            title: this.state.title,
-            artist: this.state.artist
-          };
-        }
-
         render () {
           var percentage=this.state.currentTime/this.maxTime;
           var mediaElement = null;
@@ -352,14 +344,13 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
           </div>;
 
           var editors = this.props.canEdit && <div>
-            <SongEditor
-              isOpen={this.state.editDialogIsOpen}
+            {this.state.editDialogIsOpen && <SongInfoForm
               onSubmit={this.saveSongInfo}
               title={this.state.title}
               artist={this.state.artist}
               onCancel={this.toggleSongInfoDialog.bind(this, false)}
-              populateSongInfoForm = {this.populateSongInfoForm}
-            />
+              img={this.props.artworkSrc}
+            />}
             <LyricEditor
               ref={this.props.registerEditor}
               segmentStart={this.state.segmentStart}

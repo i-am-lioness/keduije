@@ -336,6 +336,7 @@ app.post("/api/song/edit", function (req, res){
     null,
     {$set: {
       title: req.body.title,
+      img: req.body.img,
       artist: req.body.artist, //todo, only update if changed
       slug: slugify(req.body.title)
     }},

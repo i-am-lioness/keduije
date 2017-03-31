@@ -148,3 +148,20 @@ text-align: center;
   .footer a {
     color: #3B3355;
   }
+
+
+  .kezie-editor .thumbnail{
+    display: inline-block;
+  }
+
+  .kezie-editor .thumbnail.selected {
+    border: 2px #f5bb00 solid;
+  }
+  .kezie-editor .thumbnail>img {
+    height: 150px;
+  }
+
+  .kezie-editor .images-container {
+    height: 210px;
+    overflow-y: scroll;
+  }
