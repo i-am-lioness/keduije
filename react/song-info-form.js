@@ -3,23 +3,37 @@
         constructor(props) {
           super(props);
           this.state = {
-            selectedImage: null,
-            images: new Set()
+            images: new Set(),
+            title: "",
+            artist: "",
+            url: "",
+            img: ""
           }
           this.handleClick = this.handleClick.bind(this);
           this.eachImage = this.eachImage.bind(this);
           this.search = this.search.bind(this);
           this.queryYoutube = this.queryYoutube.bind(this);
           this.displayVideoInfo = this.displayVideoInfo.bind(this);
+          this.handleInput = this.handleInput.bind(this);
         }
 
         handleClick(src){
-          this.artInput.value = src;
-          this.setState({selectedImage: src});
+          this.setState({
+            img: src
+          });
+        }
+
+        handleInput(e){
+          const value = e.target.value;
+          const name = e.target.name;
+
+          this.setState({
+            [name]: value
+          });
         }
 
         eachImage(src){
-          var selectedClass = (this.state.selectedImage == src)? " selected" : "";
+          var selectedClass = (this.state.img == src)? " selected" : "";
           return <a href="#" key={src} className={"thumbnail " + selectedClass} onClick={this.handleClick.bind(this, src)}>
                   <img src={src} alt="..." />
               </a>;
@@ -58,8 +72,10 @@
 
         displayVideoInfo(res){
           var video = res.snippet;
-          this.titleInput.value = video.title;
-          $("#video-id-input").val(res.id); //todo: reimplement
+          this.setState({
+            title: video.title,
+            videoID: res.id
+          });
 
           var tns=video.thumbnails;
 
@@ -74,23 +90,19 @@
 
           return <div>
 
-            <form id="new-song-form" method="post">
+            <form id="new-song-form" className="editor-bg-color kezie-editor" method="post">
               <div className="form-group">
-                <label htmlFor="video-url-input">Video URL</label>
-                <input onBlur={this.queryYoutube} className="form-control input-lg" id="video-url-input" name="url" placeholder="Link to youtube video" />
-                <input id="video-id-input" name="videoID" type="hidden" />
+                <input onChange={this.handleInput} value={this.state.url} onBlur={this.queryYoutube} className="form-control input-lg" name="url" placeholder="Link to youtube video" />
+                <input value={this.state.videoID} id="video-id-input" name="videoID" type="hidden" />
               </div>
               <div className="form-group">
-                <label htmlFor="title-input">Title</label>
-                <input className="form-control input-lg" ref={(el)=>{this.titleInput = el}} onBlur={this.search} id="title-input" name="title" placeholder="Title"/>
+                <input onChange={this.handleInput} value={this.state.title}  className="form-control input-lg" onBlur={this.search} id="title-input" name="title" placeholder="Title"/>
               </div>
               <div className="form-group">
-                <label htmlFor="artist-input">Artist</label>
-                <input className="form-control input-lg" onBlur={this.search} id="artist-input" name="artist" placeholder="Artist" />
+                <input onChange={this.handleInput} value={this.state.artist}  className="form-control input-lg" onBlur={this.search} id="artist-input" name="artist" placeholder="Artist" />
               </div>
               <div className="form-group">
-                <label htmlFor="art-url-input">Artwork URL</label>
-                <input className="form-control input-lg" ref={(el)=>{this.artInput = el}} id="art-url-input" name="img" placeholder="Artwork URL" />
+                <input  onChange={this.handleInput}value={this.state.img}  className="form-control input-lg" id="art-url-input" name="img" placeholder="Artwork URL" />
               </div>
               <button className="btn btn-default" type="submit">Add</button>
             </form>

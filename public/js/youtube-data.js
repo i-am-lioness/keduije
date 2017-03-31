@@ -7,21 +7,6 @@ function getIDFromURL(url){
   //alert("error with url provided");
 }
 
-function getVideoInfo() {
-  var q = getIDFromURL($(this).val());
-  if(!q) return;
-  var request = gapi.client.youtube.videos.list({
-    id: q,
-    part: 'snippet'
-  });
-
-  request.execute(function(response) {
-    if(response.items){
-      displayVideoInfo(response.items[0]);
-    }
-  });
-}
-
 function googleApiClientReady() {
 
   gapi.client.init({
