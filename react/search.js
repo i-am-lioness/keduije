@@ -13,6 +13,7 @@ class Search extends React.Component {
     this.query = this.query.bind(this);
     this.listResults = this.listResults.bind(this);
     this.eachResult = this.eachResult.bind(this);
+    this.showMobileSearch = this.showMobileSearch.bind(this);
   }
 
   toggleExpand(val){
@@ -44,21 +45,30 @@ class Search extends React.Component {
     </div>;
   }
 
+  showMobileSearch(){
+    this.setState({
+      visible: "visible"
+    });
+
+  }
+
   render () {
 
+    var spanClass = (this.props.mobile && this.state.visible)? "mobile-search" : null;
+
     var results = this.state.results.map(this.eachResult);
-    return <span>
+    return <span className={spanClass}>
       <input
-        className="form-control"
+        className={"form-control "+this.state.visible}
         type="text"
-        placeholder="Search"
+        placeholder="  Search"
         onFocus={this.toggleExpand.bind(this, true)}
         onBlur={this.toggleExpand.bind(this, false)}
-        style={{width: this.state.active? "500px" : null}}
+        style={{width: (!this.props.mobile && this.state.active)? "500px" : null}}
         onChange={this.query}
       />
-      <span className= "glyphicon glyphicon-search" aria-hidden="true"></span>
-      {this.state.active && <div id="search-results">{results}</div>}
+      <span className= "glyphicon glyphicon-search" aria-hidden="true" onClick={this.props.mobile && this.showMobileSearch}></span>
+      { <div className="search-results">{results}</div>}
     </span>
 
   }

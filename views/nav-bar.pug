@@ -18,6 +18,9 @@ nav.navbar.navbar-default
                 a(href="#loginModal",data-toggle="modal") Login
             li
               a.accent(href="/new_music") Add Lyrics
+            li
+              span#mobile-search-root
+              | Search
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav.navbar-right
         li#search-root
@@ -50,8 +53,11 @@ nav.navbar.navbar-default
 script(src='/search.js', type='text/babel')
 script(type='text/babel').
   ReactDOM.render(
-    <Search 
-
-    />,
+    <Search />,
     document.getElementById('search-root')
+  );
+  
+  ReactDOM.render(
+    <Search mobile={true} />,
+    document.getElementById('mobile-search-root')
   );
