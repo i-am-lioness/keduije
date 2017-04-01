@@ -25,9 +25,8 @@ html(lang='en')
       
       KeduIje.init("#{songID}");
       
-      var hi;
       function setCallback(component){
-        hi=component;
+        window.test=component;
         if (mediaType == KeduIje.mediaTypes.AUDIO) return;
           
         onYouTubeIframeAPIReady = component.onYouTubeIframeAPIReady;

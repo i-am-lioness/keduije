@@ -1,6 +1,16 @@
 
 var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
+class EditSwitch extends React.Component {
+
+  render(){
+
+    return <label className="switch">
+      <input type="checkbox" checked={this.props.editMode} onChange={this.props.toggleEditMode} />
+      <div className="slider round"></div>
+    </label>;
+  }
+}
 
       class MediaPlayer extends React.Component {
         constructor(props) {
@@ -325,14 +335,7 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
                           togglePlayState={this.togglePlayState}
                           isPlaying={this.state.isPlaying}
                         />
-                        {this.props.canEdit && <div
-                          type="button"
-                          className="play-button"
-                          onClick={this.handleToggleEditMode}
-                          style={{left: "initial", right: 0}}
-                          >
-                          <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span>
-                        </div>}
+                        {this.props.canEdit && <EditSwitch toggleEditMode={this.handleToggleEditMode} editMode={this.state.editMode} />}
                         <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
                       </div>
 
@@ -342,9 +345,7 @@ var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
               togglePlayState={this.togglePlayState}
               isPlaying={this.state.isPlaying}
             />
-            {this.props.canEdit && <button id="edit-mode-btn" type="button" className="button" onClick={this.handleToggleEditMode}>
-              <span className={"glyphicon glyphicon-pencil"} aria-hidden="true"></span> Edit
-            </button>}
+            {this.props.canEdit && <EditSwitch toggleEditMode={this.handleToggleEditMode} editMode={this.state.editMode} />}
             <div className="song-info">
               <p className="artist">{this.state.artist}</p>
               <h1 className="title">{this.state.title}</h1>
