@@ -174,7 +174,7 @@ body > .container-fluid{
   }
 
     @media (min-width: 768px) {
-      .artwork button:hover {
+      .artwork .play-button:hover {
         background-color: rgba(0, 0, 0, 0.5);
       }
     }
@@ -277,8 +277,8 @@ body > .container-fluid{
   /*padding: 6px 6px;*/
   background: White;
   position: absolute;
-bottom: 0;
-width: 100%;
+  bottom: 0;
+  width: 100%;
 }
 
   .seeking .seeking-bar{
@@ -310,6 +310,9 @@ width: 100%;
       opacity: 0.5;
     }
 
+    .artwork .seeking {
+        position: static;
+    }
 
 .example-enter {
   transform: scale(1,0);
@@ -341,6 +344,10 @@ width: 100%;
      right: 10px;
 
 }
+
+  .hold .switch {
+      top: 27px;
+  }
 
   .switch input {display:none;}
 
@@ -379,7 +386,7 @@ width: 100%;
 }
 
 input:checked + .slider {
-  background-color: #2196F3;
+  background-color: #7ed321;
 }
 
 input:focus + .slider {

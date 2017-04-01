@@ -303,9 +303,13 @@ class EditSwitch extends React.Component {
         }
 
         onKeyUp(e) {
-          console.log(e.code); //todo: hook "ArrowRight"
-          if ((e.code == "Space")&&(this.state.editMode)&&(!this.state.displayEditor))
-            this.togglePlayState();
+          //console.log(e);
+          if ((e.keyCode == 16)&&(this.state.editMode)){ //leftshift
+            if(this.state.displayEditor)
+              this.playSegment(true);
+            else
+              this.togglePlayState();
+          }
         }
 
         render () {
@@ -345,6 +349,7 @@ class EditSwitch extends React.Component {
               togglePlayState={this.togglePlayState}
               isPlaying={this.state.isPlaying}
             />
+            <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
             {this.props.canEdit && <EditSwitch toggleEditMode={this.handleToggleEditMode} editMode={this.state.editMode} />}
             <div className="song-info">
               <p className="artist">{this.state.artist}</p>
