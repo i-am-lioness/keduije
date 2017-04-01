@@ -7,7 +7,7 @@ class EditSwitch extends React.Component {
 
     return <label className="switch">
       <input type="checkbox" checked={this.props.editMode} onChange={this.props.toggleEditMode} />
-      <div className="slider round"></div>
+      <div className="slider"></div>
     </label>;
   }
 }

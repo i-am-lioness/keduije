@@ -296,6 +296,7 @@ width: 100%;
       background: #7ed321;
       height: 100%;
       opacity: .7;
+      transition: width 1s linear;
     }
 
     .seeking .seeking-bar .seeking-bar-guide{
@@ -334,7 +335,7 @@ width: 100%;
 .switch {
   position: absolute;
      display: inline-block;
-     width: 60px;
+     width: 70px;
      height: 34px;
      top: 10px;
      right: 10px;
@@ -353,6 +354,7 @@ width: 100%;
     background-color: #ccc;
     -webkit-transition: .4s;
     transition: .4s;
+    border-radius: 34px;
   }
   .slider:before {
   position: absolute;
@@ -364,6 +366,16 @@ width: 100%;
   background-color: white;
   -webkit-transition: .4s;
   transition: .4s;
+  border-radius: 50%;
+}
+.slider:after {
+  content: "edit";
+  line-height: 34px;
+  color: White;
+  position: absolute;
+  right: 9px;
+  text-transform: uppercase;
+  font-size: 75%;
 }
 
 input:checked + .slider {
@@ -375,16 +387,13 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
+  -webkit-transform: translateX(36px);
+  -ms-transform: translateX(36px);
+  transform: translateX(36px);
 }
 
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
+input:checked + .slider:after {
+  content: "on";
+  right: initial;
+  left: 7px;
 }
