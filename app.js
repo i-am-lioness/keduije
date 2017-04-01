@@ -267,6 +267,41 @@ function requireRole(role) {
     }
 }
 
+
+
+app.get(
+  '/api/search',
+  function (req, res) {
+
+    var q = req.query.query;
+    if (!q) {
+      res.send(null);
+      return;
+    }
+
+    db.collection('lyrics').find(
+      {$or : [
+        {
+            artist: {
+                $regex: q,
+                $options: "i"
+            }
+        },
+        {
+            title: {
+                $regex: q,
+                $options: "i"
+            }
+        }
+    ]},
+      { artist: 1, title: 1, songID: 1, slug: 1}
+    ).toArray(function(err, songs) {
+      res.send(songs)
+    });
+
+  }
+);
+
 app.get(
   '/api/lyrics/:songID',
   function (req, res) {
@@ -354,6 +389,7 @@ app.post("/api/logError", function (req, res){
     agent: req.headers['user-agent'], // User Agent we get from headers
     referrer: req.headers['referrer'], //  Likewise for referrer
     ip: req.ip,
+    host: req.hostname,
     screen: { // Get screen info that we passed in url post data
       width: req.body.width,
       height: req.body.height

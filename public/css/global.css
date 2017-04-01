@@ -184,3 +184,26 @@ text-align: center;
 .ui-draggable {
   cursor: move;
 }
+
+#search-results{
+  position: absolute;
+  top: 50px;
+  right: 0px;
+  background: White;
+  width: 500px;
+}
+
+  #search-results .search-result {
+      padding: 6px 5px 2px 5px;
+      /*border-bottom: 1px rgba(128, 128, 128, 0.15) solid;*/
+  }
+
+    #search-results .search-result a{
+        color: #3B3355; /* grayish indigo */
+        display: block;
+        text-decoration: none;
+    }
+
+  #search-results .search-result:hover {
+    background-color: #f5bb00; /* gold */
+  }

@@ -5,7 +5,7 @@ var KeduIje = (function(ki){
 
   window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
 
-    if(window.location=="localhost") return;
+    if(window.location.hostname=="localhost") return;
 
       var msg = 'Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber
       + ' Column: ' + column + ' StackTrace: ' +  errorObj;
@@ -13,6 +13,9 @@ var KeduIje = (function(ki){
       $.post("/api/logError",{ width: screen.width, height: screen.height, msg: msg });
   }
 
+  function search(q, cb) {
+    $.get("/api/search", {query: q}, cb);
+  }
 
   function loadLyrics(cb){
     $.get("/api/lyrics/"+songID, cb);
@@ -59,6 +62,7 @@ var KeduIje = (function(ki){
   ki.addLyric = addLyric;
   ki.saveSongInfo = saveSongInfo;
   ki.scrollIfOutOfView = scrollIfOutOfView;
+  ki.search = search;
 
 
   function makeAffixed(el, affixFrom){
