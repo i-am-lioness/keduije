@@ -173,13 +173,6 @@ body > .container-fluid{
     line-height: 100px;
   }
 
-    @media (min-width: 768px) {
-      .artwork .play-button:hover {
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-    }
-
-
 .affix-top{
   position: fixed;
 }
@@ -265,6 +258,12 @@ body > .container-fluid{
   cursor: pointer;
   line-height: 45px;
 }
+
+  @media (min-width: 768px) {
+    .play-button:hover {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+  }
 
   .play-button .glyphicon{
     top: 0;

@@ -20,6 +20,7 @@ nav.navbar.navbar-default
               a.accent(href="/new_music") Add Lyrics
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav.navbar-right
+        li#search-root
         li
           a.accent(href="/new_music") Add Lyrics
         if user
@@ -46,3 +47,11 @@ nav.navbar.navbar-default
         a(href="/login/facebook") Login with Facebook
         br
         a(href="/login/twitter") Login with Twitter
+script(src='/search.js', type='text/babel')
+script(type='text/babel').
+  ReactDOM.render(
+    <Search 
+
+    />,
+    document.getElementById('search-root')
+  );

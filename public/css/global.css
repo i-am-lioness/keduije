@@ -123,14 +123,29 @@ h1, h2, h3, h4, strong {
       color: #3B3355;
   }
 
-input[type="text"], textarea {
+input[type="text"] {
 outline: none;
 box-shadow:none !important;
 border:0px solid #ccc;
+height: 50px;
+width: 100px;
+transition: width 1s;
 }
+
+  *::-webkit-input-placeholder {
+    text-transform: uppercase;
+  }
 
 nav .glyphicon {
   margin-left: 5px;
+}
+
+nav .glyphicon-search {
+  position: absolute;
+    right: 10px;
+    top: 0;
+    line-height: 50px;
+    color: gray;
 }
 
 body > .container-fluid{
