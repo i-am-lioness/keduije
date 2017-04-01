@@ -45,21 +45,23 @@ class Search extends React.Component {
     </div>;
   }
 
-  showMobileSearch(){
+  showMobileSearch(val){
     this.setState({
-      visible: "visible"
+      visible: val
     });
 
   }
 
   render () {
+    //todo: decouple into two seperate render functions
 
     var spanClass = (this.props.mobile && this.state.visible)? "mobile-search" : null;
 
     var results = this.state.results.map(this.eachResult);
     return <span className={spanClass}>
+      <span className= "glyphicon glyphicon-remove" aria-hidden="true" onClick={this.showMobileSearch.bind(this,false)}></span>
       <input
-        className={"form-control "+this.state.visible}
+        className={"form-control "+(this.state.visible? "visible" : "")}
         type="text"
         placeholder="  Search"
         onFocus={this.toggleExpand.bind(this, true)}
@@ -67,7 +69,7 @@ class Search extends React.Component {
         style={{width: (!this.props.mobile && this.state.active)? "500px" : null}}
         onChange={this.query}
       />
-      <span className= "glyphicon glyphicon-search" aria-hidden="true" onClick={this.props.mobile && this.showMobileSearch}></span>
+      <span className= "glyphicon glyphicon-search" aria-hidden="true" onClick={this.props.mobile && this.showMobileSearch.bind(this,true)}></span>
       { <div className="search-results">{results}</div>}
     </span>
 
