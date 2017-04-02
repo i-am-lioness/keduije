@@ -48,24 +48,26 @@ class Search extends React.Component {
     </div>;
   }
 
-  showMobileSearch(val){
+  showMobileSearch(mobile){
     this.setState({
-      mobile: val
+      mobile: mobile,
+      results: []
     });
-
   }
 
   mobile(resultsDiv){
     return <div className="mobile-search">
-      <span className= "glyphicon glyphicon-remove" aria-hidden="true" onClick={this.showMobileSearch.bind(this,false)}></span>;
-      <input
-        className={"form-control"}
-        type="text"
-        placeholder="  Search"
-        onChange={this.query}
-      />
+      <span className= "glyphicon glyphicon-remove" aria-hidden="true" onClick={this.showMobileSearch.bind(this,false)}></span>
+      <div className= "glyphicon-search">
+        <input
+          className={"form-control"}
+          type="text"
+          placeholder="  Search"
+          onChange={this.query}
+        />
+      </div>
       {resultsDiv}
-    </div>
+    </div>;
   }
 
   desktop(resultsDiv){

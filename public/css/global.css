@@ -101,17 +101,16 @@ h1, h2, h3, h4, strong {
   color: #3B3355; /* grayish indigo */
 }
 
+.glyphicon-search.hidden-xs {
+    position: absolute;
+    display: inline-block;
+    height: 50px;
+    line-height: 50px;
+    right: 0px;
+}
   @media only screen and (min-width: 768px) {
     .navbar li{
       border-left: 1px solid #e4dfdf;
-    }
-
-    .glyphicon-search {
-        position: absolute;
-        display: inline-block;
-        height: 50px;
-        line-height: 50px;
-        right: 0px;
     }
   }
 
@@ -151,6 +150,10 @@ display: none;
       /* For desktop: */
       input[type="text"] {
         display: initial;
+      }
+
+      #search-root .glyphicon-search {
+        display: none;
       }
     }
 
@@ -271,22 +274,33 @@ text-align: center;
     display: initial;
   }
 
-  .mobile-search input{
-    display: block;
-    position: relative;
-    margin: 20% auto;
-    border-radius: 0;
-    width: 80%;
-    background: none;
+  .mobile-search div.glyphicon-search {
     border-bottom: 3px #f5bb00 solid;
+    margin: 20% auto 0 auto;
+    display: block;
+    width: 80%;
+    color:  #f5bb00;
+  }
+
+    .mobile-search div.glyphicon-search::before {
+      font-family: 'Glyphicons Halflings';
+      font-size: 2em;
+    }
+
+  .mobile-search input{
+    position: relative;
+    border-radius: 0;
+    background: none;
     height: 25px;
-    color: White;
     font-size: 20px;
     margin-bottom: 5px;
+    display: initial;
+    width: 85%;
+    color:  white;
   }
 
     .mobile-search input::-webkit-input-placeholder {
-      color:  #f5bb00;
+
       font-size: 20px;
     }
 
