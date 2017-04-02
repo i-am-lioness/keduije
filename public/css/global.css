@@ -239,6 +239,10 @@ text-align: center;
       margin: 0 5px;
   }
 
+  .mobile-buttons button {
+    border: none;
+  }
+
   @media only screen and (min-width: 768px) {
       /* For desktop: */
       .mobile-buttons {
@@ -291,9 +295,10 @@ text-align: center;
     position: relative;
     border-radius: 0;
     background: none;
-    height: 25px;
+    height: 50px;
     font-size: 20px;
-    margin-bottom: 5px;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
     display: initial;
     width: 85%;
     color:  white;
