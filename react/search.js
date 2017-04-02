@@ -6,7 +6,8 @@ class Search extends React.Component {
     super(props);
     this.state = {
       active: false,
-      results: []
+      results: [],
+      mobile: false
     };
 
     this.toggleExpand = this.toggleExpand.bind(this);
@@ -14,6 +15,8 @@ class Search extends React.Component {
     this.listResults = this.listResults.bind(this);
     this.eachResult = this.eachResult.bind(this);
     this.showMobileSearch = this.showMobileSearch.bind(this);
+    this.desktop = this.desktop.bind(this);
+    this.mobile = this.mobile.bind(this);
   }
 
   toggleExpand(val){
@@ -47,31 +50,47 @@ class Search extends React.Component {
 
   showMobileSearch(val){
     this.setState({
-      visible: val
+      mobile: val
     });
 
   }
 
-  render () {
-    //todo: decouple into two seperate render functions
-
-    var spanClass = (this.props.mobile && this.state.visible)? "mobile-search" : null;
-
-    var results = this.state.results.map(this.eachResult);
-    return <span className={spanClass}>
-      <span className= "glyphicon glyphicon-remove" aria-hidden="true" onClick={this.showMobileSearch.bind(this,false)}></span>
+  mobile(resultsDiv){
+    return <div className="mobile-search">
+      <span className= "glyphicon glyphicon-remove" aria-hidden="true" onClick={this.showMobileSearch.bind(this,false)}></span>;
       <input
-        className={"form-control "+(this.state.visible? "visible" : "")}
+        className={"form-control"}
+        type="text"
+        placeholder="  Search"
+        onChange={this.query}
+      />
+      {resultsDiv}
+    </div>
+  }
+
+  desktop(resultsDiv){
+    return <span>
+      <input
+        className={"form-control"}
         type="text"
         placeholder="  Search"
         onFocus={this.toggleExpand.bind(this, true)}
         onBlur={this.toggleExpand.bind(this, false)}
-        style={{width: (!this.props.mobile && this.state.active)? "500px" : null}}
+        style={{width: (this.state.active)? "500px" : null}}
         onChange={this.query}
       />
-      <span className= "glyphicon glyphicon-search" aria-hidden="true" onClick={this.props.mobile && this.showMobileSearch.bind(this,true)}></span>
-      { <div className="search-results">{results}</div>}
-    </span>
+      <span className= "glyphicon glyphicon-search" aria-hidden="true" onClick={this.showMobileSearch.bind(this,true)}></span>
+      {resultsDiv}
+    </span>;
+  }
+
+  render () {
+    var results = this.state.results.map(this.eachResult);
+    var resultsDiv =  <div className="search-results">{results}</div>;
+    if(this.state.mobile)
+      return this.mobile(resultsDiv);
+    else
+      return this.desktop(resultsDiv)
 
   }
 }

@@ -53,6 +53,8 @@ h1, h2, h3, h4, strong {
     transition: left 1s;
     display: block;
     min-width: inherit;
+    position: fixed;
+    top: 50px;
   }
 
     #nav-mobile-menu.open>.dropdown-menu {
@@ -221,18 +223,6 @@ text-align: center;
     background-color: #f5bb00; /* gold */
   }
 
-.mobile-search{
-  position: fixed; /* Stay in place */
-  z-index: 70; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
-}
-
 .mobile-buttons {
     position: absolute;
     top: 0;
@@ -259,3 +249,58 @@ text-align: center;
           /*border: initial;*/
       }
     }
+
+
+.mobile-search{
+  position: fixed; /* Stay in place */
+  z-index: 70; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+}
+
+  .mobile-search .glyphicon-remove {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: white;
+    display: initial;
+  }
+
+  .mobile-search input{
+    display: block;
+    position: relative;
+    margin: 20% auto;
+    border-radius: 0;
+    width: 80%;
+    background: none;
+    border-bottom: 3px #f5bb00 solid;
+    height: 25px;
+    color: White;
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+
+    .mobile-search input::-webkit-input-placeholder {
+      color:  #f5bb00;
+      font-size: 20px;
+    }
+
+    .mobile-search .search-results{
+      position: static;
+      display: block;
+      background: none;
+      color: #5d41ae;
+    }
+
+    .mobile-search .search-result {
+      padding-left: 5%;
+    }
+
+    .mobile-search .search-result a{
+       color: White;
+     }
