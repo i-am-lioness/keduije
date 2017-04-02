@@ -157,7 +157,7 @@ display: none;
       }
     }
 
-  *::-webkit-input-placeholder {
+  nav *::-webkit-input-placeholder {
     text-transform: uppercase;
   }
 

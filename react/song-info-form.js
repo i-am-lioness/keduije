@@ -5,9 +5,9 @@
 
           this.resetState = {
             images: new Set(this.props.img ? [this.props.img]: null),
-            title: "",
-            artist: "",
-            url: "",
+            title: {value: "", edited: false},
+            artist: {value: "", edited: false},
+            url: {value: "", edited: false},
             img: "",
             videoID: ""
           };
@@ -20,6 +20,7 @@
           this.displayVideoInfo = this.displayVideoInfo.bind(this);
           this.handleInput = this.handleInput.bind(this);
           this.handleSubmit = this.handleSubmit.bind(this);
+          this.displayValue = this.displayValue.bind(this);
         }
 
         handleSubmit(e){
@@ -29,11 +30,11 @@
             e.target.submit();
           }else{
             this.props.onSubmit({
-              title: this.state.title || this.props.title,
-              artist: this.state.artist || this.props.title,
+              title: this.state.title.value || this.props.title,
+              artist: this.state.artist.value || this.props.title,
               img: this.state.img || this.props.img
             });
-            this.setState(this.resetState);
+            //this.setState(this.resetState);
           }
         }
 
@@ -48,7 +49,7 @@
           const name = e.target.name;
 
           this.setState({
-            [name]: value
+            [name]: {value: value, edited: true}
           });
         }
 
@@ -109,20 +110,43 @@
           })
         }
 
+        displayValue(name){
+          /*
+          three states
+          1 blank- for fresh new song
+          2 original value - for fresh edit
+          3 new value- for fresh edit
+          4 new value- for new song
+
+          */
+
+          var value;
+
+          if(this.state[name].edited){
+            value = this.state[name].value;
+          }else{
+            value = this.props[name] || "";
+          }
+
+          return value;
+        }
+
         render () {
 
           return <form id="new-song-form" className="editor-bg-color kezie-editor" method="post" onSubmit={this.handleSubmit}>
               <div className="row">
                 <div className="col-md-12">
                   {this.props.newSong &&<div className="form-group">
-                    <input onChange={this.handleInput} value={this.state.url} onBlur={this.queryYoutube} className="form-control input-lg" name="url" placeholder="Link to youtube video" />
+                    <input onChange={this.handleInput} value={this.state.url.value} onBlur={this.queryYoutube} className="form-control input-lg" name="url" placeholder="Link to youtube video" />
                     <input value={this.state.videoID} id="video-id-input" name="videoID" type="hidden" />
                   </div>}
                   <div className="form-group">
-                    <input onChange={this.handleInput} value={this.state.title || this.props.title}  className="form-control input-lg" onBlur={this.search} id="title-input" name="title" placeholder="Title"/>
+                    <label htmlFor="title-input">Title</label>
+                    <input onChange={this.handleInput} value={this.displayValue("title")}  className="form-control input-lg" onBlur={this.search} id="title-input" name="title" placeholder="Title"/>
                   </div>
                   <div className="form-group">
-                    <input onChange={this.handleInput} value={this.state.artist || this.props.artist}  className="form-control input-lg" onBlur={this.search} id="artist-input" name="artist" placeholder="Artist" />
+                    <label htmlFor="artist-input">Artist</label>
+                    <input onChange={this.handleInput} value={this.displayValue("artist")}  className="form-control input-lg" onBlur={this.search} id="artist-input" name="artist" placeholder="Artist" />
                   </div>
                   <div className="form-group">
                     <input type="hidden" onChange={this.handleInput} value={this.state.img}  className="form-control input-lg" id="art-url-input" name="img" placeholder="Artwork URL" />

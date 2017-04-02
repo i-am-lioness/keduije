@@ -287,7 +287,7 @@ class EditSwitch extends React.Component {
         }
 
         toggleSongInfoDialog(value){
-          this.setState({editDialogIsOpen: value? value : true }); //value
+          this.setState({editDialogIsOpen: value});
         }
 
         saveSongInfo(songInfo){
@@ -303,13 +303,13 @@ class EditSwitch extends React.Component {
         }
 
         onKeyUp(e) {
-          //console.log(e);
-          if ((e.keyCode == 16)&&(this.state.editMode)){ //leftshift
-            if(this.state.displayEditor)
-              this.playSegment(true);
-            else
+
+          if ((e.keyCode == 32)&&(this.state.editMode)){ //space
+            if(!this.state.displayEditor)
               this.togglePlayState();
           }
+
+          //this.playSegment(true);
         }
 
         render () {
