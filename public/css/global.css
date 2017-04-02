@@ -41,8 +41,7 @@ h1, h2, h3, h4, strong {
 }
 
 #nav-mobile-menu {
-  float: right;
-  margin: 10px;
+
 }
 
 
@@ -98,8 +97,21 @@ h1, h2, h3, h4, strong {
   text-transform: uppercase;
   font-size: 16px;
   color: #3B3355; /* grayish indigo */
-  border-left: 1px solid #e4dfdf;
 }
+
+  @media only screen and (min-width: 768px) {
+    .navbar li{
+      border-left: 1px solid #e4dfdf;
+    }
+
+    .glyphicon-search {
+        position: absolute;
+        display: inline-block;
+        height: 50px;
+        line-height: 50px;
+        right: 0px;
+    }
+  }
 
 #navbar .navbar-nav>li>a.accent {
   color: #5D41AE;
@@ -130,7 +142,15 @@ border:0px solid #ccc;
 height: 50px;
 width: 100px;
 transition: width 1s;
+display: none;
 }
+
+  @media only screen and (min-width: 768px) {
+      /* For desktop: */
+      input[type="text"] {
+        display: initial;
+      }
+    }
 
   *::-webkit-input-placeholder {
     text-transform: uppercase;
@@ -140,18 +160,6 @@ nav .glyphicon {
   margin-left: 5px;
   color: gray;
 }
-
-nav .glyphicon-search {
-  position: absolute;
-    right: 10px;
-    top: 0;
-    line-height: 50px;
-
-}
-
-  nav #nav-mobile-menu .glyphicon-search {
-    position: initial;
-  }
 
 body > .container-fluid{
   padding-top: 50px;
@@ -224,62 +232,30 @@ text-align: center;
   background-color: rgb(0,0,0); /* Fallback color */
   background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
 }
-  #nav-mobile-menu  .glyphicon-remove {
-    display: none;
-  }
-  #nav-mobile-menu .mobile-search .glyphicon-remove {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    color: white;
-    display: initial;
-  }
 
-  #nav-mobile-menu .mobile-search .glyphicon-search {
+.mobile-buttons {
     position: absolute;
-    color: #f5bb00;
-    top: 9%;
-    left: 35px;
-    font-size: 20px;
-    right: initial;
-  }
-
-#nav-mobile-menu input{
-  display: none;
+    top: 0;
+    right: 5px;
 }
 
-  #nav-mobile-menu input.visible{
-    display: block;
-    position: relative;
-    margin: 20% auto;
-    border-radius: 0;
-    width: 80%;
-    background: none;
-    border-bottom: 3px #f5bb00 solid;
-    height: 25px;
-    color: White;
-    font-size: 20px;
-    margin-bottom: 5px;
+  .mobile-buttons li {
+      display: inline-block;
+      height: 50px;
+      line-height: 50px;
+      margin: 0 5px;
   }
 
-    #nav-mobile-menu ::-webkit-input-placeholder {
-      color:  #f5bb00;
-      font-size: 20px;
-    }
-
-
-
-  #nav-mobile-menu .search-results{
-    position: static;
-    display: block;
-    background: none;
-    color: #5d41ae;
-  }
-
-    #nav-mobile-menu .search-result {
-      padding-left: 5%;
-    }
-
-      #nav-mobile-menu .search-result a{
-        color: White;
+  @media only screen and (min-width: 768px) {
+      /* For desktop: */
+      .mobile-buttons {
+          position: initial;
+          top: initial;
+          right: initial;
       }
+
+      .mobile-buttons li {
+          line-height: initial;
+          /*border: initial;*/
+      }
+    }

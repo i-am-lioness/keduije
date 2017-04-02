@@ -3,27 +3,8 @@ nav.navbar.navbar-default
     .navbar-header
       a.navbar-brand(href='/')
         | kezie
-      #nav-mobile-menu.visible-xs-block
-        button#menuDropDown(href="#",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false")
-          span.glyphicon.glyphicon-menu-hamburger(aria-hidden="true")
-        .dropdown-menu(aria-labelledby="menuDropDown")
-          ul
-            if user
-              li.login-info
-                  a(href="#") #{user.displayName}
-                  div.user-avatar(style="background-image: url(" + user.photo + ");")
-                  a(href="/logout") Logout
-            else
-              li
-                a(href="#loginModal",data-toggle="modal") Login
-            li
-              a.accent(href="/new_music") Add Lyrics
-            li
-              span#mobile-search-root
-              | Search
-    #navbar.navbar-collapse.collapse
-      ul.nav.navbar-nav.navbar-right
-        li#search-root
+    #navbar.navbar-collapse.collapse.navbar-right
+      ul.nav.navbar-nav
         li
           a.accent(href="/new_music") Add Lyrics
         if user
@@ -39,6 +20,23 @@ nav.navbar.navbar-default
         else
           li
             a(href="#loginModal",data-toggle="modal") Login
+    ul.nav.navbar-right.mobile-buttons
+      li#search-root
+      li#nav-mobile-menu.visible-xs-inline
+        button#menuDropDown(href="#",data-toggle="dropdown",aria-haspopup="true",aria-expanded="false")
+          span.glyphicon.glyphicon-menu-hamburger(aria-hidden="true")
+        .dropdown-menu(aria-labelledby="menuDropDown")
+          ul
+            if user
+              li.login-info
+                  a(href="#") #{user.displayName}
+                  div.user-avatar(style="background-image: url(" + user.photo + ");")
+                  a(href="/logout") Logout
+            else
+              li
+                a(href="#loginModal",data-toggle="modal") Login
+            li
+              a.accent(href="/new_music") Add Lyrics
 #loginModal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="myModalLabel")
   .modal-dialog(role="document")
     .modal-content
@@ -55,9 +53,4 @@ script(type='text/babel').
   ReactDOM.render(
     <Search />,
     document.getElementById('search-root')
-  );
-  
-  ReactDOM.render(
-    <Search mobile={true} />,
-    document.getElementById('mobile-search-root')
   );
