@@ -64,15 +64,6 @@ var KeduIje = (function(ki){
   ki.scrollIfOutOfView = scrollIfOutOfView;
   ki.search = search;
 
-
-  function makeAffixed(el, affixFrom){
-    $(el).affix({offset: {top: affixFrom}});
-  }
-
-  animations = {};
-  animations.affix = makeAffixed;
-  ki.animations = animations;
-
   return ki;
 
 })({});

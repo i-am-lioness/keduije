@@ -28,7 +28,8 @@ class EditSwitch extends React.Component {
             showEditDialog: false,
             editDialogIsOpen: false,
             isPlaying: false,
-            videoPlaybackMode: false
+            videoPlaybackMode: false,
+            affixed: false
           };
 
           this.maxTime = null;
@@ -62,6 +63,7 @@ class EditSwitch extends React.Component {
           this.saveSongInfo = this.saveSongInfo.bind(this);
           this.togglePlayState = this.togglePlayState.bind(this);
           this.onKeyUp = this.onKeyUp.bind(this);
+          this.onScroll = this.onScroll.bind(this);
 
         }
 
@@ -198,15 +200,19 @@ class EditSwitch extends React.Component {
 
         componentWillMount(){
           window.onkeyup = this.onKeyUp;
-         }
+          window.onscroll = this.onScroll;
+        }
+
+        onScroll(e){
+          if((!this.state.affixed)&&(window.scrollY>300))
+            this.setState({affixed: true});
+          else if((this.state.affixed)&&(window.scrollY<300))
+            this.setState({affixed: false});
+
+        }
 
         componentDidMount(){
             KeduIje.loadLyrics(this.loadSongData);
-
-            var affixStart = $(this.infoBar).offset().top;
-            affixStart=300; //to do: hard coded for now, use lyric display element
-            KeduIje.animations.affix(this.infoBar, affixStart);
-
 
             if(this.props.mediaType!=KeduIje.mediaTypes.AUDIO) return; //todo: add sanity check here
             this.media = new KeduIje.Audio(this.audioElement, this.onPlayerReady, this.handlePaused, this.handleResume);
@@ -245,8 +251,6 @@ class EditSwitch extends React.Component {
           this.setState({isPlaying: true});
           if((!this.state.videoPlaybackMode)&&(this.props.mediaType == KeduIje.mediaTypes.VIDEO)){
             this.setState({videoPlaybackMode: true});
-            $(window).off('.affix');
-            $(this.infoBar).removeData('bs.affix').removeClass('affix affix-top affix-bottom').addClass('hold');
           }
         }
 
@@ -332,7 +336,9 @@ class EditSwitch extends React.Component {
             </div>
           }
 
-          var infoBar = <div className="info-bar" ref={(el)=>{this.infoBar = el;}}>
+          var affixed = this.state.videoPlaybackMode ? "hold" : (this.state.affixed ? "affix" : "");
+
+          var infoBar = <div className={"info-bar "+affixed}>
                         <p className="title">{this.state.title}</p>
                         <p className="artist">{this.state.artist}</p>
                         <PlayControl
