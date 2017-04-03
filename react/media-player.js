@@ -204,15 +204,17 @@ class EditSwitch extends React.Component {
         }
 
         onScroll(e){
-          if((!this.state.affixed)&&(window.scrollY>300))
+          if((!this.state.affixed)&&(window.scrollY>this.affixPoint))
             this.setState({affixed: true});
-          else if((this.state.affixed)&&(window.scrollY<300))
+          else if((this.state.affixed)&&(window.scrollY<this.affixPoint))
             this.setState({affixed: false});
 
         }
 
         componentDidMount(){
             KeduIje.loadLyrics(this.loadSongData);
+
+            this.affixPoint = this.artwork.offsetTop + this.artwork.offsetHeight;
 
             if(this.props.mediaType!=KeduIje.mediaTypes.AUDIO) return; //todo: add sanity check here
             this.media = new KeduIje.Audio(this.audioElement, this.onPlayerReady, this.handlePaused, this.handleResume);
@@ -349,7 +351,7 @@ class EditSwitch extends React.Component {
                         <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
                       </div>
 
-          var artwork = <div key="artwork" className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
+          var artwork = <div key="artwork" ref={(el)=>{this.artwork = el;}} className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
             <div className="gradient"></div>
             <PlayControl
               togglePlayState={this.togglePlayState}
