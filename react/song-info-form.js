@@ -97,7 +97,7 @@
         displayVideoInfo(res){
           var video = res.snippet;
           this.setState({
-            title: video.title,
+            title: {value: video.title},
             videoID: res.id
           });
 

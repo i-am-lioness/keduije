@@ -15,7 +15,6 @@
         position: fixed;
         left: 10%;
         top: 15%;
-        width: 50%;
       }
     }
 
@@ -67,7 +66,8 @@
 }
 
 .kezie-editor .spinner-container{
-  margin: 10px 0;
+	margin: 10px 30px 10px 0;
+  white-space: nowrap;
 }
 
 .kezie-editor .label{

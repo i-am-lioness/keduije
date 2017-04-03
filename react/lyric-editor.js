@@ -57,6 +57,9 @@
             </div>
           </div>
           <div className="row">
+            <span className="hidden-xs" style={{float: "right"}}>
+              {playSegmentButton}
+            </span>
             <div className="col-md-5 col-xs-6">
               <TimeSpinner
                 className="col-md-5"
@@ -78,9 +81,6 @@
                 increment={this.props.incrementTime}
                 decrement={this.props.decrementTime}
               />
-            </div>
-            <div className="col-md-2 hidden-xs">
-              {playSegmentButton}
             </div>
           </div>
           <div className="row">
