@@ -99,7 +99,7 @@ class EditSwitch extends React.Component {
               text: this.state.text,
               endTime: this.state.segmentEnd,
               deleted: false,
-              id: this.state.lyrics.length,
+              //id: this.state.lyrics.length,
               startTime: this.state.segmentStart,
               heading: null
             };

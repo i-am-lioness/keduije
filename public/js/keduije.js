@@ -27,13 +27,8 @@ var KeduIje = (function(ki){
 
   function updateLyric(oldLyricObj, newLyricObj, cb){
 
-    var postData = {
-      new: newLyricObj,
-      original: oldLyricObj
-    };
-
     //todo: postdata should be validated
-    $.post("/api/lyrics/"+songID+"/editline/"+oldLyricObj.id, postData, cb);
+    $.post("/api/lyrics/"+songID+"/editline/"+oldLyricObj.id, newLyricObj, cb);
 
   }
 

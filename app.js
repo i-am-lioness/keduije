@@ -514,48 +514,6 @@ function validate(lyric){
   return false;
 }
 
-app.post('/api/lyrics/:songID/addline', function (req, res) {
-
-  var obj = req.body;
-  obj.lastEditBy = req.user._id;
-  obj.revised=false;
-
-  if(validate(obj)){
-    res.send("error validating");
-  }
-
-  db.collection('lyrics').findAndModify(
-     { _id: ObjectId(req.params.songID) } ,
-     null,
-     {
-       $push: { lyrics: obj }
-     },
-     {new: true},
-     function(err, result) {
-       res.send(result.value.lyrics); //todo: error checking
-     }
-  );
-
-});
-
-function updateLyric(req, res, obj) { //todo: obj might be redundant
-
-  //'Cannot update \'lyrics.5\' and \'lyrics.5.lastEdit\' at the same time',
-  obj.lastEdit = new Date();
-
-  db.collection('lyrics').findAndModify(
-     { _id: ObjectId(req.params.songID), "lyrics.id": req.params.lineID } ,
-     null,
-     { $set: { "lyrics.$" : obj }
-      },
-      {new: true},
-     function(err, result) {
-       res.send(result.value.lyrics); //todo: error checking
-     }
-  );
-
-}
-
 /*temporary script */
 /*
 app.get('/temp', function (req, res) {
@@ -571,8 +529,9 @@ app.get('/temp', function (req, res) {
 //      song.lyrics.forEach(function(lyric){
 //        lyric.revised = false;
 //      });
+			song.lyricCnt = song.lyrics.length;
     }
-
+		
     db.collection('lyrics').save(song);
   });
 
@@ -582,33 +541,115 @@ app.get('/temp', function (req, res) {
 */
 
 
+
+function commitRevision(revision){
+	revision.state="applied";
+	db.collection("revisions").save(revision).then(function(){
+		db.collection('lyrics').updateOne(
+			{ _id: revision.songID, pendingRevisions: revision._id},
+			{$pull: {pendingRevisions: revision._id}}
+		).then(function(result){
+			revision.state="done";
+			db.collection("revisions").save(revision);
+		});
+	});
+}
+
+
+function getNewLyricID(songID) {
+	return new Promise((resolve, reject) => {
+		 db.collection("lyrics").findAndModify(
+			 { _id: songID }, 
+			 null,
+			 { $inc: { lyricCnt: 1 } },
+			 {new: true}
+		 ).then((result)=>{ resolve(result.value.lyricCnt.toString());}, reject);
+	});
+}
+
+function _processRevision(revision, res, queryObj, updateObj){
+	//console.log("queryObj", queryObj);
+	//console.log("updateObj",updateObj);
+	db.collection('lyrics').findAndModify(
+		queryObj,
+		null,
+		updateObj,
+		{new: true}
+	).then(
+		function(result){
+			//console.log(result);
+			var song = result.value;
+			res.send(song.lyrics); //todo: error checking
+
+			commitRevision(revision)
+		},
+		function(err){
+			console.log(err);
+		}
+	);
+}
+
+function processRevision(revision, res){
+	
+	var queryObj = { _id: revision.songID};
+	var updateObj = {
+		$push: {pendingRevisions: revision._id},
+		$currentDate: { lastModified: true }
+	};
+	
+	switch(revision.action){
+		case "edit_lyric":
+			queryObj["lyrics.id"]=revision.lineID;
+			updateObj["$set"]={"lyrics.$": revision.newValue};
+			return _processRevision(revision, res, queryObj, updateObj);
+		case "add_lyric":
+			updateObj["$push"].lyrics = revision.newValue;
+			return getNewLyricID(revision.songID).then((id)=>{
+				revision.lineID=id;
+				revision.newValue.id=revision.lineID; 
+				_processRevision(revision, res, queryObj, updateObj);
+			});
+		default:
+			res.send("unknown action: "+ revision.action)
+			return;
+	}
+	
+	
+}
+
+function executeAction(action, req, res){
+	var revision = {
+		state: "pending", 
+		action: action,
+		user: req.user._id,
+		songID: ObjectId(req.params.songID),
+		lineID: req.params.lineID || null,
+		lastModified: new Date(),
+		newValue: req.body
+	};
+	
+	db.collection("revisions").insertOne(revision).then(function(results){
+		//todo: error checking
+		//later: will be handled by a worker process
+		processRevision(revision, res);
+	});
+}
+
 app.post('/api/lyrics/:songID/editline/:lineID', ensureLoggedIn(), function (req, res) {
+	
+	executeAction("edit_lyric", req, res);
 
-  req.body.new.lastEditBy=req.user._id;
+});
 
-  console.log("req.body.original.revised",req.body.original.revised);
+app.post('/api/lyrics/:songID/addline', function (req, res) {
 
-  if((JSON.parse(req.body.original.revised))  || (req.user._id!=req.body.original.lastEditBy)){
-    console.log("this lyric is in revision phase");
+  var obj = req.body;
 
-    //different user, so must start saving revisions
-    req.body.new.revised = true; //todo: could be redundant
-
-    var revision = req.body.original; //todo: get original record directly from db rather than from client
-    revision.songID = req.params.songID;
-    revision.user = revision.lastEditBy;
-    delete revision.lastEditBy;
-    delete revision.revised;
-
-
-    db.collection("revisions").insertOne(revision, function(err, results){
-      updateLyric(req, res, req.body.new);
-    });
-
-  }else{ //todo: use promise
-    console.log("this lyric is not yet being revised. direct update")
-    updateLyric(req, res, req.body.new);
+  if(validate(obj)){
+    res.send("error validating");
   }
+
+	executeAction("add_lyric", req, res);
 
 });
 

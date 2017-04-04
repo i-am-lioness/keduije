@@ -8,26 +8,146 @@ can add headings or lyrics
 <0:15> Aga m agbachazi nbo gbara aka laa
 <>Imana mu na Chi m so
 
-lyric_line {
-  id: num_of_bars
+lyric {
+  id: {integer++},
   startTime:
   endTime:
   deleted: false,
   text:
   heading: null || "string",
   lastEdit: {dateTime}
-  lastEditBy: null || "userID" //null, if never revised by another
+  lastEditBy: null || "userID" //null, if never revised by another,
+	version: {integer++}
 }
 
 //id can change until annotated or edited
 revision: {
+	_id: (new ObjectID()),
+	state: {"pending" || "applied" || "done"},
+	updateDoc : <update doc>
   user:
+	action: {"add" || "edit" || "delete" },
+	target: {"info" || "lyrics" },
+	
+	
   songID:
   lineID:
   date: {dateTime}
-  change: {deleted: true ||
+  value: {deleted: true ||
           startTime: x ||
           endTime: x ||
           content:,
           header: }
 }
+
+
+song: {
+	pendingRevisions: [], 
+	version: {integer},
+	title: "string",
+	slug: Slugify(this.title),
+	artist: "string", /* for now */
+	img: "string",
+	totalViews: {integer},
+	lyricCnt: {integer++}
+	history: [/*viewing history*/]
+	type: 0 || 1, /* audio= 0, video=1 */
+	/*for audio type */
+	src: "string", /*formally 'url' */
+	lyrics: []
+
+}
+
+
+1***Editing lyric:
+-r=Revisions.insert(({state: "pending", action: "edit_lyric"})) 
+==>can optimisticly be displayed at this point
+-Songs.find({id: revisions.songID}, (song)=>{
+	song.update({
+		$set: {"lyric.$": r.new},
+		$push: {pendingRevisions: r.id}
+		});
+	
+})
+-Revisions.find({_id: r.id}, (revision)=>{
+	revision.state = "applied"
+})
+-Songs.find({id: revisions.songID}, (song)=>{
+	song.pendingRevisions.pull(r.id),
+})
+-Revisions.find({_id: r.id}, (revision)=>{
+	revision.state = "done"
+})
+
+/*
+handle: what if two ppl are adding lyrics at the same time?
+*/
+2***Adding lyric:
+-r=Revisions.insert(({state: "pending", action: "add_lyric"})) 
+==>could optimisticly be displayed at this point
+-Songs.find({_id: revisions.songID}, (song)=>{
+	song.update({
+		$push: {
+			pendingRevisions: r.id,
+			lyrics: r.new
+			}
+		});
+})
+=>better to wait till this point, so at least concurrent editing will display
+-Revisions.find({_id: r.id}, (revision)=>{
+	revision.state = "applied"
+})
+-Songs.find({id: revisions.songID}, (song)=>{
+	song.pendingRevisions.pull(r.id),
+})
+-Revisions.find({_id: r.id}, (revision)=>{
+	revision.state = "done"
+})
+
+
+3***Adding Song:
+-s=Songs.insert(new Song());
+=>send form to client
+===>on cancel, delete
+===>on save, next
+-r=Revisions.insert(({state: "pending", action: "insert_song", new: <update doc>})) 
+-Songs.find({id: revisions.songID}, (song)=>{
+	song.update({
+		$set: r.new, 
+		$push: {pendingRevisions: r.id}
+		});
+})
+==>can optimisticly be displayed at this point
+-Revisions.find({_id: r.id}, (revision)=>{
+	revision.state = "applied"
+})
+-Songs.find({id: revisions.songID}, (song)=>{
+	song.pendingRevisions.pull(r.id),
+})
+-Revisions.find({_id: r.id}, (revision)=>{
+	revision.state = "done"
+})
+
+
+
+Editing Song Info:
+-r=Revisions.insert(({state: "pending", action: "edit_song", <update doc>})) 
+==>can optimisticly be displayed at this point
+-Songs.find({id: revisions.songID}, (song)=>{
+	song.update({
+		$set: r.new, 
+		$push: {pendingRevisions: r.id}
+		});
+})
+-Revisions.find({_id: r.id}, (revision)=>{
+	revision.state = "applied"
+})
+-Songs.find({id: revisions.songID}, (song)=>{
+	song.pendingRevisions.pull(r.id),
+})
+-Revisions.find({_id: r.id}, (revision)=>{
+	revision.state = "done"
+})
+
+
+ 
