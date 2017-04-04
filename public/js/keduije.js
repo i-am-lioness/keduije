@@ -57,6 +57,7 @@ var KeduIje = (function(ki){
   ki.saveSongInfo = saveSongInfo;
   ki.scrollIfOutOfView = scrollIfOutOfView;
   ki.search = search;
+  ki.deleteSong = ()=>{}; //todo: implement
 
   return ki;
 

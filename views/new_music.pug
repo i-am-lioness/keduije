@@ -12,10 +12,21 @@ html(lang='en')
     script(src="/js/youtube-data.js")
     script(src='/song-info-form.js', type='text/babel')
     script(type='text/babel').
+      KeduIje.init("#{songID}");
+      
+      function submitSongInfo(data){
+
+        KeduIje.saveSongInfo(data, (song) => { 
+          window.location="/music/"+song.slug;
+        });
+      }
+      
       ReactDOM.render(
         <SongInfoForm 
           ref={(component) => {window.hi = component}}
           newSong={true}
+          onSubmit={submitSongInfo}
+          onCancel={KeduIje.deleteSong}
         />,
         document.getElementById('root')
       );  

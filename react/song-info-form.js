@@ -21,26 +21,33 @@
           this.handleInput = this.handleInput.bind(this);
           this.handleSubmit = this.handleSubmit.bind(this);
           this.displayValue = this.displayValue.bind(this);
+          this.addValue = this.addValue.bind(this);
+        }
+        
+        addValue(obj, name){
+          if(this.state[name].edited==true)
+            obj[name]=this.state[name].value;
+          else if (this.state[name].edited==false)
+            return;
+          else if(this.state[name])
+            obj[name]=this.state[name];
         }
 
         handleSubmit(e){
           e.preventDefault();
-
-          if(this.props.newSong){
-            e.target.submit();
-          }else{
-            
-            
-            var updates = {};
-            if(this.state.title.edited)
-              updates["title"]=this.state.title.value;
-            if(this.state.artist.edited)
-              updates["artist"]=this.state.artist.value;
-            if (this.state.img)
-              updates["img"]=this.state.img;
-						
-            this.props.onSubmit(updates);
+          
+          var updates={};
+          for (var key in this.state) {
+            if(key=="images") continue;
+            if (this.state.hasOwnProperty(key)) {
+              this.addValue(updates, key);
+            }
           }
+          
+          if(this.props.newSong) updates.status="published";
+          
+          this.props.onSubmit(updates);
+          
         }
 
         handleClick(src){
@@ -102,9 +109,10 @@
         displayVideoInfo(res){
           var video = res.snippet;
           this.setState({
-            title: {value: video.title},
+            title: {value: video.title, edited: true},
             videoID: res.id
           });
+          
 
           var tns=video.thumbnails;
 
@@ -138,7 +146,7 @@
 
         render () {
 
-          return <form id="new-song-form" className="editor-bg-color kezie-editor" method="post" onSubmit={this.handleSubmit}>
+          return <form id="new-song-form" className="editor-bg-color kezie-editor" onSubmit={this.handleSubmit}>
               <div className="row">
                 <div className="col-md-12">
                   {this.props.newSong &&<div className="form-group">

@@ -432,16 +432,9 @@ app.get('/videos/all', function (req, res) {
 });
 
 app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
-  res.render("new_music",{title: "New Music | " + res.locals.title});
-
-  });
-
-app.post( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
-  req.body["creator"] = req.user._id;
-  req.body["slug"] = slugify(req.body.title)
-  db.collection("lyrics").insertOne(req.body, function(){
-    res.redirect("/music/"+req.body.slug); //todo: make bettter;
-  });
+  db.collection("lyrics").insertOne({creator: req.user._id, status: "draft"}).then(function(result){
+    res.render("new_music",{title: "New Music | " + res.locals.title, songID: result.insertedId});
+   });
 });
 
 app.get(
