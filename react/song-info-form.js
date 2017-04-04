@@ -29,12 +29,17 @@
           if(this.props.newSong){
             e.target.submit();
           }else{
-            this.props.onSubmit({
-              title: this.state.title.value || this.props.title,
-              artist: this.state.artist.value || this.props.title,
-              img: this.state.img || this.props.img
-            });
-            //this.setState(this.resetState);
+            
+            
+            var updates = {};
+            if(this.state.title.edited)
+              updates["title"]=this.state.title.value;
+            if(this.state.artist.edited)
+              updates["artist"]=this.state.artist.value;
+            if (this.state.img)
+              updates["img"]=this.state.img;
+						
+            this.props.onSubmit(updates);
           }
         }
 

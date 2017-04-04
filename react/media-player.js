@@ -92,18 +92,17 @@ class EditSwitch extends React.Component {
                 newLyricObj.endTime = this.state.segmentEnd;
               }
 
-            KeduIje.updateLyric(oldLyricObj, newLyricObj, this.loadLyrics);
+            KeduIje.updateLyric(oldLyricObj, newLyricObj, this.loadSongData);
 
           }else {
             var newLyric = {
               text: this.state.text,
               endTime: this.state.segmentEnd,
               deleted: false,
-              //id: this.state.lyrics.length,
               startTime: this.state.segmentStart,
               heading: null
             };
-            KeduIje.addLyric(newLyric, this.loadLyrics);
+            KeduIje.addLyric(newLyric, this.loadSongData);
           }
           this.indexBeingModified = false;
 
@@ -297,7 +296,7 @@ class EditSwitch extends React.Component {
         }
 
         saveSongInfo(songInfo){
-          KeduIje.saveSongInfo(songInfo, this.displaySongInfo);
+          KeduIje.saveSongInfo(songInfo, this.loadSongData);
         }
 
         displaySongInfo(songInfo){
@@ -311,7 +310,7 @@ class EditSwitch extends React.Component {
         onKeyUp(e) {
 
           if ((e.keyCode == 32)&&(this.state.editMode)){ //space
-            if(!this.state.displayEditor)
+            if((!this.state.displayEditor)&&(!this.state.editDialogIsOpen))
               this.togglePlayState();
           }
 

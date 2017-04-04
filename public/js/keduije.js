@@ -33,8 +33,7 @@ var KeduIje = (function(ki){
   }
 
   function saveSongInfo(songInfo, cb){
-    songInfo.songID = songID;
-    $.post("/api/song/edit", songInfo, cb);
+    $.post("/api/song/edit/"+songID, songInfo, cb);
   }
 
   //responsively adjusts scroll position of lyrics during playback

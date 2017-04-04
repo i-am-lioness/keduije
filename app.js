@@ -365,24 +365,6 @@ app.get('/', function (req, res) {
 
 });
 
-function updateSongInfo(req, res){
-  req.body.lastEditBy=req.user._id;
-  db.collection('lyrics').findAndModify(
-    {_id: ObjectId(req.body.songID)},
-    null,
-    {$set: {
-      title: req.body.title,
-      img: req.body.img,
-      artist: req.body.artist, //todo, only update if changed
-      slug: slugify(req.body.title)
-    }},
-    {new: true},
-     function (err, result){
-      res.send(result.value);
-    }
-  );
-}
-
 app.post("/api/logError", function (req, res){
 
   var error = {
@@ -411,19 +393,6 @@ app.post("/api/logError", function (req, res){
         console.log('Message sent: ' + info.response);
         res.json({yo: info.response});
     };
-  });
-
-});
-
-app.post("/api/song/edit", function (req, res){
-
-  var revision = Object.assign({}, req.body);
-  revision.user = req.user._id;
-
-
-
-  db.collection("revisions").insertOne(revision, function(err, results){
-    updateSongInfo(req, res);
   });
 
 });
@@ -568,8 +537,8 @@ function getNewLyricID(songID) {
 }
 
 function _processRevision(revision, res, queryObj, updateObj){
-	//console.log("queryObj", queryObj);
-	//console.log("updateObj",updateObj);
+	console.log("queryObj", queryObj);
+	console.log("updateObj",updateObj);
 	db.collection('lyrics').findAndModify(
 		queryObj,
 		null,
@@ -579,7 +548,7 @@ function _processRevision(revision, res, queryObj, updateObj){
 		function(result){
 			//console.log(result);
 			var song = result.value;
-			res.send(song.lyrics); //todo: error checking
+			res.send(song); //todo: error checking
 
 			commitRevision(revision)
 		},
@@ -604,11 +573,15 @@ function processRevision(revision, res){
 			return _processRevision(revision, res, queryObj, updateObj);
 		case "add_lyric":
 			updateObj["$push"].lyrics = revision.newValue;
-			return getNewLyricID(revision.songID).then((id)=>{
+			return getNewLyricID(revision.songID).then((id)=>{ //todo: implement with await
 				revision.lineID=id;
 				revision.newValue.id=revision.lineID; 
 				_processRevision(revision, res, queryObj, updateObj);
 			});
+		case "edit_song":
+			updateObj["$set"]=revision.newValue;
+			if(revision.newValue.title) updateObj["$set"].slug=slugify(revision.newValue.title);
+			return _processRevision(revision, res, queryObj, updateObj);
 		default:
 			res.send("unknown action: "+ revision.action)
 			return;
@@ -652,6 +625,14 @@ app.post('/api/lyrics/:songID/addline', function (req, res) {
 	executeAction("add_lyric", req, res);
 
 });
+
+
+app.post("/api/song/edit/:songID", function (req, res){
+
+	executeAction("edit_song", req, res);
+
+});
+
 
 MongoClient.connect(process.env.DB_URL, function(err, _db) {
   assert.equal(null, err);
