@@ -303,6 +303,7 @@ class EditSwitch extends React.Component {
           this.setState({
             title: songInfo.title || "",
             artist: songInfo.artist || "",
+            img: songInfo.img || "",
             editDialogIsOpen: false
           });
         }
@@ -326,12 +327,20 @@ class EditSwitch extends React.Component {
               <source src={this.props.src} type="audio/mpeg" />
             </audio>;
           }else{
+
+
+            var src = 'http://www.youtube.com/embed/' + this.props.videoID
+              +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin='
+               + window.location.origin + '&playsinline=1&rel=0&controls=0';
+
+            console.log("src",src);
+
             var iframeClass = this.state.videoPlaybackMode ?  "" : " hidden-video";
             mediaElement = <div className={'embed-responsive embed-responsive-16by9' + iframeClass}>
               <iframe
                 ref={(iframe) => {this.iframe = iframe;}}
                 className='embed-responsive-item'
-                src={this.props.src}
+                src={src}
                 frameBorder='0'
               />
             </div>
@@ -348,9 +357,9 @@ class EditSwitch extends React.Component {
                         />
                         {this.props.canEdit && <EditSwitch toggleEditMode={this.handleToggleEditMode} editMode={this.state.editMode} />}
                         <ProgressBar onSeekTo={this.seekTo} percentage={percentage}/>
-                      </div>
+                      </div>;
 
-          var artwork = <div key="artwork" ref={(el)=>{this.artwork = el;}} className="artwork" style={{backgroundImage: "url("+this.props.artworkSrc+")"}}>
+          var artwork = <div key="artwork" ref={(el)=>{this.artwork = el;}} className="artwork" style={{backgroundImage: "url("+this.state.img+")"}}>
             <div className="gradient"></div>
             <PlayControl
               togglePlayState={this.togglePlayState}
@@ -372,7 +381,7 @@ class EditSwitch extends React.Component {
               title={this.state.title}
               artist={this.state.artist}
               onCancel={this.toggleSongInfoDialog.bind(this, false)}
-              img={this.props.artworkSrc}
+              img={this.state.img}
             />}
             <LyricEditor
               ref={this.props.registerEditor}

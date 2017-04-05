@@ -331,22 +331,14 @@ app.get(
             return;
           }
 
-          var youtube_thumbnail = "https://img.youtube.com/vi/"+media.videoID+"/hqdefault.jpg";
-          var artwork_src = media.img || youtube_thumbnail;
-
-          //do better
-          var src = media.videoID ? 'http://www.youtube.com/embed/' + media.videoID
-            +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://'
-             + req.headers.host + '&playsinline=1&rel=0&controls=0' : media.url;
-
           var data = {
             title: media.title + " | " + res.locals.title,
-            artwork_src: artwork_src,
             videoID: media.videoID,
             user: req.user || null,
             canEdit: !!(req.user && req.user.isAdmin),
-            src: src,
-            mediaID: media._id
+            src: media.src,
+            mediaID: media._id,
+            mediaType: media.type
           };
           //console.log(data);
           res.render('player', data);
@@ -398,21 +390,21 @@ app.post("/api/logError", function (req, res){
 
 app.get('/api/carousel', function (req, res) {
 
-  db.collection('media').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1, slug: 1}).toArray(function(err, videos) {
+  db.collection('media').find({ img : { $exists: false }, status: "published"},{videoID: 1, title: 1, img: 1, slug: 1}).toArray(function(err, videos) {
     res.render("sub/carousel",{videos: videos.slice(0,3), carouselIDquery: "#main-carousel"});
   });
 });
 
 app.get('/api/rankings', function (req, res) {
 
-  db.collection('media').find().sort({totalViews: -1}).toArray(function(err, videos) {
+  db.collection('media').find({status: "published"}).sort({totalViews: -1}).toArray(function(err, videos) {
     res.render("sub/media_list",{videos: videos.slice(0,10)});
   });
 });
 
 app.get('/api/list/audio', function (req, res) {
 
-  db.collection('media').find({ img : { $exists: true }},{slug: 1, title: 1, img: 1}).toArray(function(err, videos) {
+  db.collection('media').find({ img : { $exists: true }, status: "published" }).toArray(function(err, videos) {
     res.render("sub/horizontal-slider",{videos: videos});
   });
 });

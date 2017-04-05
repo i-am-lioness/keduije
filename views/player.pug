@@ -19,8 +19,8 @@ html(lang='en')
       script(src='/time-spinner.js', type='text/babel')
       script(src='/lyric-editor.js', type='text/babel')
     script(type='text/babel').
-      var mediaType = "#{videoID}" ? KeduIje.mediaTypes.VIDEO : KeduIje.mediaTypes.AUDIO; //Improve
       var onYouTubeIframeAPIReady;
+      var mediaType = parseInt(#{mediaType});
       
       KeduIje.init("#{mediaID}");
       
@@ -36,7 +36,7 @@ html(lang='en')
           ref={setCallback}
           canEdit={#{canEdit}}
           src={"#{src}"}
-          artworkSrc={"#{artwork_src}"}
+          videoID={"#{videoID}"}
           mediaType={mediaType}
         />,
         document.getElementById('root')

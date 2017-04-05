@@ -165,7 +165,7 @@
                     <input onChange={this.handleInput} value={this.displayValue("artist")}  className="form-control input-lg" onBlur={this.search} id="artist-input" name="artist" placeholder="Artist" />
                   </div>
                   <div className="form-group">
-                    <input type="hidden" onChange={this.handleInput} value={this.state.img}  className="form-control input-lg" id="art-url-input" name="img" placeholder="Artwork URL" />
+                    <input type={this.props.newSong? null : "hidden"} onChange={this.handleInput} value={this.state.img}  className="form-control input-lg" id="art-url-input" name="img" placeholder="Artwork URL" />
                   </div>
                 </div>
               </div>
