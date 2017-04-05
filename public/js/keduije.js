@@ -13,6 +13,10 @@ var KeduIje = (function(ki){
       $.post("/api/logError",{ width: screen.width, height: screen.height, msg: msg });
   }
 
+  function getRevisions(cb){
+    $.get("/api/revisions", cb);
+  }
+
   function search(q, cb) {
     $.get("/api/search", {query: q}, cb);
   }
@@ -32,12 +36,25 @@ var KeduIje = (function(ki){
   function updateLyric(oldLyricObj, newLyricObj, cb){
 
     //todo: postdata should be validated
-    $.post("/api/lines/edit/"+oldLyricObj._id, newLyricObj, cb);
+    var postData = {
+      original: oldLyricObj,
+      changes: newLyricObj,
+      mediaID: songID
+    };
+
+    $.post("/api/lines/edit/"+oldLyricObj._id, postData, cb);
 
   }
 
-  function saveSongInfo(songInfo, cb){
-    $.post("/api/media/edit/"+songID, songInfo, cb);
+  function saveSongInfo(original, changes, cb){
+
+    //todo: postdata should be validated
+    var postData = {
+      original: original,
+      changes: changes
+    };
+
+    $.post("/api/media/edit/"+songID, postData, cb);
   }
 
   //responsively adjusts scroll position of lyrics during playback
@@ -62,6 +79,7 @@ var KeduIje = (function(ki){
   ki.saveSongInfo = saveSongInfo;
   ki.scrollIfOutOfView = scrollIfOutOfView;
   ki.search = search;
+  ki.getRevisions = getRevisions;
   ki.deleteSong = ()=>{}; //todo: implement
 
   return ki;

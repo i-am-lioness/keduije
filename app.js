@@ -409,6 +409,7 @@ app.get('/api/list/audio', function (req, res) {
   });
 });
 
+//dead code?
 app.get('/videos/all', function (req, res) {
 
   db.collection('media').find({},{videoID: 1}).toArray(function(err, results) {
@@ -426,6 +427,16 @@ app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, re
   db.collection("media").insertOne({creator: req.user._id, status: "draft"}).then(function(result){
     res.render("new_music",{title: "New Music | " + res.locals.title, mediaID: result.insertedId});
    }).catch(logError);
+});
+
+app.get( '/history', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+  res.render("profile",{title: "My History | " + res.locals.title});
+});
+
+app.get( '/api/revisions', ensureLoggedIn(), function (req, res) {
+  db.collection("revisions").find({user: req.user._id}).toArray(function(err, revisions){
+    res.send(revisions);
+   });
 });
 
 app.get(
@@ -528,6 +539,7 @@ function getVersionNumber(revision) {
 function applyChange(revision, res, queryObj, updateObj, versionNumber){
 	//console.log("queryObj", queryObj);
 	//console.log("updateObj",updateObj);
+  //if((versionNumber-1)!=parseInt(revision.original.version) return; //todo
   updateObj.$set.version=versionNumber;
 	db.collection(revision.target).findAndModify(
 		queryObj,
@@ -576,11 +588,14 @@ function executeEdit(target, req, res){
 	var revision = {
 		state: "pending",
 		target: target,
-		user: req.user._id,
+		user: req.user._id, //todo: also embed username
     forID: ObjectId(req.params.forID),
 		lastModified: new Date(),
-		newValues: req.body
+		newValues: req.body.changes,
+    original: req.body.original
 	};
+
+  if(target=="lines") revision.mediaID=req.body.mediaID; //for easy querying of all song edits
 
 	db.collection("revisions").insertOne(revision).then(processRevision.bind(this, revision, res)).catch(logError);
 }

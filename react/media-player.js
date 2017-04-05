@@ -39,6 +39,7 @@ class EditSwitch extends React.Component {
           this.timer;
           this.lyricBeingEdited = null;
           this.stopAtSegmentEnd = false;
+          this.originalSongInfo = null;
 
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
           this.onPlayerReady = this.onPlayerReady.bind(this);
@@ -108,7 +109,7 @@ class EditSwitch extends React.Component {
             };
             KeduIje.addLyric(newLyric, this.loadLyrics);
           }
-          this.lyricBeingEdited = false;
+          this.lyricBeingEdited = null;
 
         }
 
@@ -296,10 +297,11 @@ class EditSwitch extends React.Component {
         }
 
         saveSongInfo(songInfo){
-          KeduIje.saveSongInfo(songInfo, this.displaySongInfo);
+          KeduIje.saveSongInfo(this.originalSongInfo, songInfo, this.displaySongInfo);
         }
 
         displaySongInfo(songInfo){
+          this.originalSongInfo = songInfo;
           this.setState({
             title: songInfo.title || "",
             artist: songInfo.artist || "",
