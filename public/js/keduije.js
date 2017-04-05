@@ -25,8 +25,16 @@ var KeduIje = (function(ki){
     $.get("/api/lines/"+songID, cb);
   }
 
+  function myLines(cb){
+    $.get("/api/myLines/", cb);
+  }
+
   function loadSongInfo(cb){
-    $.get("/api/media/"+songID, cb);
+    getMediaInfo(songID, cb);
+  }
+
+  function getMediaInfo(mediaID, cb){
+    $.get("/api/media/"+mediaID, cb);
   }
 
   function addLyric(newLyric, cb){
@@ -80,6 +88,8 @@ var KeduIje = (function(ki){
   ki.scrollIfOutOfView = scrollIfOutOfView;
   ki.search = search;
   ki.getRevisions = getRevisions;
+  ki.myLines = myLines;
+  ki.getMediaInfo = getMediaInfo;
   ki.deleteSong = ()=>{}; //todo: implement
 
   return ki;

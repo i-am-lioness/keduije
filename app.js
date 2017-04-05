@@ -409,27 +409,13 @@ app.get('/api/list/audio', function (req, res) {
   });
 });
 
-//dead code?
-app.get('/videos/all', function (req, res) {
-
-  db.collection('media').find({},{videoID: 1}).toArray(function(err, results) {
-    var videos = [];
-    results.forEach(function(obj){
-      if(obj.videoID){
-        videos.push(obj.videoID);
-      }
-    })
-    res.send(videos);
-  });
-});
-
 app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
   db.collection("media").insertOne({creator: req.user._id, status: "draft"}).then(function(result){
     res.render("new_music",{title: "New Music | " + res.locals.title, mediaID: result.insertedId});
    }).catch(logError);
 });
 
-app.get( '/history', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+app.get( '/history', ensureLoggedIn(), function (req, res) {
   res.render("profile",{title: "My History | " + res.locals.title});
 });
 
@@ -509,6 +495,13 @@ function sendLines(req, res){
     res.send(lines);
   });
 }
+
+app.get( '/api/myLines', ensureLoggedIn(), function (req, res) {
+  db.collection("lines").find({creator: req.user._id}).toArray(function(err, lines) {
+    //console.log(lines);
+    res.send(lines);
+  });
+});
 
 function commitRevision(revision){
 	revision.state="applied";
