@@ -8,8 +8,8 @@ can add headings or lyrics
 <0:15> Aga m agbachazi nbo gbara aka laa
 <>Imana mu na Chi m so
 
-lyric {
-  id: {integer++},
+line {
+  mediaID
   startTime:
   endTime:
   deleted: false,
@@ -22,16 +22,11 @@ lyric {
 
 //id can change until annotated or edited
 revision: {
-	_id: (new ObjectID()),
+	forID: {ObjectID},
 	state: {"pending" || "applied" || "done"},
 	updateDoc : <update doc>
   user:
-	action: {"add" || "edit" || "delete" },
-	target: {"info" || "lyrics" },
-	
-	
-  songID:
-  lineID:
+	target: {"media" || "lines"}
   date: {dateTime}
   value: {deleted: true ||
           startTime: x ||
@@ -41,33 +36,32 @@ revision: {
 }
 
 
-song: {
-	pendingRevisions: [], 
+media: {
+	pendingRevisions: [],
 	version: {integer},
 	title: "string",
 	slug: Slugify(this.title),
 	artist: "string", /* for now */
 	img: "string",
 	totalViews: {integer},
-	lyricCnt: {integer++}
 	history: [/*viewing history*/]
 	type: 0 || 1, /* audio= 0, video=1 */
 	/*for audio type */
 	src: "string", /*formally 'url' */
-	lyrics: []
+	lyrics: [] //may no longer be necessary
 
 }
 
 
 1***Editing lyric:
--r=Revisions.insert(({state: "pending", action: "edit_lyric"})) 
+-r=Revisions.insert(({state: "pending", action: "edit_lyric"}))
 ==>can optimisticly be displayed at this point
 -Songs.find({id: revisions.songID}, (song)=>{
 	song.update({
 		$set: {"lyric.$": r.new},
 		$push: {pendingRevisions: r.id}
 		});
-	
+
 })
 -Revisions.find({_id: r.id}, (revision)=>{
 	revision.state = "applied"
@@ -83,7 +77,7 @@ song: {
 handle: what if two ppl are adding lyrics at the same time?
 */
 2***Adding lyric:
--r=Revisions.insert(({state: "pending", action: "add_lyric"})) 
+-r=Revisions.insert(({state: "pending", action: "add_lyric"}))
 ==>could optimisticly be displayed at this point
 -Songs.find({_id: revisions.songID}, (song)=>{
 	song.update({
@@ -110,10 +104,10 @@ handle: what if two ppl are adding lyrics at the same time?
 =>send form to client
 ===>on cancel, delete
 ===>on save, next
--r=Revisions.insert(({state: "pending", action: "insert_song", new: <update doc>})) 
+-r=Revisions.insert(({state: "pending", action: "insert_song", new: <update doc>}))
 -Songs.find({id: revisions.songID}, (song)=>{
 	song.update({
-		$set: r.new, 
+		$set: r.new,
 		$push: {pendingRevisions: r.id}
 		});
 })
@@ -131,11 +125,11 @@ handle: what if two ppl are adding lyrics at the same time?
 
 
 Editing Song Info:
--r=Revisions.insert(({state: "pending", action: "edit_song", <update doc>})) 
+-r=Revisions.insert(({state: "pending", action: "edit_song", <update doc>}))
 ==>can optimisticly be displayed at this point
 -Songs.find({id: revisions.songID}, (song)=>{
 	song.update({
-		$set: r.new, 
+		$set: r.new,
 		$push: {pendingRevisions: r.id}
 		});
 })
@@ -148,6 +142,3 @@ Editing Song Info:
 -Revisions.find({_id: r.id}, (revision)=>{
 	revision.state = "done"
 })
-
-
- 

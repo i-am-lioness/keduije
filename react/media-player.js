@@ -37,7 +37,7 @@ class EditSwitch extends React.Component {
           this.saveStartTime=false; //accounts for "jumping" around, rename to "holdStartTime"
           this.timeMarksFrozen = false; //todo: make sure to unfreeze
           this.timer;
-          this.indexBeingModified = null;
+          this.lyricBeingEdited = null;
           this.stopAtSegmentEnd = false;
 
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
@@ -57,18 +57,18 @@ class EditSwitch extends React.Component {
           this.handleToggleEditMode = this.handleToggleEditMode.bind(this);
           this.handleTextChange = this.handleTextChange.bind(this);
           this.showEditHeaderDialog = this.showEditHeaderDialog.bind(this);
-          this.loadSongData = this.loadSongData.bind(this);
           this.displaySongInfo = this.displaySongInfo.bind(this);
           this.toggleSongInfoDialog = this.toggleSongInfoDialog.bind(this);
           this.saveSongInfo = this.saveSongInfo.bind(this);
           this.togglePlayState = this.togglePlayState.bind(this);
           this.onKeyUp = this.onKeyUp.bind(this);
           this.onScroll = this.onScroll.bind(this);
+          this.updateIfChanged = this.updateIfChanged.bind(this);
 
         }
 
         showEditHeaderDialog(data){
-          this.indexBeingModified = data;
+          this.lyricBeingEdited = data;
           var defaultValue = "[]";
           var headingText = prompt(data.heading ? "Update Heading" : "Please enter heading", data.heading || defaultValue);
           if(headingText && (headingText!=defaultValue))
@@ -79,20 +79,24 @@ class EditSwitch extends React.Component {
           this.setState({text: event.target.value});
         }
 
-        saveLyric(headingText){
-          if(this.indexBeingModified){
+        updateIfChanged(obj, name){
+          if(this.state[name].toString()!=this.lyricBeingEdited[name])
+            obj[name]=this.state[name];
+        }
 
-              var oldLyricObj = this.indexBeingModified;
-              var newLyricObj = $.extend({}, oldLyricObj);
+        saveLyric(headingText){
+          if(this.lyricBeingEdited){
+
+              var lyricChanges = {};
               if(headingText){
-                newLyricObj.heading = headingText;
+                lyricChanges.heading = headingText;
               } else {
-                newLyricObj.text = this.state.text;
-                newLyricObj.startTime = this.state.segmentStart;
-                newLyricObj.endTime = this.state.segmentEnd;
+                this.updateIfChanged(lyricChanges, "text");
+                this.updateIfChanged(lyricChanges, "segmentStart");
+                this.updateIfChanged(lyricChanges, "segmentEnd");
               }
 
-            KeduIje.updateLyric(oldLyricObj, newLyricObj, this.loadSongData);
+            KeduIje.updateLyric(this.lyricBeingEdited, lyricChanges, this.loadLyrics);
 
           }else {
             var newLyric = {
@@ -102,9 +106,9 @@ class EditSwitch extends React.Component {
               startTime: this.state.segmentStart,
               heading: null
             };
-            KeduIje.addLyric(newLyric, this.loadSongData);
+            KeduIje.addLyric(newLyric, this.loadLyrics);
           }
-          this.indexBeingModified = false;
+          this.lyricBeingEdited = false;
 
         }
 
@@ -116,7 +120,7 @@ class EditSwitch extends React.Component {
         }
 
         showEditDialog(data){
-          this.indexBeingModified = data;
+          this.lyricBeingEdited = data;
 
           var mode = "add";
           var originalText = null;
@@ -192,11 +196,6 @@ class EditSwitch extends React.Component {
           this.audioElement = audio;
         }
 
-        loadSongData(song){
-          this.loadLyrics(song.lyrics || []);
-          this.displaySongInfo(song);
-        }
-
         componentWillMount(){
           window.onkeyup = this.onKeyUp;
           window.onscroll = this.onScroll;
@@ -211,7 +210,8 @@ class EditSwitch extends React.Component {
         }
 
         componentDidMount(){
-            KeduIje.loadLyrics(this.loadSongData);
+            KeduIje.loadLyrics(this.loadLyrics);
+            KeduIje.loadSongInfo(this.displaySongInfo);
 
             this.affixPoint = this.artwork.offsetTop + this.artwork.offsetHeight;
 
@@ -296,7 +296,7 @@ class EditSwitch extends React.Component {
         }
 
         saveSongInfo(songInfo){
-          KeduIje.saveSongInfo(songInfo, this.loadSongData);
+          KeduIje.saveSongInfo(songInfo, this.displaySongInfo);
         }
 
         displaySongInfo(songInfo){

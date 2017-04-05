@@ -10,9 +10,10 @@ html(lang='en')
       .row
         .col-md-12#root
     script(src="/js/youtube-data.js")
+    script(src="/js/keduije-media.js")
     script(src='/song-info-form.js', type='text/babel')
     script(type='text/babel').
-      KeduIje.init("#{songID}");
+      KeduIje.init("#{mediaID}");
       
       function submitSongInfo(data){
 

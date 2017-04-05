@@ -279,7 +279,7 @@ app.get(
       return;
     }
 
-    db.collection('lyrics').find(
+    db.collection('media').find(
       {$or : [
         {
             artist: {
@@ -294,60 +294,59 @@ app.get(
             }
         }
     ]},
-      { artist: 1, title: 1, songID: 1, slug: 1}
-    ).toArray(function(err, songs) {
-      res.send(songs)
+      { artist: 1, title: 1, slug: 1}
+    ).toArray(function(err, media) {
+      res.send(media);
     });
 
   }
 );
 
-app.get(
-  '/api/lyrics/:songID',
-  function (req, res) {
-    db.collection('lyrics').find({ _id: ObjectId(req.params.songID) } )
-      .nextObject(function(err, obj) {
-        var lyrics = (obj&&obj.lyrics) ? obj.lyrics : [];
-        //res.send(lyrics);
-        res.send(obj);
-      })
-  }
-);
+app.get('/api/media/:mediaID', function(req,res){
+  db.collection('media')
+    .findOne({_id: ObjectId(req.params.mediaID)})
+    .then((media)=>{
+      res.send(media);
+    })
+    .catch(logError);
+});
+
+app.get('/api/lines/:mediaID',sendLines);
 
 app.get(
   '/music/:slug',
   function (req, res) {
     var slug = req.params.slug;
 
-    db.collection('lyrics')
+    db.collection('media')
       .findAndModify(
         { slug: slug},
         null,
         {$inc: {views: 1}},
         function(err, result){
-          var song = result.value;
+          var media = result.value;
 
-          if(!song){
+          if(!media){
             res.send("not found"); //improve
             return;
           }
 
-          var youtube_thumbnail = "https://img.youtube.com/vi/"+song.videoID+"/hqdefault.jpg";
-          var artwork_src = song.img || youtube_thumbnail;
+          var youtube_thumbnail = "https://img.youtube.com/vi/"+media.videoID+"/hqdefault.jpg";
+          var artwork_src = media.img || youtube_thumbnail;
 
           //do better
-          var src = song.videoID ? 'http://www.youtube.com/embed/' + song.videoID
+          var src = media.videoID ? 'http://www.youtube.com/embed/' + media.videoID
             +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://'
-             + req.headers.host + '&playsinline=1&rel=0&controls=0' : song.url;
+             + req.headers.host + '&playsinline=1&rel=0&controls=0' : media.url;
 
           var data = {
-            title: song.title + " | " + res.locals.title,
+            title: media.title + " | " + res.locals.title,
             artwork_src: artwork_src,
-            videoID: song.videoID,
+            videoID: media.videoID,
             user: req.user || null,
             canEdit: !!(req.user && req.user.isAdmin),
             src: src,
-            songID: song._id
+            mediaID: media._id
           };
           //console.log(data);
           res.render('player', data);
@@ -399,28 +398,28 @@ app.post("/api/logError", function (req, res){
 
 app.get('/api/carousel', function (req, res) {
 
-  db.collection('lyrics').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1, slug: 1}).toArray(function(err, videos) {
+  db.collection('media').find({ img : { $exists: false }},{videoID: 1, title: 1, img: 1, slug: 1}).toArray(function(err, videos) {
     res.render("sub/carousel",{videos: videos.slice(0,3), carouselIDquery: "#main-carousel"});
   });
 });
 
 app.get('/api/rankings', function (req, res) {
 
-  db.collection('lyrics').find().sort({totalViews: -1}).toArray(function(err, videos) {
+  db.collection('media').find().sort({totalViews: -1}).toArray(function(err, videos) {
     res.render("sub/media_list",{videos: videos.slice(0,10)});
   });
 });
 
 app.get('/api/list/audio', function (req, res) {
 
-  db.collection('lyrics').find({ img : { $exists: true }},{slug: 1, title: 1, img: 1}).toArray(function(err, videos) {
+  db.collection('media').find({ img : { $exists: true }},{slug: 1, title: 1, img: 1}).toArray(function(err, videos) {
     res.render("sub/horizontal-slider",{videos: videos});
   });
 });
 
 app.get('/videos/all', function (req, res) {
 
-  db.collection('lyrics').find({},{videoID: 1}).toArray(function(err, results) {
+  db.collection('media').find({},{videoID: 1}).toArray(function(err, results) {
     var videos = [];
     results.forEach(function(obj){
       if(obj.videoID){
@@ -432,9 +431,9 @@ app.get('/videos/all', function (req, res) {
 });
 
 app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
-  db.collection("lyrics").insertOne({creator: req.user._id, status: "draft"}).then(function(result){
-    res.render("new_music",{title: "New Music | " + res.locals.title, songID: result.insertedId});
-   });
+  db.collection("media").insertOne({creator: req.user._id, status: "draft"}).then(function(result){
+    res.render("new_music",{title: "New Music | " + res.locals.title, mediaID: result.insertedId});
+   }).catch(logError);
 });
 
 app.get(
@@ -470,9 +469,9 @@ app.get('/logout', function(req, res){
 });
 
 //Todo: complete
-function validate(lyric){
-  lyric.startTime = parseInt(lyric.startTime);
-  lyric.endTime = parseInt(lyric.endTime);
+function validate(line){
+  line.startTime = parseInt(line.startTime);
+  line.endTime = parseInt(line.endTime);
   return false;
 }
 
@@ -485,16 +484,10 @@ app.get('/temp', function (req, res) {
     return;
   }
 
-  db.collection('lyrics').find().forEach(function (song){
-    console.log(song.title);
-    if(song.lyrics){
-//      song.lyrics.forEach(function(lyric){
-//        lyric.revised = false;
-//      });
-			song.lyricCnt = song.lyrics.length;
-    }
-		
-    db.collection('lyrics').save(song);
+  db.collection('media').find().forEach(function (media){
+    console.log(media.title);
+
+    db.collection('media').save(media);
   });
 
   res.send("done");
@@ -502,37 +495,49 @@ app.get('/temp', function (req, res) {
 });
 */
 
+function logError(error){
+  console.log(error);
+}
 
+function sendLines(req, res){
+  var mediaID = req.params? req.params.mediaID : req;
+
+  db.collection("lines").find({mediaID: mediaID}).toArray(function(err, lines) {
+    res.send(lines);
+  });
+}
 
 function commitRevision(revision){
 	revision.state="applied";
 	db.collection("revisions").save(revision).then(function(){
-		db.collection('lyrics').updateOne(
-			{ _id: revision.songID, pendingRevisions: revision._id},
+		db.collection(revision.target).updateOne(
+			{ _id: revision.forID, pendingRevisions: revision._id},
 			{$pull: {pendingRevisions: revision._id}}
 		).then(function(result){
 			revision.state="done";
 			db.collection("revisions").save(revision);
 		});
-	});
+	}).catch(logError);
 }
 
-
-function getNewLyricID(songID) {
+//todo: not needed for new media
+function getVersionNumber(revision) {
 	return new Promise((resolve, reject) => {
-		 db.collection("lyrics").findAndModify(
-			 { _id: songID }, 
+		 db.collection(revision.target).findAndModify(
+			 { _id: revision.forID },
 			 null,
-			 { $inc: { lyricCnt: 1 } },
+			 { $inc: { version: 1 } },
 			 {new: true}
-		 ).then((result)=>{ resolve(result.value.lyricCnt.toString());}, reject);
+		 ).then((result)=>{ resolve(result.value.version)})
+     .catch(reject);;
 	});
 }
 
-function _processRevision(revision, res, queryObj, updateObj){
-	console.log("queryObj", queryObj);
-	console.log("updateObj",updateObj);
-	db.collection('lyrics').findAndModify(
+function applyChange(revision, res, queryObj, updateObj, versionNumber){
+	//console.log("queryObj", queryObj);
+	//console.log("updateObj",updateObj);
+  updateObj.$set.version=versionNumber;
+	db.collection(revision.target).findAndModify(
 		queryObj,
 		null,
 		updateObj,
@@ -540,91 +545,71 @@ function _processRevision(revision, res, queryObj, updateObj){
 	).then(
 		function(result){
 			//console.log(result);
-			var song = result.value;
-			res.send(song); //todo: error checking
+
+      if(revision.target=="media"){
+			   res.send(result.value); //todo: error checking
+      } else if(revision.target=="lines"){
+         sendLines(result.value.mediaID, res);
+      }else {
+        res.send("error, unrecognized db collection name: "+ revision.target);
+      }
 
 			commitRevision(revision)
 		},
 		function(err){
 			console.log(err);
 		}
-	);
+	).catch(logError);
 }
 
 function processRevision(revision, res){
-	
-	var queryObj = { _id: revision.songID};
+
+	var queryObj = { _id: revision.forID, pendingRevisions: { $ne: revision._id } };
 	var updateObj = {
 		$push: {pendingRevisions: revision._id},
-		$currentDate: { lastModified: true }
+		$currentDate: { lastModified: true },
+    $set: revision.newValues
 	};
-	
-	switch(revision.action){
-		case "edit_lyric":
-			queryObj["lyrics.id"]=revision.lineID;
-			updateObj["$set"]={"lyrics.$": revision.newValue};
-			return _processRevision(revision, res, queryObj, updateObj);
-		case "add_lyric":
-			updateObj["$push"].lyrics = revision.newValue;
-			return getNewLyricID(revision.songID).then((id)=>{ //todo: implement with await
-				revision.lineID=id;
-				revision.newValue.id=revision.lineID; 
-				_processRevision(revision, res, queryObj, updateObj);
-			});
-		case "edit_song":
-			updateObj["$set"]=revision.newValue;
-			if(revision.newValue.title) updateObj["$set"].slug=slugify(revision.newValue.title);
-			return _processRevision(revision, res, queryObj, updateObj);
-		default:
-			res.send("unknown action: "+ revision.action)
-			return;
-	}
-	
-	
+
+  if((revision.target=="media") && revision.newValues.title)
+    revision.newValues.slug=slugify(revision.newValues.title);
+
+  getVersionNumber(revision)
+    .then(applyChange.bind(this, revision, res, queryObj, updateObj))
+    .catch(logError);
+
 }
 
-function executeAction(action, req, res){
+function executeEdit(target, req, res){
 	var revision = {
-		state: "pending", 
-		action: action,
+		state: "pending",
+		target: target,
 		user: req.user._id,
-		songID: ObjectId(req.params.songID),
-		lineID: req.params.lineID || null,
+    forID: ObjectId(req.params.forID),
 		lastModified: new Date(),
-		newValue: req.body
+		newValues: req.body
 	};
-	
-	db.collection("revisions").insertOne(revision).then(function(results){
-		//todo: error checking
-		//later: will be handled by a worker process
-		processRevision(revision, res);
-	});
+
+	db.collection("revisions").insertOne(revision).then(processRevision.bind(this, revision, res)).catch(logError);
 }
 
-app.post('/api/lyrics/:songID/editline/:lineID', ensureLoggedIn(), function (req, res) {
-	
-	executeAction("edit_lyric", req, res);
+app.post('/api/lines/edit/:forID', ensureLoggedIn(), executeEdit.bind(this, "lines"));
 
-});
+app.post('/api/media/:mediaID/addline', function (req, res) {
 
-app.post('/api/lyrics/:songID/addline', function (req, res) {
-
-  var obj = req.body;
-
-  if(validate(obj)){
+  if(validate(req.body)){
     res.send("error validating");
   }
 
-	executeAction("add_lyric", req, res);
+  req.body.creator = req.user._id;
+  req.body.mediaID = req.params.mediaID;
+
+  db.collection("lines").insertOne(req.body).then(sendLines.bind(this, req.params.mediaID, res)).catch(logError);
 
 });
 
 
-app.post("/api/song/edit/:songID", function (req, res){
-
-	executeAction("edit_song", req, res);
-
-});
+app.post("/api/media/edit/:forID", executeEdit.bind(this, "media"));
 
 
 MongoClient.connect(process.env.DB_URL, function(err, _db) {

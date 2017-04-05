@@ -18,22 +18,26 @@ var KeduIje = (function(ki){
   }
 
   function loadLyrics(cb){
-    $.get("/api/lyrics/"+songID, cb);
+    $.get("/api/lines/"+songID, cb);
+  }
+
+  function loadSongInfo(cb){
+    $.get("/api/media/"+songID, cb);
   }
 
   function addLyric(newLyric, cb){
-    $.post("/api/lyrics/"+songID+"/addline", newLyric, cb);
+    $.post("/api/media/"+songID+"/addline", newLyric, cb);
   }
 
   function updateLyric(oldLyricObj, newLyricObj, cb){
 
     //todo: postdata should be validated
-    $.post("/api/lyrics/"+songID+"/editline/"+oldLyricObj.id, newLyricObj, cb);
+    $.post("/api/lines/edit/"+oldLyricObj._id, newLyricObj, cb);
 
   }
 
   function saveSongInfo(songInfo, cb){
-    $.post("/api/song/edit/"+songID, songInfo, cb);
+    $.post("/api/media/edit/"+songID, songInfo, cb);
   }
 
   //responsively adjusts scroll position of lyrics during playback
@@ -52,6 +56,7 @@ var KeduIje = (function(ki){
   };
 
   ki.loadLyrics = loadLyrics;
+  ki.loadSongInfo = loadSongInfo;
   ki.updateLyric = updateLyric;
   ki.addLyric = addLyric;
   ki.saveSongInfo = saveSongInfo;

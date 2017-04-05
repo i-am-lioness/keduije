@@ -157,11 +157,11 @@
               delete curr.key;
               forDisplay = $.extend({data: curr}, curr);
               if(curr.heading){
-                rows.push($.extend({key: curr.id+"-h", data: curr}, curr));
+                rows.push($.extend({key: curr._id+"-h", data: curr}, curr));
                 forDisplay.heading=null;
                 forDisplay.hasHeading= true;
               }
-              forDisplay.key=curr.id;
+              forDisplay.key=curr._id;
               forDisplay.displayEndTime = (this.props.lyrics[i+1])? this.props.lyrics[i+1].startTime : forDisplay.endTime;
 
               rows.push(forDisplay);

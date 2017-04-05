@@ -7,7 +7,7 @@
             images: new Set(this.props.img ? [this.props.img]: null),
             title: {value: "", edited: false},
             artist: {value: "", edited: false},
-            url: {value: "", edited: false},
+            src: {value: "", edited: false},
             img: "",
             videoID: ""
           };
@@ -23,7 +23,7 @@
           this.displayValue = this.displayValue.bind(this);
           this.addValue = this.addValue.bind(this);
         }
-        
+
         addValue(obj, name){
           if(this.state[name].edited==true)
             obj[name]=this.state[name].value;
@@ -35,7 +35,7 @@
 
         handleSubmit(e){
           e.preventDefault();
-          
+
           var updates={};
           for (var key in this.state) {
             if(key=="images") continue;
@@ -43,11 +43,14 @@
               this.addValue(updates, key);
             }
           }
-          
-          if(this.props.newSong) updates.status="published";
-          
+
+          if(this.props.newSong){
+            updates.status="published";
+            updates.type=(this.state.videoID)? KeduIje.mediaTypes.VIDEO: KeduIje.mediaTypes.AUDIO;
+          }
+
           this.props.onSubmit(updates);
-          
+
         }
 
         handleClick(src){
@@ -112,7 +115,7 @@
             title: {value: video.title, edited: true},
             videoID: res.id
           });
-          
+
 
           var tns=video.thumbnails;
 
@@ -150,7 +153,7 @@
               <div className="row">
                 <div className="col-md-12">
                   {this.props.newSong &&<div className="form-group">
-                    <input onChange={this.handleInput} value={this.state.url.value} onBlur={this.queryYoutube} className="form-control input-lg" name="url" placeholder="Link to youtube video" />
+                    <input onChange={this.handleInput} value={this.state.src.value} onBlur={this.queryYoutube} className="form-control input-lg" name="src" placeholder="Link to youtube video" />
                     <input value={this.state.videoID} id="video-id-input" name="videoID" type="hidden" />
                   </div>}
                   <div className="form-group">
