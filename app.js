@@ -420,7 +420,7 @@ app.get( '/history', ensureLoggedIn(), function (req, res) {
 });
 
 app.get( '/api/revisions', ensureLoggedIn(), function (req, res) {
-  db.collection("revisions").find({user: req.user._id}).toArray(function(err, revisions){
+  db.collection("revisions").find({user: req.user._id, status: "done"}).toArray(function(err, revisions){
     res.send(revisions);
    });
 });
@@ -541,7 +541,7 @@ function applyChange(revision, res, queryObj, updateObj, versionNumber){
 		{new: true}
 	).then(
 		function(result){
-			//console.log(result);
+			console.log(result);
 
       if(revision.target=="media"){
 			   res.send(result.value); //todo: error checking
@@ -552,9 +552,6 @@ function applyChange(revision, res, queryObj, updateObj, versionNumber){
       }
 
 			commitRevision(revision)
-		},
-		function(err){
-			console.log(err);
 		}
 	).catch(logError);
 }
@@ -581,14 +578,13 @@ function executeEdit(target, req, res){
 	var revision = {
 		state: "pending",
 		target: target,
-		user: req.user._id, //todo: also embed username
+		user: req.user._id,
     forID: ObjectId(req.params.forID),
 		lastModified: new Date(),
 		newValues: req.body.changes,
-    original: req.body.original
+    original: req.body.original,
+    mediaID: req.body.mediaID //for easy querying of all song edits
 	};
-
-  if(target=="lines") revision.mediaID=req.body.mediaID; //for easy querying of all song edits
 
 	db.collection("revisions").insertOne(revision).then(processRevision.bind(this, revision, res)).catch(logError);
 }

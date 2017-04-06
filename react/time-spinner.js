@@ -17,16 +17,9 @@
           this.props.increment(this.variableName);
         }
 
-        convertToTime(seconds){
-          var minutes = seconds/60;
-          var seconds = seconds%60;
-          if (seconds<10) seconds = "0"+seconds;
-          return Math.floor(minutes) + ":" + seconds;
-        }
-
         render () {
 
-          var displayedTimeMark = this.convertToTime(this.props.seconds);
+          var displayedTimeMark = KeduIje.convertToTime(this.props.seconds);
           return <div className="spinner-container">
                     <div className="label">{this.props.label}</div>
                     <div className="inner-spinner">

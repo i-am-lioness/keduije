@@ -59,7 +59,8 @@ var KeduIje = (function(ki){
     //todo: postdata should be validated
     var postData = {
       original: original,
-      changes: changes
+      changes: changes,
+      mediaID: songID //for easy querying
     };
 
     $.post("/api/media/edit/"+songID, postData, cb);
@@ -76,6 +77,14 @@ var KeduIje = (function(ki){
       $("html,body").animate({scrollTop: position-height*0.2}, 800);
   }
 
+  function convertToTime(seconds){
+    seconds=parseInt(seconds);
+    var minutes = seconds/60;
+    var seconds = seconds%60;
+    if (seconds<10) seconds = "0"+seconds;
+    return Math.floor(minutes) + ":" + seconds;
+  }
+
   ki.init = function (_songID){
     songID = _songID;
   };
@@ -90,6 +99,7 @@ var KeduIje = (function(ki){
   ki.getRevisions = getRevisions;
   ki.myLines = myLines;
   ki.getMediaInfo = getMediaInfo;
+  ki.convertToTime = convertToTime;
   ki.deleteSong = ()=>{}; //todo: implement
 
   return ki;

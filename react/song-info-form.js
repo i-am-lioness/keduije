@@ -96,7 +96,9 @@
 
         queryYoutube(e){
           var q = getIDFromURL(e.target.value);
-          if(!q) return;
+          if(!q) {
+            return this.setState({isAudio: true});
+          };
           var request = gapi.client.youtube.videos.list({
             id: q,
             part: 'snippet'
@@ -165,7 +167,7 @@
                     <input onChange={this.handleInput} value={this.displayValue("artist")}  className="form-control input-lg" onBlur={this.search} id="artist-input" name="artist" placeholder="Artist" />
                   </div>
                   <div className="form-group">
-                    <input type={this.props.newSong? null : "hidden"} onChange={this.handleInput} value={this.state.img}  className="form-control input-lg" id="art-url-input" name="img" placeholder="Artwork URL" />
+                    <input type={(this.props.newSong&&this.state.isAudio)? null : "hidden"} onChange={this.handleInput} value={this.state.img}  className="form-control input-lg" id="art-url-input" name="img" placeholder="Artwork URL" />
                   </div>
                 </div>
               </div>

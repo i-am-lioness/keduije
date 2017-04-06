@@ -16,7 +16,7 @@ class Edits extends React.Component {
     this.setEdits = this.setEdits.bind(this);
     this.setAdds = this.setAdds.bind(this);
     this.saveSongInfo = this.saveSongInfo.bind(this);
-    this.extractDate = this.extractDate.bind(this);
+    this.processEdit = this.processEdit.bind(this);
   }
 
   componentWillMount(){
@@ -25,8 +25,8 @@ class Edits extends React.Component {
   }
 
   setEdits(edits){
-    edits.forEach((el)=>{ el.type="edit"});
-    edits.forEach(this.extractDate);
+    edits.forEach(this.processEdit.bind(this,"edit"));
+    console.log(edits);
 
     this.setState({edits: edits});
   }
@@ -38,19 +38,17 @@ class Edits extends React.Component {
   }
 
   setAdds(adds){
-    console.log(adds);
-    adds.forEach((el)=>{ el.type="add"});
-    adds.forEach(this.extractDate);
+    adds.forEach(this.processEdit.bind(this,"add"));
 
     this.setState({adds: adds});
   }
 
-  extractDate(el){
+  processEdit(type, el){
+    el.type=type;
+
     var timestamp = el._id.toString().substring(0,8);
     var date = new Date( parseInt( timestamp, 16 ) * 1000 );
     el.date=date;
-
-    console.log("songs",this.state.songs);
 
     if(!this.state.songs[el.mediaID])
       KeduIje.getMediaInfo(el.mediaID, this.saveSongInfo);
@@ -67,19 +65,55 @@ class Edits extends React.Component {
     return <span className={className} key={i}>{diff.value}</span>;
   }
 
+  changedInfo(name, edit){
+    return <p>Renamed {name}: {edit.original[name]} => {edit.newValues[name]}</p>;
+  }
+
   eachEdit(edit, idx){
 
-    var output= null
-    if(edit.type=="edit" && edit.newValues.text){
-      var diff = JsDiff.diffChars(edit.original.text, edit.newValues.text);
-      var changes = diff.map(this.eachDiff);
-      output = <p>Edited: <strong>{changes}</strong></p>;
-    }else if(edit.type=="add"){
-      output = <p>Added: <strong>{edit.text}</strong></p>
+    var song = this.state.songs[edit.mediaID];
+    var songUrl=null;
+    var songTitle = null;
+
+    if(song) {
+      songUrl="/music/"+song.slug;
+      songTitle = <a className="song-title" href={songUrl}>{song.title}</a>;
     }
 
-    var song = this.state.songs[edit.mediaID];
-    var songTitle = song? <a href={"/music/"+song.slug}>{song.title}</a> : null;
+    var output= null;
+    if(edit.type=="edit"){
+      if(!edit.newValues) return null;
+      if(edit.newValues.text){ //if a line edit
+        var diff = JsDiff.diffChars(edit.original.text, edit.newValues.text);
+        var changes = diff.map(this.eachDiff);
+        output = <p>Edited: <strong>{changes}</strong></p>;
+      }else{ //if an info edit
+
+        var textOutput, artistOutput, imgOutput = null;
+        if(edit.newValues.title){
+          textOutput = this.changedInfo("title", edit);
+        }
+
+        if(edit.newValues.artist){
+          artistOutput = this.changedInfo("artist", edit);
+        }
+
+        if(edit.newValues.img){
+          imgOutput = <p>changed art work</p>;
+        }
+
+        output = <span>{textOutput} {artistOutput} {imgOutput}</span>;
+      }
+
+    }else if(edit.type=="add"){
+      var startTime = KeduIje.convertToTime(edit.startTime);
+      var endTime = KeduIje.convertToTime(edit.endTime);
+      output = <p>Added:
+        <strong>{edit.text}</strong>
+        <a href={songUrl+"#"+edit.startTime}>({startTime})</a>
+      </p>;
+    }
+
 
     return <div
         className="panel panel-default"
@@ -98,7 +132,7 @@ class Edits extends React.Component {
 
   render () {
     var activities = this.state.adds.concat(this.state.edits);
-    activities.sort((a,b)=>{return (a.date<b.date);});
+    activities.sort((a,b)=>{return (b.date-a.date);});
     var activityDisplay = activities.map(this.eachEdit);
 
     return <div className="">

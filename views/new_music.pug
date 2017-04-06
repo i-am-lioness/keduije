@@ -17,7 +17,7 @@ html(lang='en')
       
       function submitSongInfo(data){
 
-        KeduIje.saveSongInfo(data, (song) => { 
+        KeduIje.saveSongInfo(null, data, (song) => { 
           window.location="/music/"+song.slug;
         });
       }

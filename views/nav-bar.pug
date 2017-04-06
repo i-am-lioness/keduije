@@ -14,7 +14,7 @@ nav.navbar.navbar-default
               span.glyphicon.glyphicon-menu-down(aria-hidden="true")
             ul.dropdown-menu(aria-labelledby="userDropdown")
               li
-                a(href="#") #{user.displayName}
+                a(href="/history") #{user.displayName}
               li
                 a(href="/logout") Logout
         else
@@ -31,7 +31,7 @@ nav.navbar.navbar-default
           ul
             if user
               li.login-info
-                  a(href="#") #{user.displayName}
+                  a(href="/history") #{user.displayName}
                   div.user-avatar(style="background-image: url(" + user.photo + ");")
                   a(href="/logout") Logout
             else
