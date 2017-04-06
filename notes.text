@@ -9,36 +9,36 @@ can add headings or lyrics
 <>Imana mu na Chi m so
 
 line {
-  mediaID
+  pendingRevisions: [],
+  mediaID:
   startTime:
   endTime:
   deleted: false,
   text:
   heading: null || "string",
   lastEdit: {dateTime}
-  lastEditBy: null || "userID" //null, if never revised by another,
+  //lastEditBy: null || "userID" //null, if never revised by another,
 	version: {integer++}
 }
 
 //id can change until annotated or edited
 revision: {
-	forID: {ObjectID},
-	state: {"pending" || "applied" || "done"},
-	updateDoc : <update doc>
-  user:
-	target: {"media" || "lines"}
+  forID: {ObjectID},
+  state: {"pending" || "applied" || "done"},
+  newValues : <update doc>,
+  original: {line}
+  user: {ObjectID}
+  target: {"media" || "lines"}
   date: {dateTime}
-  value: {deleted: true ||
-          startTime: x ||
-          endTime: x ||
-          content:,
-          header: }
+  mediaID: {ObjectID}, //for easy querying
+  changeset: 
 }
 
 
 media: {
 	pendingRevisions: [],
-	version: {integer},
+  creator: {ObjectID},
+	version: {integer++},
 	title: "string",
 	slug: Slugify(this.title),
 	artist: "string", /* for now */
@@ -48,13 +48,12 @@ media: {
 	type: 0 || 1, /* audio= 0, video=1 */
 	/*for audio type */
 	src: "string", /*formally 'url' */
-	lyrics: [] //may no longer be necessary
 
 }
 
 
 1***Editing lyric:
--r=Revisions.insert(({state: "pending", action: "edit_lyric"}))
+-r=Revisions.insert(({state: "pending", targe: "lines"}))
 ==>can optimisticly be displayed at this point
 -Songs.find({id: revisions.songID}, (song)=>{
 	song.update({
@@ -142,3 +141,25 @@ Editing Song Info:
 -Revisions.find({_id: r.id}, (revision)=>{
 	revision.state = "done"
 })
+
+
+Editing Control
+- User turns on edit mode (15-minute timer starts, and restarts with each edit)
+- Requests changeset from server
+- all edits are tagged with changset id
+- each line "add" will be committed
+- but line "edits" are staged until:
+-- user gets server version number line
+-- if version number matches uesr version, then it goes through
+-- if not, revision is canceled, and goes to trash, but user, should have views refreshed
+---user version not matching, will typically happen, if 
+    someone else (user2) has started editing since user1 retrieved server version 
+    so user2's edit will go over user1's, since user2 was editing the latest version
+    there is no "locking". whoever edits first, wins.
+
+    version 7
+    --> 9:01 AM user1 editing version 8 --> user 1 sees version==9
+    --------> 9:04 AM user2 editing version 8--->user2 saves version 8
+
+to avoid clashes, in the future, the more popular a song is,
+ the fewer people will have the privilege of editing it

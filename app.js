@@ -492,8 +492,11 @@ app.get('/temp', function (req, res) {
 });
 */
 
-function logError(error){
-  console.log(error);
+function logError(error, res){
+  console.log("Error", error);
+  if(res){
+    res.status(500).send(error);
+  }
 }
 
 function sendLines(req, res){
@@ -524,23 +527,35 @@ function commitRevision(revision){
 	}).catch(logError);
 }
 
-//todo: not needed for new media
 function getVersionNumber(revision) {
 	return new Promise((resolve, reject) => {
+
+    if(revision.original){
 		 db.collection(revision.target).findAndModify(
 			 { _id: revision.forID },
 			 null,
 			 { $inc: { version: 1 } },
 			 {new: true}
-		 ).then((result)=>{ resolve(result.value.version)})
-     .catch(reject);;
+		 ).then((result)=>{ 
+        var versionNumber = result.value.version;
+        if((versionNumber-1)==parseInt(revision.original.version)){
+          //this revision is the next version, and will be applied
+          resolve(versionNumber);
+        }else{
+          reject("Version "+ versionNumber + " already edited.");
+
+          revision.state="canceled";
+          db.collection("revisions").save(revision);
+        }
+      }).catch(reject);
+    }else{
+      //not needed for new media
+      resolve(1);
+    }
 	});
 }
 
 function applyChange(revision, res, queryObj, updateObj, versionNumber){
-	//console.log("queryObj", queryObj);
-	//console.log("updateObj",updateObj);
-  //if((versionNumber-1)!=parseInt(revision.original.version) return; //todo
   updateObj.$set.version=versionNumber;
 	db.collection(revision.target).findAndModify(
 		queryObj,
@@ -549,14 +564,16 @@ function applyChange(revision, res, queryObj, updateObj, versionNumber){
 		{new: true}
 	).then(
 		function(result){
-			console.log(result);
+			//console.log(result);
 
-      if(revision.target=="media"){
-			   res.send(result.value); //todo: error checking
-      } else if(revision.target=="lines"){
-         sendLines(result.value.mediaID, res);
-      }else {
-        res.send("error, unrecognized db collection name: "+ revision.target);
+      if(res){
+        if(revision.target=="media"){
+          res.send(result.value); //todo: error checking
+        } else if(revision.target=="lines"){
+          sendLines(result.value.mediaID, res);
+        }else {
+          res.send("error, unrecognized db collection name: "+ revision.target);
+        }
       }
 
 			commitRevision(revision)
@@ -578,7 +595,7 @@ function processRevision(revision, res){
 
   getVersionNumber(revision)
     .then(applyChange.bind(this, revision, res, queryObj, updateObj))
-    .catch(logError);
+    .catch((error)=>{ logError(error,res)});
 
 }
 
@@ -607,6 +624,7 @@ app.post('/api/media/:mediaID/addline', function (req, res) {
 
   req.body.creator = req.user._id;
   req.body.mediaID = req.params.mediaID;
+  req.body.version = 1;
 
   db.collection("lines").insertOne(req.body).then(sendLines.bind(this, req.params.mediaID, res)).catch(logError);
 
