@@ -28,6 +28,7 @@ class Edits extends React.Component {
 
   componentWillMount(){
     KeduIje.getChangesets(this.setChangesets);
+    KeduIje.listMedia(this.setListings)
   }
 
   setChangesets(changesets){
@@ -63,6 +64,7 @@ class Edits extends React.Component {
 
   setListings(listings){
     listings.forEach(this.processSession.bind(this,"listing"));
+    listings.sort((a,b)=>{return (b.date-a.date);});
 
     this.setState({listings: listings});
   }
@@ -70,9 +72,7 @@ class Edits extends React.Component {
   processEdit(type, el){
     el.type=type;
 
-    var timestamp = el._id.toString().substring(0,8);
-    var date = new Date( parseInt( timestamp, 16 ) * 1000 );
-    el.date=date;
+    el.time = parseInt(el.original? (el.original.startTime || -1) : el.startTime);
 
   }
 
@@ -111,12 +111,18 @@ class Edits extends React.Component {
   eachEdit(songUrl, edit, idx){
 
     var output= null;
+    var startTime = KeduIje.convertToTime(edit.time);
+
     if(edit.type=="edit"){
       if(!edit.newValues) return null;
       if(edit.newValues.text){ //if a line edit
         var diff = JsDiff.diffChars(edit.original.text, edit.newValues.text);
         var changes = diff.map(this.eachDiff);
-        output = <p>Edited: <strong>{changes}</strong></p>;
+        output = <p>
+            <a href={songUrl+"#"+edit.time}>({startTime})</a>
+            <span className="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+            <strong>{changes}</strong>
+          </p>;
       }else{ //if an info edit
 
         var textOutput, artistOutput, imgOutput = null;
@@ -136,11 +142,10 @@ class Edits extends React.Component {
       }
 
     }else if(edit.type=="add"){
-      var startTime = KeduIje.convertToTime(edit.startTime);
-      var endTime = KeduIje.convertToTime(edit.endTime);
-      output = <p>Added:
+      output = <p>
+        <a href={songUrl+"#"+edit.time}>({startTime})</a>
+        <span className="glyphicon glyphicon-plus" aria-hidden="true"></span>
         <strong>{edit.text}</strong>
-        <a href={songUrl+"#"+edit.startTime}>({startTime})</a>
       </p>;
     }
 
@@ -153,7 +158,7 @@ class Edits extends React.Component {
 
   listEdits(changesetID, songUrl){
     var edits = (this.state.adds[changesetID]||[]).concat((this.state.edits[changesetID]||[]));
-    edits.sort((a,b)=>{return (b.date-a.date);});
+    edits.sort((a,b)=>{return (a.time-b.time); });
 
     var editsHTML = edits.map(this.eachEdit.bind(this, songUrl));
 
@@ -162,13 +167,15 @@ class Edits extends React.Component {
 
   eachChangeset(changeset, idx){
 
-    var song = this.state.songs[changeset.mediaID];
+    var song = this.state.songs[changeset.mediaID||changeset._id];
     var songUrl=null;
     var songTitle = null;
+    var songImg = null;
 
     if(song) {
       songUrl="/music/"+song.slug;
       songTitle = <a className="song-title" href={songUrl}>{song.title}</a>;
+      songImg = song.img;
     }
 
     var output= null;
@@ -176,7 +183,16 @@ class Edits extends React.Component {
       output = this.listEdits(changeset._id, songUrl);
       
     }else if(changeset.type=="listing"){
-      output=<p> Listed this song</p>;
+      output=<div className="media">
+        <div className="media-left">
+          <a href={songUrl}>
+            <img className="media-object" src={songImg} alt={songTitle} style={{width: "200px"}} />
+          </a>
+        </div>
+        <div className="media-body">
+          <h4 className="media-heading">Added</h4>
+        </div>
+      </div>;
     }
 
 
@@ -197,7 +213,8 @@ class Edits extends React.Component {
 
   render () {
 
-    var activityDisplay = this.state.changesets.map(this.eachChangeset);
+    var history = this.state.changesets.concat(this.state.listings).sort((a,b)=>{return (b.date-a.date);});
+    var activityDisplay = history.map(this.eachChangeset);
 
     return <div className="">
         {activityDisplay}
