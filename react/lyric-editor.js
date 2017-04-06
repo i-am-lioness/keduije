@@ -15,7 +15,7 @@
         }
 
         handleSubmit(event) {
-          event.preventDefault();
+          event.preventDefault(); //todo: stop submitting for additional buttons without appropriate type
           this.props.saveLyric();
         }
 
@@ -46,7 +46,10 @@
           var editSwitchText = (this.props.editMode) ? "Done Editing" : "Edit";
           var dialog = <form id="lyricEditor" style={{visibility: this.props.displayed? "visible": "hidden"}} ref={(el)=> {this.lyricEditor = el}} className="editor-bg-color kezie-editor" onSubmit={this.handleSubmit}>
           <div className="row">
-            <div className="col-md-12"> {originalText} </div>
+            <div className="col-md-12">
+              {originalText}
+              <button onClick={this.props.onDelete} type="button" style={{position: "absolute"}}>Delete</button>
+            </div>
           </div>
           <div className="row">
             <div className="col-md-12 col-xs-10">

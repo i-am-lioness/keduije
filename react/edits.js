@@ -72,6 +72,19 @@ class Edits extends React.Component {
   processEdit(type, el){
     el.type=type;
 
+    if(type=="edit"){
+      if("deleted" in el.newValues){ 
+        if((el.newValues.deleted==true)||(el.newValues.deleted=="true"))
+          el.type="deletion";
+        else{ //todo: for now treat lyric recoveries like brand new adds
+          el.type="add";
+          el.text=edit.newValues.text; //todo: should Object.assign()
+        }
+      }else if(el.target=="media"){ //todo: reorganize
+        el.type="info";
+      }
+    }
+
     el.time = parseInt(el.original? (el.original.startTime || -1) : el.startTime);
 
   }
@@ -108,22 +121,62 @@ class Edits extends React.Component {
     return <p>Renamed {name}: {edit.original[name]} => {edit.newValues[name]}</p>;
   }
 
+  changedTimeMark(label, edit, field, timeUrl){
+    if(edit.newValues[field]){
+      var formatedTimeOld = KeduIje.convertToTime(edit.original[field]);
+      var formatedTimeNew = KeduIje.convertToTime(edit.newValues[field]);
+    return <p>
+          {label}
+          <a href={timeUrl}>({formatedTimeOld})</a>
+          <span className="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+          <a href={timeUrl}>({formatedTimeNew})</a>
+        </p>;
+    }
+    return null;
+  }
+
   eachEdit(songUrl, edit, idx){
 
     var output= null;
     var startTime = KeduIje.convertToTime(edit.time);
 
     if(edit.type=="edit"){
-      if(!edit.newValues) return null;
+      var textChange = null;
+      var startTimeChange = null;
+      var endTimeChange = null;
       if(edit.newValues.text){ //if a line edit
         var diff = JsDiff.diffChars(edit.original.text, edit.newValues.text);
         var changes = diff.map(this.eachDiff);
-        output = <p>
+        textChange = <p>
             <a href={songUrl+"#"+edit.time}>({startTime})</a>
             <span className="glyphicon glyphicon-pencil" aria-hidden="true"></span>
             <strong>{changes}</strong>
           </p>;
-      }else{ //if an info edit
+       
+      }
+
+      if(edit.newValues.startTime){
+        startTimeChange = <p>
+          start time moved to <a href={songUrl+"#"+edit.time}>({startTime})</a>
+        </p>;
+      }
+      startTimeChange = this.changedTimeMark("Start :", edit, "startTime", songUrl+"#"+edit.time);
+      endTimeChange = this.changedTimeMark("End :", edit, "endTime", songUrl+"#"+edit.time);
+
+      output = <span data-id={edit._id}>
+            {textChange}
+            {startTimeChange}
+            {endTimeChange}
+          </span>;
+    }else if(edit.type=="deletion"){//if a deletion
+       
+        output = <p className="deleted-line">
+          <a href={songUrl+"#"+edit.time}>({startTime})</a>
+          <span className="glyphicon glyphicon-trash" aria-hidden="true"></span>
+          <strong >{edit.original.text}</strong>
+        </p>;
+      
+    }else if(edit.type=="info"){ //if an info edit
 
         var textOutput, artistOutput, imgOutput = null;
         if(edit.newValues.title){
@@ -139,7 +192,6 @@ class Edits extends React.Component {
         }
 
         output = <span>{textOutput} {artistOutput} {imgOutput}</span>;
-      }
 
     }else if(edit.type=="add"){
       output = <p>
@@ -162,7 +214,7 @@ class Edits extends React.Component {
 
     var editsHTML = edits.map(this.eachEdit.bind(this, songUrl));
 
-    return <ul className="list-group">{editsHTML}</ul>;
+    return editsHTML.length ? <ul className="list-group">{editsHTML}</ul> : null;
   }
 
   eachChangeset(changeset, idx){
@@ -196,7 +248,7 @@ class Edits extends React.Component {
     }
 
 
-    return <div
+    return output ? <div
         className="panel panel-default"
         key={changeset._id}
       >
@@ -207,7 +259,7 @@ class Edits extends React.Component {
         <div className="panel-body">
           {output}
         </div>
-      </div>;
+      </div> : null;
 
   }
 

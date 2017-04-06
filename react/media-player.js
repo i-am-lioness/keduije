@@ -66,6 +66,7 @@ class EditSwitch extends React.Component {
           this.onScroll = this.onScroll.bind(this);
           this.updateIfChanged = this.updateIfChanged.bind(this);
           this.cancelEditMode = this.cancelEditMode.bind(this);
+          this.handleDelete = this.handleDelete.bind(this);
 
         }
 
@@ -77,13 +78,20 @@ class EditSwitch extends React.Component {
             this.saveLyric(headingText)
         }
 
+        handleDelete(e){
+          var r = confirm("Are you sure you want to delete '"+ this.state.originalText + "'?");
+          if (r == true) {
+              KeduIje.deleteLyric(this.lyricBeingEdited, this.loadLyrics);
+          }
+        }
+
         handleTextChange(event) {
           this.setState({text: event.target.value});
         }
 
-        updateIfChanged(obj, name){
-          if(this.state[name].toString()!=this.lyricBeingEdited[name])
-            obj[name]=this.state[name];
+        updateIfChanged(obj, field, stateName){
+          if(this.state[stateName].toString()!=this.lyricBeingEdited[field])
+            obj[field]=this.state[stateName];
         }
 
         saveLyric(headingText){
@@ -93,12 +101,12 @@ class EditSwitch extends React.Component {
               if(headingText){
                 lyricChanges.heading = headingText;
               } else {
-                this.updateIfChanged(lyricChanges, "text");
-                this.updateIfChanged(lyricChanges, "segmentStart");
-                this.updateIfChanged(lyricChanges, "segmentEnd");
+                this.updateIfChanged(lyricChanges, "text", "text");
+                this.updateIfChanged(lyricChanges, "startTime", "segmentStart");
+                this.updateIfChanged(lyricChanges, "endTime", "segmentEnd");
               }
 
-            KeduIje.updateLyric(this.lyricBeingEdited, lyricChanges, this.loadLyrics);
+            KeduIje.updateLyric(this.lyricBeingEdited, lyricChanges, this.loadLyrics); //to do: [semantics] back a "refresh" instead
 
           }else {
             var newLyric = {
@@ -413,6 +421,7 @@ class EditSwitch extends React.Component {
               saveLyric = {this.saveLyric}
               value = {this.state.text}
               handleChange = {this.handleTextChange}
+              onDelete = {this.handleDelete}
               />
             </div>;
 

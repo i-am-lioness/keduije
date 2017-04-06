@@ -513,15 +513,14 @@ function logError(error, res){
 
 function sendLines(req, res){
   var mediaID = req.params? req.params.mediaID : req;
-
-  db.collection("lines").find({mediaID: mediaID}).toArray(function(err, lines) {
+  //todo: keep data types consistent. delete should be stored as boolean or string consistently
+  db.collection("lines").find({mediaID: mediaID, deleted: {$in: ["false", false]}}).toArray(function(err, lines) {
     res.send(lines);
   });
 }
 
 app.get( '/api/myLines', ensureLoggedIn(), function (req, res) {
   db.collection("lines").find({changeset: req.query.changeset}).toArray(function(err, lines) {
-    //console.log(lines);
     res.send(lines);
   });
 });

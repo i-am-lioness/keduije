@@ -72,6 +72,10 @@ var KeduIje = (function(ki){
 
   }
 
+  function deleteLyric(oldLyricObj, cb){
+    updateLyric(oldLyricObj, {deleted: true}, cb);
+  }
+
   function saveSongInfo(original, changes, cb){
 
     //todo: postdata should be validated
@@ -122,6 +126,7 @@ var KeduIje = (function(ki){
   ki.listMedia = listMedia;
   ki.startEditSession = startEditSession;
   ki.getChangesets = getChangesets;
+  ki.deleteLyric = deleteLyric;
   ki.deleteSong = ()=>{}; //todo: implement
 
   return ki;
