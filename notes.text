@@ -37,6 +37,7 @@ revision: {
 
 media: {
 	pendingRevisions: [],
+	status: "draft"||"published"||"deleted",
   creator: {ObjectID},
 	version: {integer++},
 	title: "string",

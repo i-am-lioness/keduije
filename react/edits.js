@@ -82,6 +82,9 @@ class Edits extends React.Component {
         }
       }else if(el.target=="media"){ //todo: reorganize
         el.type="info";
+        if(el.newValues.status=="deleted"){
+          el.type="removal"; //song deletion, todo: organize semantics
+        }
       }
     }
 
@@ -199,11 +202,16 @@ class Edits extends React.Component {
         <span className="glyphicon glyphicon-plus" aria-hidden="true"></span>
         <strong>{edit.text}</strong>
       </p>;
+    }else if(edit.type=="removal"){ //todo: should have own panel
+      output = <p>
+        Removed this song
+      </p>;
     }
 
-
+    var debug = false;
     return <li className="list-group-item" key={edit._id}>
             {output}
+            {debug && <pre>{JSON.stringify(edit)}</pre>}
           </li>;
 
   }

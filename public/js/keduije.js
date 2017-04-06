@@ -89,6 +89,12 @@ var KeduIje = (function(ki){
     $.post("/api/media/edit/"+songID, postData, cb);
   }
 
+  function deleteSong(original){
+
+    saveSongInfo(original, {status: "deleted"}, ()=>{window.location="/";});
+    //todo: catch error
+  }
+
   //responsively adjusts scroll position of lyrics during playback
   function scrollIfOutOfView(element){
     var position = $(element).offset().top;
@@ -127,7 +133,7 @@ var KeduIje = (function(ki){
   ki.startEditSession = startEditSession;
   ki.getChangesets = getChangesets;
   ki.deleteLyric = deleteLyric;
-  ki.deleteSong = ()=>{}; //todo: implement
+  ki.deleteSong = deleteSong;
 
   return ki;
 

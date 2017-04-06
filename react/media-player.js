@@ -67,6 +67,7 @@ class EditSwitch extends React.Component {
           this.updateIfChanged = this.updateIfChanged.bind(this);
           this.cancelEditMode = this.cancelEditMode.bind(this);
           this.handleDelete = this.handleDelete.bind(this);
+          this.deleteThisSong = this.deleteThisSong.bind(this);
 
         }
 
@@ -320,6 +321,10 @@ class EditSwitch extends React.Component {
           KeduIje.saveSongInfo(this.originalSongInfo, songInfo, this.displaySongInfo);
         }
 
+        deleteThisSong(){
+          KeduIje.deleteSong(this.originalSongInfo);
+        }
+
         displaySongInfo(songInfo){
           this.originalSongInfo = songInfo;
           this.setState({
@@ -404,6 +409,7 @@ class EditSwitch extends React.Component {
               artist={this.state.artist}
               onCancel={this.toggleSongInfoDialog.bind(this, false)}
               img={this.state.img}
+              onRemove={this.deleteThisSong}
             />}
             <LyricEditor
               ref={this.props.registerEditor}

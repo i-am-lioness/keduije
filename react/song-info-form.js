@@ -174,6 +174,7 @@
                   <div className="form-group">
                     <input type={(this.props.newSong&&this.state.isAudio)? null : "hidden"} onChange={this.handleInput} value={this.state.img}  className="form-control input-lg" id="art-url-input" name="img" placeholder="Artwork URL" />
                   </div>
+                  {this.props.newSong || <button type="button" onClick={this.props.onRemove}>Remove this Song</button>}
                 </div>
               </div>
               <div className="row">

@@ -27,7 +27,7 @@ html(lang='en')
           ref={(component) => {window.hi = component}}
           newSong={true}
           onSubmit={submitSongInfo}
-          onCancel={KeduIje.deleteSong}
+          onCancel={KeduIje.deleteSong.bind(this,null)}
         />,
         document.getElementById('root')
       );  
