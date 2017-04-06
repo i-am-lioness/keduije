@@ -13,6 +13,8 @@
           };
           this.state = this.resetState;
 
+          this.ytThumbnail = null;
+
           this.handleClick = this.handleClick.bind(this);
           this.eachImage = this.eachImage.bind(this);
           this.search = this.search.bind(this);
@@ -31,6 +33,8 @@
             return;
           else if(this.state[name])
             obj[name]=this.state[name];
+          else if(name=="img" && this.ytThumbnail)
+            obj["img"]=this.ytThumbnail;
         }
 
         handleSubmit(e){
@@ -122,7 +126,8 @@
           var tns=video.thumbnails;
 
           var images = Array.from(this.state.images);
-          images.push(tns.medium.url);
+          this.ytThumbnail = tns.medium.url;
+          images.push(this.ytThumbnail);
           this.setState({
             images: new Set(images)
           })
