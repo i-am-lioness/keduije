@@ -35,7 +35,7 @@ class EditSwitch extends React.Component {
           this.maxTime = null;
           this.media = null;
           this.saveStartTime=false; //accounts for "jumping" around, rename to "holdStartTime"
-          this.timeMarksFrozen = false; //todo: make sure to unfreeze
+          this.timeMarksFrozen = false;
           this.timer;
           this.lyricBeingEdited = null;
           this.stopAtSegmentEnd = false;
@@ -173,6 +173,8 @@ class EditSwitch extends React.Component {
             displayEditor: false,
             text: ""
           });
+
+          this.timeMarksFrozen = false;
         }
 
         togglePlayState(){
