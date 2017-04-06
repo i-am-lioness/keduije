@@ -29,6 +29,10 @@ var KeduIje = (function(ki){
     $.get("/api/myLines/", cb);
   }
 
+  function listMedia(cb){
+    $.get("/api/media/list", cb);
+  }
+
   function loadSongInfo(cb){
     getMediaInfo(songID, cb);
   }
@@ -100,6 +104,7 @@ var KeduIje = (function(ki){
   ki.myLines = myLines;
   ki.getMediaInfo = getMediaInfo;
   ki.convertToTime = convertToTime;
+  ki.listMedia = listMedia;
   ki.deleteSong = ()=>{}; //todo: implement
 
   return ki;

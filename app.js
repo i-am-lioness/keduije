@@ -302,6 +302,13 @@ app.get(
   }
 );
 
+app.get('/api/media/list', function (req, res) {
+
+  db.collection('media').find({status: "published", creator: req.user._id}).toArray(function(err, media) {
+    res.send(media);
+  });
+});
+
 app.get('/api/media/:mediaID', function(req,res){
   db.collection('media')
     .findOne({_id: ObjectId(req.params.mediaID)})
@@ -420,7 +427,8 @@ app.get( '/history', ensureLoggedIn(), function (req, res) {
 });
 
 app.get( '/api/revisions', ensureLoggedIn(), function (req, res) {
-  db.collection("revisions").find({user: req.user._id, status: "done"}).toArray(function(err, revisions){
+  db.collection("revisions").find({user: req.user._id, state: "done"}).toArray(function(err, revisions){
+    //console.log({user: req.user._id, state: "done"});
     res.send(revisions);
    });
 });

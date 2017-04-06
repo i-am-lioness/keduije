@@ -8,7 +8,8 @@ class Edits extends React.Component {
     this.state = {
       edits: [],
       adds: [],
-      songs:{}
+      listings: [],
+      songs:{} //rename to "meta"
     };
 
     this.eachEdit = this.eachEdit.bind(this);
@@ -17,11 +18,13 @@ class Edits extends React.Component {
     this.setAdds = this.setAdds.bind(this);
     this.saveSongInfo = this.saveSongInfo.bind(this);
     this.processEdit = this.processEdit.bind(this);
+    this.setListings = this.setListings.bind(this);
   }
 
   componentWillMount(){
     KeduIje.getRevisions(this.setEdits);
     KeduIje.myLines(this.setAdds);
+    KeduIje.listMedia(this.setListings);
   }
 
   setEdits(edits){
@@ -43,6 +46,12 @@ class Edits extends React.Component {
     this.setState({adds: adds});
   }
 
+  setListings(listings){
+    listings.forEach(this.processEdit.bind(this,"listing"));
+
+    this.setState({listings: listings});
+  }
+
   processEdit(type, el){
     el.type=type;
 
@@ -50,8 +59,10 @@ class Edits extends React.Component {
     var date = new Date( parseInt( timestamp, 16 ) * 1000 );
     el.date=date;
 
-    if(!this.state.songs[el.mediaID])
-      KeduIje.getMediaInfo(el.mediaID, this.saveSongInfo);
+    var mediaID = el.mediaID || el._id;
+
+    if(!this.state.songs[mediaID])
+      KeduIje.getMediaInfo(mediaID, this.saveSongInfo);
   }
 
   eachDiff(diff,i){
@@ -71,7 +82,7 @@ class Edits extends React.Component {
 
   eachEdit(edit, idx){
 
-    var song = this.state.songs[edit.mediaID];
+    var song = this.state.songs[edit.mediaID||edit._id];
     var songUrl=null;
     var songTitle = null;
 
@@ -112,6 +123,8 @@ class Edits extends React.Component {
         <strong>{edit.text}</strong>
         <a href={songUrl+"#"+edit.startTime}>({startTime})</a>
       </p>;
+    }else if(edit.type=="listing"){
+      output=<p> Listed this song</p>;
     }
 
 
@@ -131,7 +144,8 @@ class Edits extends React.Component {
   }
 
   render () {
-    var activities = this.state.adds.concat(this.state.edits);
+    var activities = this.state.adds.concat(this.state.edits).concat(this.state.listings);
+    //console.log(this.state.edits);
     activities.sort((a,b)=>{return (b.date-a.date);});
     var activityDisplay = activities.map(this.eachEdit);
 
