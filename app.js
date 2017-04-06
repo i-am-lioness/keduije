@@ -427,7 +427,7 @@ app.get( '/history', ensureLoggedIn(), function (req, res) {
 });
 
 app.get( '/api/revisions', ensureLoggedIn(), function (req, res) {
-  db.collection("revisions").find({user: req.user._id, state: "done"}).toArray(function(err, revisions){
+  db.collection("revisions").find({changeset: req.query.changeset, state: "done"}).toArray(function(err, revisions){
     //console.log({user: req.user._id, state: "done"});
     res.send(revisions);
    });
@@ -492,6 +492,18 @@ app.get('/temp', function (req, res) {
 });
 */
 
+app.get( '/api/changesets/list', ensureLoggedIn(), function (req, res) {
+  db.collection("changesets").find({user: req.user._id}).toArray(function(err, changesets) {
+    res.send(changesets);
+  });
+});
+
+app.get( '/api/start_edit/:mediaID', ensureLoggedIn(), function (req, res) {
+  db.collection("changesets").insertOne({user: req.user._id, mediaID: req.params.mediaID}).then(function(result){
+    res.send(result.insertedId);
+   }).catch(logError);
+});
+
 function logError(error, res){
   console.log("Error", error);
   if(res){
@@ -508,7 +520,7 @@ function sendLines(req, res){
 }
 
 app.get( '/api/myLines', ensureLoggedIn(), function (req, res) {
-  db.collection("lines").find({creator: req.user._id}).toArray(function(err, lines) {
+  db.collection("lines").find({changeset: req.query.changeset}).toArray(function(err, lines) {
     //console.log(lines);
     res.send(lines);
   });
@@ -608,6 +620,7 @@ function executeEdit(target, req, res){
 		lastModified: new Date(),
 		newValues: req.body.changes,
     original: req.body.original,
+    changeset: req.body.changeset,
     mediaID: req.body.mediaID //for easy querying of all song edits
 	};
 

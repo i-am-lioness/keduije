@@ -2,6 +2,7 @@
 var KeduIje = (function(ki){
 
   var songID = null;
+  var changesetID = null;
 
   window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
 
@@ -13,8 +14,8 @@ var KeduIje = (function(ki){
       $.post("/api/logError",{ width: screen.width, height: screen.height, msg: msg });
   }
 
-  function getRevisions(cb){
-    $.get("/api/revisions", cb);
+  function getRevisions(changeset, cb){
+    $.get("/api/revisions", {changeset: changeset}, cb);
   }
 
   function search(q, cb) {
@@ -25,12 +26,23 @@ var KeduIje = (function(ki){
     $.get("/api/lines/"+songID, cb);
   }
 
-  function myLines(cb){
-    $.get("/api/myLines/", cb);
+  function myLines(changeset, cb){
+    $.get("/api/myLines/", {changeset: changeset}, cb);
   }
 
   function listMedia(cb){
     $.get("/api/media/list", cb);
+  }
+
+  function getChangesets(cb){
+    $.get("/api/changesets/list", cb);
+  }
+
+  function startEditSession(isStart, cb){
+    if(isStart)
+      $.get("/api/start_edit/" + songID, (resp)=>{changesetID=resp}).fail((err)=>{cb && cb(err);});
+    else
+      changesetID=null;
   }
 
   function loadSongInfo(cb){
@@ -42,6 +54,7 @@ var KeduIje = (function(ki){
   }
 
   function addLyric(newLyric, cb){
+    newLyric.changeset = changesetID;
     $.post("/api/media/"+songID+"/addline", newLyric, cb);
   }
 
@@ -51,7 +64,8 @@ var KeduIje = (function(ki){
     var postData = {
       original: oldLyricObj,
       changes: newLyricObj,
-      mediaID: songID
+      mediaID: songID,
+      changeset: changesetID
     };
 
     $.post("/api/lines/edit/"+oldLyricObj._id, postData, cb);
@@ -64,6 +78,7 @@ var KeduIje = (function(ki){
     var postData = {
       original: original,
       changes: changes,
+      changeset: changesetID,
       mediaID: songID //for easy querying
     };
 
@@ -105,6 +120,8 @@ var KeduIje = (function(ki){
   ki.getMediaInfo = getMediaInfo;
   ki.convertToTime = convertToTime;
   ki.listMedia = listMedia;
+  ki.startEditSession = startEditSession;
+  ki.getChangesets = getChangesets;
   ki.deleteSong = ()=>{}; //todo: implement
 
   return ki;

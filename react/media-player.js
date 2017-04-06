@@ -65,6 +65,7 @@ class EditSwitch extends React.Component {
           this.onKeyUp = this.onKeyUp.bind(this);
           this.onScroll = this.onScroll.bind(this);
           this.updateIfChanged = this.updateIfChanged.bind(this);
+          this.cancelEditMode = this.cancelEditMode.bind(this);
 
         }
 
@@ -115,9 +116,18 @@ class EditSwitch extends React.Component {
 
         handleToggleEditMode(){
 
+          KeduIje.startEditSession(!this.state.editMode, this.cancelEditMode);
+            //todo: wait for callback before setting state. or better handle asynchronicity
+
           this.setState((prevState, props) => ({
             editMode: !prevState.editMode
           }));
+        }
+
+        cancelEditMode(err){
+          console.log(err);
+          alert("you cannot edit at this time");
+          this.setState({editMode: false})
         }
 
         showEditDialog(data){
