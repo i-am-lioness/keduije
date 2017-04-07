@@ -16,6 +16,7 @@ var slugify = require('slugify')
 var nodemailer = require('nodemailer');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
+const revision = require('./lib/revision.js');
 
 var db;
 
@@ -318,7 +319,9 @@ app.get('/api/media/:mediaID', function(req,res){
     .catch(logError);
 });
 
-app.get('/api/lines/:mediaID',sendLines);
+app.get('/api/lines/:mediaID',function (req, res) {
+  sendLines(req.params.mediaID, res);
+});
 
 app.get(
   '/music/:slug',
@@ -428,7 +431,6 @@ app.get( '/history', ensureLoggedIn(), function (req, res) {
 
 app.get( '/api/revisions', ensureLoggedIn(), function (req, res) {
   db.collection("revisions").find({changeset: req.query.changeset, state: "done"}).toArray(function(err, revisions){
-    //console.log({user: req.user._id, state: "done"});
     res.send(revisions);
    });
 });
@@ -511,8 +513,9 @@ function logError(error, res){
   }
 }
 
-function sendLines(req, res){
-  var mediaID = req.params? req.params.mediaID : req;
+function sendLines(mediaID, res){
+  console.log(mediaID, "mediaID");
+
   //todo: keep data types consistent. delete should be stored as boolean or string consistently
   db.collection("lines").find({mediaID: mediaID, deleted: {$in: ["false", false]}}).toArray(function(err, lines) {
     res.send(lines);
@@ -525,108 +528,12 @@ app.get( '/api/myLines', ensureLoggedIn(), function (req, res) {
   });
 });
 
-function commitRevision(revision){
-	revision.state="applied";
-	db.collection("revisions").save(revision).then(function(){
-		db.collection(revision.target).updateOne(
-			{ _id: revision.forID, pendingRevisions: revision._id},
-			{$pull: {pendingRevisions: revision._id}}
-		).then(function(result){
-			revision.state="done";
-			db.collection("revisions").save(revision);
-		});
-	}).catch(logError);
-}
 
-function getVersionNumber(revision) {
-	return new Promise((resolve, reject) => {
+app.post('/api/lines/edit/:forID', ensureLoggedIn(),  function(req, res) {
 
-    if(revision.original){
-		 db.collection(revision.target).findAndModify(
-			 { _id: revision.forID },
-			 null,
-			 { $inc: { version: 1 } },
-			 {new: true}
-		 ).then((result)=>{ 
-        var versionNumber = result.value.version;
-        if((versionNumber-1)==parseInt(revision.original.version)){
-          //this revision is the next version, and will be applied
-          resolve(versionNumber);
-        }else{
-          reject("Version "+ versionNumber + " already edited.");
+  revision(req, res, db, sendLines).executeEdit("lines");
 
-          revision.state="canceled";
-          db.collection("revisions").save(revision);
-        }
-      }).catch(reject);
-    }else{
-      //not needed for new media
-      resolve(1);
-    }
-	});
-}
-
-function applyChange(revision, res, queryObj, updateObj, versionNumber){
-  updateObj.$set.version=versionNumber;
-	db.collection(revision.target).findAndModify(
-		queryObj,
-		null,
-		updateObj,
-		{new: true}
-	).then(
-		function(result){
-			//console.log(result);
-
-      if(res){
-        if(revision.target=="media"){
-          res.send(result.value); //todo: error checking
-        } else if(revision.target=="lines"){
-          sendLines(result.value.mediaID, res);
-        }else {
-          res.send("error, unrecognized db collection name: "+ revision.target);
-        }
-      }
-
-			commitRevision(revision)
-		}
-	).catch(logError);
-}
-
-function processRevision(revision, res){
-
-	var queryObj = { _id: revision.forID, pendingRevisions: { $ne: revision._id } };
-	var updateObj = {
-		$push: {pendingRevisions: revision._id},
-		$currentDate: { lastModified: true },
-    $set: revision.newValues
-	};
-
-  if((revision.target=="media") && revision.newValues.title)
-    revision.newValues.slug=slugify(revision.newValues.title);
-
-  getVersionNumber(revision)
-    .then(applyChange.bind(this, revision, res, queryObj, updateObj))
-    .catch((error)=>{ logError(error,res)});
-
-}
-
-function executeEdit(target, req, res){
-	var revision = {
-		state: "pending",
-		target: target,
-		user: req.user._id,
-    forID: ObjectId(req.params.forID),
-		lastModified: new Date(),
-		newValues: req.body.changes,
-    original: req.body.original,
-    changeset: req.body.changeset,
-    mediaID: req.body.mediaID //for easy querying of all song edits
-	};
-
-	db.collection("revisions").insertOne(revision).then(processRevision.bind(this, revision, res)).catch(logError);
-}
-
-app.post('/api/lines/edit/:forID', ensureLoggedIn(), executeEdit.bind(this, "lines"));
+});
 
 app.post('/api/media/:mediaID/addline', function (req, res) {
 
@@ -638,12 +545,19 @@ app.post('/api/media/:mediaID/addline', function (req, res) {
   req.body.mediaID = req.params.mediaID;
   req.body.version = 1;
 
-  db.collection("lines").insertOne(req.body).then(sendLines.bind(this, req.params.mediaID, res)).catch(logError);
+  db.collection("lines").insertOne(req.body)
+  .then(()=>{
+    sendLines(req.params.mediaID, res);
+  }).catch(logError);
 
 });
 
 
-app.post("/api/media/edit/:forID", executeEdit.bind(this, "media"));
+app.post("/api/media/edit/:forID", function(req, res) {
+
+  revision(req, res, db, sendLines).executeEdit("media");
+
+});
 
 
 MongoClient.connect(process.env.DB_URL, function(err, _db) {
