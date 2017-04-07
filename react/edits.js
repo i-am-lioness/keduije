@@ -6,9 +6,9 @@ class Edits extends React.Component {
     super(props);
 
     this.state = {
-      listings: [],
+      listings: {}, //media by changeset
       changesets: [],
-      songs:{}, //rename to "meta"
+      songs:{}, //media by _id
       edits: {},
       adds: {}
     };
@@ -19,7 +19,6 @@ class Edits extends React.Component {
     this.setAdds = this.setAdds.bind(this);
     this.saveSongInfo = this.saveSongInfo.bind(this);
     this.processEdit = this.processEdit.bind(this);
-    this.setListings = this.setListings.bind(this);
     this.setChangesets = this.setChangesets.bind(this);
     this.eachChangeset = this.eachChangeset.bind(this);
     this.processSession = this.processSession.bind(this);
@@ -28,11 +27,10 @@ class Edits extends React.Component {
 
   componentWillMount(){
     KeduIje.getChangesets(this.setChangesets);
-    KeduIje.listMedia(this.setListings)
   }
 
   setChangesets(changesets){
-    changesets.forEach(this.processSession.bind(this,"changeset"));
+    changesets.forEach(this.processSession);
     changesets.sort((a,b)=>{return (b.date-a.date);});
 
     this.setState({changesets: changesets});
@@ -62,11 +60,12 @@ class Edits extends React.Component {
     this.setState({adds: update(this.state.adds, updateObj)});
   }
 
-  setListings(listings){
-    listings.forEach(this.processSession.bind(this,"listing"));
-    listings.sort((a,b)=>{return (b.date-a.date);});
-
-    this.setState({listings: listings});
+  setListing(changesetID, media){ //todo, make more efficient
+    console.log("changeset", changesetID);
+    console.log("matching media", media);
+    var updateObj = {};
+    updateObj[changesetID]={$set: media};
+    this.setState({listings: update(this.state.listings, updateObj)});
   }
 
   processEdit(type, el){
@@ -92,21 +91,26 @@ class Edits extends React.Component {
 
   }
 
-  processSession(type, el){
-    el.type=type;
+  processSession(el){
 
     var timestamp = el._id.toString().substring(0,8);
     var date = new Date( parseInt( timestamp, 16 ) * 1000 );
     el.date=date;
 
-    var mediaID = el.mediaID || el._id;
-
-    if(!this.state.songs[mediaID])
-      KeduIje.getMediaInfo(mediaID, this.saveSongInfo);
-
     var changesetID = el._id;
-    KeduIje.getRevisions(changesetID, this.setEdits.bind(this, changesetID));
-    KeduIje.myLines(changesetID, this.setAdds.bind(this, changesetID));
+
+    if(el.type=="new"){
+      KeduIje.getMediaByChangeset(changesetID, this.setListing.bind(this, changesetID));
+    }else{
+
+      var mediaID = el.mediaID;
+
+      if(!this.state.songs[mediaID])
+        KeduIje.getMediaInfo(mediaID, this.saveSongInfo);
+
+      KeduIje.getRevisions(changesetID, this.setEdits.bind(this, changesetID));
+      KeduIje.myLines(changesetID, this.setAdds.bind(this, changesetID));
+    }
   }
 
   eachDiff(diff,i){
@@ -227,32 +231,41 @@ class Edits extends React.Component {
 
   eachChangeset(changeset, idx){
 
-    var song = this.state.songs[changeset.mediaID||changeset._id];
+    var song = null;
     var songUrl=null;
     var songTitle = null;
     var songImg = null;
-
-    if(song) {
-      songUrl="/music/"+song.slug;
-      songTitle = <a className="song-title" href={songUrl}>{song.title}</a>;
-      songImg = song.img;
-    }
-
-    var output= null;
-    if(changeset.type=="changeset"){
-      output = this.listEdits(changeset._id, songUrl);
+    var output= null;      
       
-    }else if(changeset.type=="listing"){
-      output=<div className="media">
-        <div className="media-left">
-          <a href={songUrl}>
-            <img className="media-object" src={songImg} alt={songTitle} style={{width: "200px"}} />
-          </a>
-        </div>
-        <div className="media-body">
-          <h4 className="media-heading">Added</h4>
-        </div>
+    if(changeset.type=="new"){
+
+      song = this.state.listings[changeset._id]
+
+      if(song) {
+        songUrl="/music/"+song.slug;
+        songTitle = <a className="song-title" href={songUrl}>{song.title}</a>;
+        songImg = song.img;
+      
+
+        output=<div className="media">
+          <div className="media-left">
+            <a href={songUrl}>
+              <img className="media-object" src={songImg} alt={songTitle} style={{width: "200px"}} />
+            </a>
+          </div>
+          <div className="media-body">
+            <h4 className="media-heading">Added</h4>
+            {true || <pre>{JSON.stringify(changeset)}</pre>}
+          </div>
       </div>;
+      }
+    }else{
+      song = this.state.songs[changeset._id];
+      if(song) {
+        songUrl="/music/"+song.slug;
+        songTitle = <a className="song-title" href={songUrl}>{song.title}</a>;
+      }
+      output = this.listEdits(changeset._id, songUrl);
     }
 
 
@@ -273,7 +286,7 @@ class Edits extends React.Component {
 
   render () {
 
-    var history = this.state.changesets.concat(this.state.listings).sort((a,b)=>{return (b.date-a.date);});
+    var history = this.state.changesets.sort((a,b)=>{return (b.date-a.date);});
     var activityDisplay = history.map(this.eachChangeset);
 
     return <div className="">

@@ -13,12 +13,11 @@ html(lang='en')
     script(src="/js/keduije-media.js")
     script(src='/song-info-form.js', type='text/babel')
     script(type='text/babel').
-      KeduIje.init("#{mediaID}");
       
       function submitSongInfo(data){
-
-        KeduIje.saveSongInfo(null, data, (song) => { 
-          window.location="/music/"+song.slug;
+        data.changeset = "#{changesetID}";
+        KeduIje.createSong(data, (slug) => { 
+          window.location="/music/"+slug;
         });
       }
       

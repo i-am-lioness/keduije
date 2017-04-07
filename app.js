@@ -319,6 +319,15 @@ app.get('/api/media/:mediaID', function(req,res){
     .catch(logError);
 });
 
+app.get('/api/media', function(req,res){
+  db.collection('media')
+    .findOne({changeset: req.query.changeset})
+    .then((media)=>{
+      res.send(media);
+    })
+    .catch(logError);
+});
+
 app.get('/api/lines/:mediaID',function (req, res) {
   sendLines(req.params.mediaID, res);
 });
@@ -420,8 +429,18 @@ app.get('/api/list/audio', function (req, res) {
 });
 
 app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
-  db.collection("media").insertOne({creator: req.user._id, status: "draft"}).then(function(result){
-    res.render("new_music",{title: "New Music | " + res.locals.title, mediaID: result.insertedId});
+  db.collection("changesets").insertOne({user: req.user._id, type: "new"}).then(function(result){
+    res.render("new_music",{title: "New Music | " + res.locals.title, changesetID: result.insertedId});
+  }).catch(logError);
+});
+
+app.post( '/api/media/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+  req.body.creator = req.user._id;
+  req.body.status = "published";
+  req.body.slug = slugify(req.body.title);
+  req.body.version = 1;
+  db.collection("media").insertOne(req.body).then(function(result){
+    res.send(req.body.slug);
    }).catch(logError);
 });
 

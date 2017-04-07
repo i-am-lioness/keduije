@@ -53,6 +53,10 @@ var KeduIje = (function(ki){
     $.get("/api/media/"+mediaID, cb);
   }
 
+  function getMediaByChangeset(cs, cb){
+    $.get("/api/media", {changeset: cs}, cb);
+  }
+
   function addLyric(newLyric, cb){
     newLyric.changeset = changesetID;
     $.post("/api/media/"+songID+"/addline", newLyric, cb);
@@ -87,6 +91,11 @@ var KeduIje = (function(ki){
     };
 
     $.post("/api/media/edit/"+songID, postData, cb);
+  }
+
+  function createSong(songInfo, cb){
+
+    $.post("/api/media/new", songInfo, cb);
   }
 
   function deleteSong(original){
@@ -129,11 +138,13 @@ var KeduIje = (function(ki){
   ki.myLines = myLines;
   ki.getMediaInfo = getMediaInfo;
   ki.convertToTime = convertToTime;
-  ki.listMedia = listMedia;
+  //ki.listMedia = listMedia;
   ki.startEditSession = startEditSession;
   ki.getChangesets = getChangesets;
   ki.deleteLyric = deleteLyric;
   ki.deleteSong = deleteSong;
+  ki.createSong = createSong;
+  ki.getMediaByChangeset = getMediaByChangeset;
 
   return ki;
 

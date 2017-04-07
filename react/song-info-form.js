@@ -49,7 +49,7 @@
           }
 
           if(this.props.newSong){
-            updates.status="published";
+            //updates.status="published";
             updates.type=(this.state.videoID)? KeduIje.mediaTypes.VIDEO: KeduIje.mediaTypes.AUDIO;
           }
 
