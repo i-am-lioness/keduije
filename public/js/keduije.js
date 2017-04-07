@@ -34,8 +34,8 @@ var KeduIje = (function(ki){
     $.get("/api/media/list", cb);
   }
 
-  function getChangesets(cb){
-    $.get("/api/changesets/list", cb);
+  function getChangesets(cb, query){
+    $.get("/api/changesets/list", query, cb);
   }
 
   function startEditSession(isStart, cb){

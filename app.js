@@ -514,7 +514,11 @@ app.get('/temp', function (req, res) {
 */
 
 app.get( '/api/changesets/list', ensureLoggedIn(), function (req, res) {
-  db.collection("changesets").find({user: req.user._id}).toArray(function(err, changesets) {
+  var queryDoc = {user: req.user._id};
+  if(req.query.from)
+    queryDoc._id = {$lt: ObjectId(req.query.from)}
+
+  db.collection("changesets").find(queryDoc).sort({_id: -1}).limit(10).toArray(function(err, changesets) {
     res.send(changesets);
   });
 });

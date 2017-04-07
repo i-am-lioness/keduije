@@ -10,7 +10,8 @@ class Edits extends React.Component {
       changesets: [],
       songs:{}, //media by _id
       edits: {},
-      adds: {}
+      adds: {},
+      showMoreBtn: true
     };
 
     this.eachEdit = this.eachEdit.bind(this);
@@ -23,17 +24,29 @@ class Edits extends React.Component {
     this.eachChangeset = this.eachChangeset.bind(this);
     this.processSession = this.processSession.bind(this);
     this.listEdits = this.listEdits.bind(this);
+    this.loadMoreChangesets = this.loadMoreChangesets.bind(this);
+
+    this.lastChangesetID = null;
   }
 
   componentWillMount(){
     KeduIje.getChangesets(this.setChangesets);
   }
 
+  loadMoreChangesets(){
+    var query = {from: this.lastChangesetID};
+    KeduIje.getChangesets(this.setChangesets, query);
+  }
+
   setChangesets(changesets){
     changesets.forEach(this.processSession);
     changesets.sort((a,b)=>{return (b.date-a.date);});
 
-    this.setState({changesets: changesets});
+    if(changesets.length<10){
+      this.setState({showMoreBtn: false});
+    }
+
+    this.setState({changesets: update(this.state.changesets, {$push: changesets})});
   }
 
   setEdits(changesetID, edits){
@@ -61,8 +74,6 @@ class Edits extends React.Component {
   }
 
   setListing(changesetID, media){ //todo, make more efficient
-    console.log("changeset", changesetID);
-    console.log("matching media", media);
     var updateObj = {};
     updateObj[changesetID]={$set: media};
     this.setState({listings: update(this.state.listings, updateObj)});
@@ -98,6 +109,7 @@ class Edits extends React.Component {
     el.date=date;
 
     var changesetID = el._id;
+    this.lastChangesetID = changesetID;
 
     if(el.type=="new"){
       KeduIje.getMediaByChangeset(changesetID, this.setListing.bind(this, changesetID));
@@ -260,7 +272,7 @@ class Edits extends React.Component {
       </div>;
       }
     }else{
-      song = this.state.songs[changeset._id];
+      song = this.state.songs[changeset.mediaID];
       if(song) {
         songUrl="/music/"+song.slug;
         songTitle = <a className="song-title" href={songUrl}>{song.title}</a>;
@@ -291,6 +303,7 @@ class Edits extends React.Component {
 
     return <div className="">
         {activityDisplay}
+        {this.state.showMoreBtn && <button onClick={this.loadMoreChangesets}> Load More </button>}
       </div>;
 
   }
