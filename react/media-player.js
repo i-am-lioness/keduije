@@ -40,6 +40,7 @@ class EditSwitch extends React.Component {
           this.lyricBeingEdited = null;
           this.stopAtSegmentEnd = false;
           this.originalSongInfo = null;
+          this.historyLink = "";
 
           this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
           this.onPlayerReady = this.onPlayerReady.bind(this);
@@ -327,6 +328,7 @@ class EditSwitch extends React.Component {
 
         displaySongInfo(songInfo){
           this.originalSongInfo = songInfo;
+          this.historyLink="/music/" + songInfo.slug + "/history";//consider making state
           this.setState({
             title: songInfo.title || "",
             artist: songInfo.artist || "",
@@ -359,8 +361,6 @@ class EditSwitch extends React.Component {
             var src = 'http://www.youtube.com/embed/' + this.props.videoID
               +'?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin='
                + window.location.origin + '&playsinline=1&rel=0&controls=0';
-
-            console.log("src",src);
 
             var iframeClass = this.state.videoPlaybackMode ?  "" : " hidden-video";
             mediaElement = <div className={'embed-responsive embed-responsive-16by9' + iframeClass}>
@@ -399,6 +399,7 @@ class EditSwitch extends React.Component {
               <h1 className="title">{this.state.title}</h1>
 
               {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
+              {this.props.canEdit && <a href={this.historyLink}>(history)</a>}
             </div>
           </div>;
 

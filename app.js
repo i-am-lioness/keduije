@@ -448,6 +448,24 @@ app.get( '/history', ensureLoggedIn(), function (req, res) {
   res.render("profile",{title: "My History | " + res.locals.title});
 });
 
+app.get( '/music/:slug/history', ensureLoggedIn(), function (req, res) {
+    var slug = req.params.slug;
+
+    db.collection('media').findOne({slug: slug}).then(function(media){
+      if(!media){
+        res.send("not found"); //improve
+        return;
+      }
+
+      var data = {
+        title: "History | "+ media.title + " | " + res.locals.title,
+        mediaID: media._id,
+      };
+
+      res.render('media_history', data);
+    });
+  });
+
 app.get( '/api/revisions', ensureLoggedIn(), function (req, res) {
   db.collection("revisions").find({changeset: req.query.changeset, state: "done"}).toArray(function(err, revisions){
     res.send(revisions);
@@ -514,8 +532,12 @@ app.get('/temp', function (req, res) {
 */
 
 app.get( '/api/changesets/list', ensureLoggedIn(), function (req, res) {
-  var queryDoc = {user: req.user._id};
-  if(req.query.from)
+  var queryDoc = {};
+  if("user" in req.query)
+    queryDoc.user = req.query.user || req.user._id
+  if("media" in req.query)
+    queryDoc.mediaID = req.query.media;
+  if("from" in req.query)
     queryDoc._id = {$lt: ObjectId(req.query.from)}
 
   db.collection("changesets").find(queryDoc).sort({_id: -1}).limit(10).toArray(function(err, changesets) {
@@ -554,7 +576,9 @@ app.get( '/api/myLines', ensureLoggedIn(), function (req, res) {
 
 app.post('/api/lines/edit/:forID', ensureLoggedIn(),  function(req, res) {
 
-  revision(req, res, db, sendLines).executeEdit("lines");
+  revision(db, function(line){
+    sendLines(line.mediaID, res);
+  }, res).executeEdit("lines", req);
 
 });
 
@@ -578,7 +602,9 @@ app.post('/api/media/:mediaID/addline', function (req, res) {
 
 app.post("/api/media/edit/:forID", function(req, res) {
 
-  revision(req, res, db, sendLines).executeEdit("media");
+  revision(db, function(media){
+    res.send(media);
+  }, res).executeEdit("media", req);
 
 });
 

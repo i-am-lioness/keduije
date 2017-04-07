@@ -1,0 +1,12 @@
+.removed {
+  text-decoration: line-through;
+  color: red;
+}
+.added {
+  color: green;
+}
+
+.deleted-line{
+  text-decoration: line-through;
+  color: red;
+}

@@ -27,15 +27,21 @@ class Edits extends React.Component {
     this.loadMoreChangesets = this.loadMoreChangesets.bind(this);
 
     this.lastChangesetID = null;
+
+    this.query = {};
+    if("byUser" in this.props)
+      this.query.user = this.props.byUser;
+    else if("media" in this.props)
+      this.query.media = this.props.media;
   }
 
   componentWillMount(){
-    KeduIje.getChangesets(this.setChangesets);
+    KeduIje.getChangesets(this.setChangesets, this.query);
   }
 
   loadMoreChangesets(){
-    var query = {from: this.lastChangesetID};
-    KeduIje.getChangesets(this.setChangesets, query);
+    this.query.from = this.lastChangesetID;
+    KeduIje.getChangesets(this.setChangesets, this.query);
   }
 
   setChangesets(changesets){
