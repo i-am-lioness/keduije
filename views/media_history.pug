@@ -3,17 +3,12 @@ html(lang='en')
   head
     include head.pug
     script(src='/js/diff.js')
+    script.
+      var mediaFromServer="#{mediaID}";
     link(href='/css/edits.css', rel='stylesheet')
   body
     include nav-bar.pug
     .container-fluid#root
     include footer.pug
-    script(src='/edits.js', type='text/babel')
-    script(type='text/babel').
-
-      ReactDOM.render(
-        <Edits 
-          media="#{mediaID}"
-        />,
-        document.getElementById('root')
-      );
+    script(src='/history.bundle.js')
+    //script(src='/edits.js', type='text/babel')

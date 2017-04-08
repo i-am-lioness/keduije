@@ -1,3 +1,4 @@
+import React from 'react';
 
       class TimeSpinner extends React.Component {
         constructor(props) {
@@ -34,3 +35,6 @@
                   </div>;
         }
       }
+
+export default TimeSpinner;
+

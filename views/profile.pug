@@ -4,16 +4,11 @@ html(lang='en')
     include head.pug
     script(src='/js/diff.js')
     link(href='/css/edits.css', rel='stylesheet')
+    script.
+      var mediaFromServer=null;
   body
     include nav-bar.pug
     .container-fluid#root
     include footer.pug
-    script(src='/edits.js', type='text/babel')
-    script(type='text/babel').
-
-      ReactDOM.render(
-        <Edits 
-          byUser=""
-        />,
-        document.getElementById('root')
-      );
+    //script(src='/edits.js', type='text/babel')
+    script(src='/history.bundle.js')

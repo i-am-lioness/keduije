@@ -1,3 +1,4 @@
+/* eslint-env node */
 require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
 const express = require('express');
@@ -16,7 +17,6 @@ const app = express();
 
 let db;
 
-app.set('views', __dirname + '/views');
 app.set('view engine', 'pug');
 app.enable('trust proxy');
 app.use(bodyParser.urlencoded({
@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
-app.use(express.static('react'));
+app.use(express.static('out'));
 app.use(require('cookie-parser')());
 
 app.use(session({

@@ -1,5 +1,7 @@
+/* eslint-env browser */
 
-var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 class Search extends React.Component {
   constructor(props) {
@@ -96,3 +98,8 @@ class Search extends React.Component {
 
   }
 }
+
+ReactDOM.render(
+  <Search />,
+  document.getElementById('search-root')
+);

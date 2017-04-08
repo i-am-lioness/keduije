@@ -8,12 +8,17 @@
   },
   "main": "index.js",
   "scripts": {
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js"
   },
   "author": "Udegbunam, Nnenna",
   "license": "ISC",
   "dependencies": {
+    "babel-core": "^6.24.1",
+    "babel-loader": "^6.4.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
     "body-parser": "^1.16.1",
     "connect-ensure-login": "^0.1.1",
     "connect-mongo": "^1.3.2",
@@ -33,7 +38,12 @@
     "passport-twitter": "^1.0.4",
     "path": "^0.12.7",
     "pug": "^2.0.0-beta11",
-    "slugify": "^1.1.0"
+    "react": "^15.5.3",
+    "react-addons-css-transition-group": "^15.5.1",
+    "react-addons-update": "^15.5.1",
+    "react-dom": "^15.5.3",
+    "slugify": "^1.1.0",
+    "webpack": "^2.3.3"
   },
   "bugs": {
     "url": "https://github.com/nnennaude/keduije/issues"
@@ -45,5 +55,11 @@
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-jsx-a11y": "^4.0.0",
     "eslint-plugin-react": "^6.10.3"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "react"
+    ]
   }
 }

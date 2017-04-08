@@ -1,5 +1,8 @@
 
-var update = React.addons.update;
+// const update = React.addons.update;
+import React from 'react';
+import ReactDOM from 'react-dom';
+import update from 'react-addons-update'; // todo: replace with https://github.com/kolodny/immutability-helper
 
 class Edits extends React.Component {
   constructor(props) {
@@ -29,10 +32,11 @@ class Edits extends React.Component {
     this.lastChangesetID = null;
 
     this.query = {};
-    if("byUser" in this.props)
-      this.query.user = this.props.byUser;
-    else if("media" in this.props)
+
+    if (this.props.media)
       this.query.media = this.props.media;
+    else
+      this.query.user = this.props.byUser;
   }
 
   componentWillMount(){
@@ -314,3 +318,12 @@ class Edits extends React.Component {
 
   }
 }
+
+
+ReactDOM.render(
+  <Edits
+    byUser=''
+    media={mediaFromServer}
+  />,
+  document.getElementById('root')
+);

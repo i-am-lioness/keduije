@@ -1,3 +1,4 @@
+import React from 'react';
 
   class PencilIcon extends React.Component {
 
@@ -177,3 +178,5 @@
 
         }
       }
+
+export default LyricDisplay;

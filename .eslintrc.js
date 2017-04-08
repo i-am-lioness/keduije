@@ -9,7 +9,7 @@ module.exports = {
         "object-shorthand": 0,
         "no-underscore-dangle": 0,
         "prefer-template": 1,
-        "comma-dangle": [2, {
+        "comma-dangle": [1, {
             "functions": "ignore",
             "objects": "always-multiline"
         }],

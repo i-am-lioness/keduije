@@ -1,3 +1,5 @@
+import React from 'react';
+import TimeSpinner from './time-spinner';
 
       class LyricEditor extends React.Component {
         constructor(props) {
@@ -105,3 +107,5 @@
 
         }
       }
+
+export default LyricEditor;

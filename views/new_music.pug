@@ -11,8 +11,8 @@ html(lang='en')
         .col-md-12#root
     script(src="/js/youtube-data.js")
     script(src="/js/keduije-media.js")
-    script(src='/song-info-form.js', type='text/babel')
-    script(type='text/babel').
+    //script(src='/song-info-form.js', type='text/babel')
+    script.
       
       function submitSongInfo(data){
         data.changeset = "#{changesetID}";
@@ -21,13 +21,6 @@ html(lang='en')
         });
       }
       
-      ReactDOM.render(
-        <SongInfoForm 
-          ref={(component) => {window.hi = component}}
-          newSong={true}
-          onSubmit={submitSongInfo}
-          onCancel={KeduIje.deleteSong.bind(this,null)}
-        />,
-        document.getElementById('root')
-      );  
+
     script(src="https://apis.google.com/js/client.js?onload=googleApiClientReady")
+    script(src="/new_music.bundle.js")

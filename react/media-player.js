@@ -1,5 +1,15 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group'; // ES6
+// todo replace with https://github.com/reactjs/react-transition-group
 
-var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
+import LyricDisplay from './lyric-display';
+import LyricEditor from './lyric-editor';
+import SongInfoForm from './song-info-form';
+import { ProgressBar, PlayControl } from './media-controls';
+
+
+// var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
 
 class EditSwitch extends React.Component {
 
@@ -454,3 +464,14 @@ class EditSwitch extends React.Component {
 
         }
       }
+
+ReactDOM.render(
+  <MediaPlayer 
+    ref={setCallback}
+    canEdit={canEdit}
+    src={mediaSrc}
+    videoID={videoID}
+    mediaType={mediaType}
+  />,
+  document.getElementById('root')
+);

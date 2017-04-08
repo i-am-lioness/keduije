@@ -1,3 +1,4 @@
+import React from 'react';
 
 class ProgressBar extends React.Component {
   constructor(props) {
@@ -67,3 +68,5 @@ class PlayControl extends React.Component {
   }
 
 }
+
+export { ProgressBar, PlayControl };
