@@ -64,7 +64,7 @@ app.get(
     req.session.returnTo = req.session.returnTo || req.header('Referer');
     next();
   },
-  passport.authenticate('twitter'),
+  passport.authenticate('twitter')
 );
 
 app.get(
@@ -72,7 +72,7 @@ app.get(
   passport.authenticate('twitter', { failureRedirect: '/login' }),
   (req, res) => {
     res.redirect(req.session.returnTo || '/');
-  },
+  }
 );
 
 app.get(
@@ -103,7 +103,7 @@ app.post(
   passport.authenticate(
     'local',
     { successRedirect: '/music/E-sure-for-me-(Olisa-Doo)', failureRedirect: '/login'}
-  ),
+  )
 );
 
 app.get(
@@ -130,7 +130,7 @@ app.get(
           }
         }
       ] },
-      { artist: 1, title: 1, slug: 1 },
+      { artist: 1, title: 1, slug: 1 }
     ).toArray((err, media) => {
       res.send(media);
     });
@@ -300,7 +300,7 @@ app.get(
     req.session.returnTo = req.session.returnTo || req.header('Referer');
     next();
   },
-  passport.authenticate('facebook'),
+  passport.authenticate('facebook')
 );
 
 app.get(
