@@ -31,7 +31,7 @@ app.use(session({
   secret: 'keyboard cat',
   resave: true,
   saveUninitialized: true,
-  store: new MongoStore({ url: process.env.DB_URL })
+  store: new MongoStore({ url: process.env.DB_URL }),
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -102,7 +102,7 @@ app.post(
   '/login/yc',
   passport.authenticate(
     'local',
-    { successRedirect: '/music/E-sure-for-me-(Olisa-Doo)', failureRedirect: '/login'}
+    { successRedirect: '/music/E-sure-for-me-(Olisa-Doo)', failureRedirect: '/login' }
   )
 );
 
@@ -121,13 +121,13 @@ app.get(
           artist: {
             $regex: q,
             $options: 'i',
-          }
+          },
         },
         {
           title: {
             $regex: q,
             $options: 'i',
-          }
+          },
         }
       ] },
       { artist: 1, title: 1, slug: 1 }
@@ -255,7 +255,7 @@ app.post('/api/media/new', ensureLoggedIn(), users.require('admin'), (req, res) 
   req.body.version = 1;
   db.collection('media').insertOne(req.body).then((result) => {
     res.send(req.body.slug);
-   }).catch(logError);
+  }).catch(logError);
 });
 
 app.get('/history', ensureLoggedIn(), (req, res) => {
@@ -320,8 +320,8 @@ app.get('/logout', (req, res) => {
 
 // Todo: complete
 function validate(line) {
-  line.startTime = parseInt(line.startTime);
-  line.endTime = parseInt(line.endTime);
+  line.startTime = parseInt(line.startTime, 10);
+  line.endTime = parseInt(line.endTime, 10);
   return false;
 }
 

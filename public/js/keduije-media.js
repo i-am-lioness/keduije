@@ -1,44 +1,43 @@
-
-var KeduIje = (function(ki){
-
-  class Media { //todo: combine both classes
+/* global YT, KeduIje:true */
+KeduIje = ((ki) => {
+  class Media { // todo: combine both classes
     constructor(iframe, onPlayerReady, handlePaused, handleResume) {
-      this.video = new YT.Player(iframe, {
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': this._onPlayerStateChange.bind(this)
+      this.video = new YT.Player(
+        iframe,
+        { events: {
+          onReady: onPlayerReady,
+          onStateChange: this._onPlayerStateChange.bind(this),
+        },
         }
-      });
+      );
 
       this.handlePaused = handlePaused;
       this.handleResume = handleResume;
-
     }
     _onPlayerStateChange(event) {
-
-      if (event.data == YT.PlayerState.PAUSED) {
+      if (event.data === YT.PlayerState.PAUSED) {
         this.handlePaused();
-      }else if (event.data == YT.PlayerState.PLAYING) {
+      } else if (event.data === YT.PlayerState.PLAYING) {
         this.handleResume();
       }
     }
 
-    play(){
+    play() {
       this.video.playVideo();
     }
-    pause(){
+    pause() {
       this.video.pauseVideo();
     }
 
-    getCurrentTime(){
+    getCurrentTime() {
       return this.video.getCurrentTime();
     }
 
-    seekTo(pos, buffer){
+    seekTo(pos, buffer) {
       this.video.seekTo(pos, buffer);
     }
 
-    getDuration(){
+    getDuration() {
       return this.video.getDuration();
     }
   }
@@ -51,34 +50,33 @@ var KeduIje = (function(ki){
       this.audio.onplay = resumeHandler;
       this.audio.load();
     }
-    play(){
+    play() {
       this.audio.play();
     }
-    pause(){
+    pause() {
       this.audio.pause();
     }
 
-    getCurrentTime(){
+    getCurrentTime() {
       return this.audio.currentTime;
     }
 
-    seekTo(pos, buffer){
+    seekTo(pos, buffer) {
       this.audio.currentTime = pos;
     }
 
-    getDuration(){
+    getDuration() {
       return this.audio.duration;
     }
   }
-  
+
   ki.mediaTypes = {
     AUDIO: 0,
-    VIDEO: 1
+    VIDEO: 1,
   };
 
   ki.Media = Media;
   ki.Audio = Audio;
 
   return ki;
-
 })(KeduIje || {});

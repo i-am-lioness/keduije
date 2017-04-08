@@ -13,6 +13,9 @@ module.exports = {
             "functions": "ignore",
             "objects": "always-multiline"
         }],
-        "no-unused-vars": 1
+        "no-unused-vars": 1,
+        "dot-notation": 1,
+        "no-param-reassign": 1,
+        "no-unused-expressions": 1
     }
 };

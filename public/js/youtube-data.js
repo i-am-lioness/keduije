@@ -1,19 +1,19 @@
-function getIDFromURL(url){
-  var res = url.match(/[?&]v=([^&]+)/);
-  if(res){
+/* global gapi */
+function getIDFromURL(url) {
+  const res = url.match(/[?&]v=([^&]+)/);
+  if (res) {
     return res[1];
   }
   return false;
-  //alert("error with url provided");
+  // alert("error with url provided");
 }
 
 function googleApiClientReady() {
-
   gapi.client.init({
-    'apiKey': 'AIzaSyBLYlu4hbmzhr1iOCiD_o2PTrjzvQBuQUA'
-  }).then(function() {
-    gapi.client.load('youtube', 'v3', function() {
-      //handleAPILoaded();
+    apiKey: 'AIzaSyBLYlu4hbmzhr1iOCiD_o2PTrjzvQBuQUA',
+  }).then(() => {
+    gapi.client.load('youtube', 'v3', () => {
+      // handleAPILoaded();
     });
   });
 }
