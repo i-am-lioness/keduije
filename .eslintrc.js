@@ -16,6 +16,8 @@ module.exports = {
         "no-unused-vars": 1,
         "dot-notation": 1,
         "no-param-reassign": 1,
-        "no-unused-expressions": 1
+        "no-unused-expressions": 1,
+        "class-methods-use-this": 1,
+        "react/sort-comp": 0
     }
 };
