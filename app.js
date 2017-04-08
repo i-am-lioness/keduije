@@ -103,8 +103,6 @@ passport.use(new FacebookStrategy({
 
 passport.use(new LocalStrategy(
   function(username, password, done) {
-    console.log("local strategy");
-    console.log("username", username);
     if(username=="yc"){
       db.collection('users').findAndModify(
          { username: "yc" } , null,
@@ -359,7 +357,6 @@ app.get(
             mediaID: media._id,
             mediaType: media.type
           };
-          //console.log(data);
           res.render('player', data);
         }
       );
@@ -551,16 +548,16 @@ app.get( '/api/start_edit/:mediaID', ensureLoggedIn(), function (req, res) {
    }).catch(logError);
 });
 
-function logError(error, res){
-  console.log("Error", error);
-  if(res){
-    res.status(500).send(error);
-  }
+function sendError(res, error){
+  logError(error);
+  res.status(500).send(error);
+}
+
+function logError(error){
+  console.log("Error: ", error);
 }
 
 function sendLines(mediaID, res){
-  console.log(mediaID, "mediaID");
-
   //todo: keep data types consistent. delete should be stored as boolean or string consistently
   db.collection("lines").find({mediaID: mediaID, deleted: {$in: ["false", false]}}).toArray(function(err, lines) {
     res.send(lines);
@@ -576,9 +573,9 @@ app.get( '/api/myLines', ensureLoggedIn(), function (req, res) {
 
 app.post('/api/lines/edit/:forID', ensureLoggedIn(),  function(req, res) {
 
-  revision(db, function(line){
+  revision(db).onUpdateRequest("lines", req).then(function(line){
     sendLines(line.mediaID, res);
-  }, res).executeEdit("lines", req);
+  }).catch(sendError.bind(this, res));
 
 });
 
@@ -592,8 +589,7 @@ app.post('/api/media/:mediaID/addline', function (req, res) {
   req.body.mediaID = req.params.mediaID;
   req.body.version = 1;
 
-  db.collection("lines").insertOne(req.body)
-  .then(()=>{
+  db.collection("lines").insertOne(req.body).then(()=>{
     sendLines(req.params.mediaID, res);
   }).catch(logError);
 
@@ -602,9 +598,9 @@ app.post('/api/media/:mediaID/addline', function (req, res) {
 
 app.post("/api/media/edit/:forID", function(req, res) {
 
-  revision(db, function(media){
+  revision(db).onUpdateRequest("media", req).then(function(media){
     res.send(media);
-  }, res).executeEdit("media", req);
+  }).catch(sendError.bind(this, res));
 
 });
 
