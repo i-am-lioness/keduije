@@ -1,159 +1,31 @@
 require('dotenv').config()
-var MongoClient = require('mongodb').MongoClient
-  , assert = require('assert');
+var MongoClient = require('mongodb').MongoClient;
 var express = require('express');
 var app = express();
 const bodyParser= require('body-parser');
 var cors = require('cors')
 var path = require('path');
 var passport = require('passport');
-var FacebookStrategy = require('passport-facebook').Strategy;
-var LocalStrategy = require('passport-local').Strategy;
-var TwitterStrategy = require('passport-twitter').Strategy;
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var ObjectId = require('mongodb').ObjectId;
 var slugify = require('slugify')
-var nodemailer = require('nodemailer');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const revision = require('./lib/revision.js');
+var mail = require("./lib/mail.js");
+var users = require("./lib/users.js")(passport);
 
 var db;
 
-
-var twCallbackURL = process.env.HOST + "/login/twitter/return";
-var fbCallbackURL = process.env.HOST + "/login/facebook/return";
-
-var transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-            user: process.env.EMAIL_ADDRESS,
-            pass: process.env.EMAIL_PASSWORD,
-        }
-    });
-
-var mailOptions = {
-    from: process.env.EMAIL_ADDRESS, // sender address
-    to: process.env.EMAIL_ADDRESS, // list of receivers
-    subject: 'Web activity', // Subject line
-    text: "someone accessed" //, // plaintext body
-    // html: '<b>Hello world ✔</b>' // You can choose to send an HTML body instead
-};
-
-
-function getTwitterUser(twitterProfile, cb){
-  db.collection('users').findAndModify(
-    { twitterID: twitterProfile.id } ,
-    null,
-    { $setOnInsert:
-      {
-        twitterID: twitterProfile.id,
-        displayName: twitterProfile.username,
-        photo: twitterProfile.photos[0].value, //todo: make sure it exists
-        role: "member"
-      },
-    $set: {
-      lastLogin: new Date()
-      }
-    },
-    { upsert: true },
-    function(err, result) {
-      cb(err,result.value);
-    }
-  );
-}
-
-function getFacebookUser(facebookProfile, cb){
-  db.collection('users').findAndModify(
-     { facebookID: facebookProfile.id } ,
-     null,
-     { $setOnInsert: { facebookID: facebookProfile.id,
-                displayName: facebookProfile.displayName,
-                role: "member",
-                photo: "http://graph.facebook.com/v2.8/" + facebookProfile.id + "/picture"
-      },
-       $set: {
-         lastLogin: new Date(),
-       }
-     },
-     { upsert: true },
-     function(err, result) {
-       cb(err,result.value);
-     }
-  );
-}
-
-function getUser(userID, cb){
-  db.collection('users').findOne(
-    { _id: new ObjectId(userID) },
-    function (err, result){
-      cb(err,result);
-    });
-}
-
-passport.use(new FacebookStrategy({
-    clientID: process.env.FB_CLIENT_ID,
-    clientSecret: process.env.FB_CLIENT_SECRET,
-    callbackURL: fbCallbackURL
-  },
-  function(accessToken, refreshToken, profile, cb) {
-    getFacebookUser(profile, cb);
-  }
-));
-
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    if(username=="yc"){
-      db.collection('users').findAndModify(
-         { username: "yc" } , null,
-         {
-           $set: {
-             lastLogin: new Date(),
-           }
-         },
-         null,
-         function(err, result) {
-           done(err,result.value);
-         }
-      );
-    }else{
-      return done(null, false, { message: 'Incorrect username.' });
-    }
-  }
-));
-
-passport.use(new TwitterStrategy({
-    consumerKey: process.env.TWITTER_CONSUMER_KEY,
-    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-    callbackURL: twCallbackURL
-  },
-  function(token, tokenSecret, profile, cb) {
-    getTwitterUser(profile, cb);
-  }
-));
-
-passport.serializeUser(function(user, cb) {
-  cb(null, user._id);
-});
-
-passport.deserializeUser(function(id, cb) {
-  getUser(id, cb);
-});
-
-// Configure view engine to render EJS templates.
 app.set('views', __dirname + '/views');
 app.set('view engine', 'pug')
-
 app.enable('trust proxy');
-
-
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use(express.static('react'));
-
 app.use(require('cookie-parser')());
 app.use(session({
   secret: 'keyboard cat',
@@ -161,18 +33,18 @@ app.use(session({
   saveUninitialized: true,
   store: new MongoStore({ url: process.env.DB_URL })
 }));
-
 app.use(passport.initialize());
 app.use(passport.session());
-
 app.use(function(req, res, next){
   res.locals.user = req.user;
-  res.locals.title = "Kezie"
+  res.locals.title = "Kezie";
   //res.locals.authenticated = ! req.user.anonymous;
 
   next();
 
-  logUser(req);
+  users.log(req, function(text){
+    mail.send(text);
+  });
 });
 
 app.get(
@@ -191,40 +63,6 @@ app.get(
     res.redirect(req.session.returnTo || "/");
   }
 );
-
-function logUser(req){
-  if(req.xhr) return; //do not log ajax requests
-  if(req.path.startsWith("/logout")) return;
-  if(req.path.startsWith("/login")){
-    if(req.path!="/login/yc") return;
-  }
-
-  var user = (req.user)? req.user.displayName : "anonymous";
-  if (user=="Nnenna Ude") return;
-  if ((user!="yc")&&(req.ip == process.env.DEVELOPER_IP)) return; //do not log local requests
-
-  var record = {
-    user: user,
-    host: req.hostname,
-    path: req.path,
-    from: req.ip,
-    date: (new Date().toString())
-  };
-
-  db.collection("logs").insertOne(record);
-
-  mailOptions.text = JSON.stringify(record);
-
-  transporter.sendMail(mailOptions, function(error, info){
-    if(error){
-        console.log(error);
-        res.json({yo: 'error'});
-    }else{
-        console.log('Message sent: ' + info.response);
-        res.json({yo: info.response});
-    };
-});
-}
 
 app.get(
   '/login/yc',
@@ -256,17 +94,6 @@ app.post(
     { successRedirect: '/music/E-sure-for-me-(Olisa-Doo)', failureRedirect: '/login'}
   )
 );
-
-function requireRole(role) {
-  return function(req, res, next) {
-    if(req.user && req.user.role === role)
-      next();
-    else
-      res.sendStatus(403);
-    }
-}
-
-
 
 app.get(
   '/api/search',
@@ -389,18 +216,7 @@ app.post("/api/logError", function (req, res){
   console.log(error);
   db.collection("errors").insertOne(error); //todo: log instead
 
-  mailOptions.text = JSON.stringify(error);
-  mailOptions.subject = "client error";
-
-  transporter.sendMail(mailOptions, function(error, info){
-    if(error){
-        console.log(error);
-        res.json({yo: 'error'});
-    }else{
-        console.log('Message sent: ' + info.response);
-        res.json({yo: info.response});
-    };
-  });
+  mail.send(JSON.stringify(error), "client error"); //todo: send with separate script
 
 });
 
@@ -425,13 +241,13 @@ app.get('/api/list/audio', function (req, res) {
   });
 });
 
-app.get( '/new_music', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+app.get( '/new_music', ensureLoggedIn(), users.require("admin"), function (req, res) {
   db.collection("changesets").insertOne({user: req.user._id, type: "new"}).then(function(result){
     res.render("new_music",{title: "New Music | " + res.locals.title, changesetID: result.insertedId});
   }).catch(logError);
 });
 
-app.post( '/api/media/new', ensureLoggedIn(), requireRole("admin"), function (req, res) {
+app.post( '/api/media/new', ensureLoggedIn(), users.require("admin"), function (req, res) {
   req.body.creator = req.user._id;
   req.body.status = "published";
   req.body.slug = slugify(req.body.title);
@@ -508,26 +324,6 @@ function validate(line){
   return false;
 }
 
-/*temporary script */
-/*
-app.get('/temp', function (req, res) {
-
-  if(req.ip != process.env.DEVELOPER_IP){
-    res.send("Forbidden IP");
-    return;
-  }
-
-  db.collection('media').find().forEach(function (media){
-    console.log(media.title);
-
-    db.collection('media').save(media);
-  });
-
-  res.send("done");
-
-});
-*/
-
 app.get( '/api/changesets/list', ensureLoggedIn(), function (req, res) {
   var queryDoc = {};
   if("user" in req.query)
@@ -570,7 +366,6 @@ app.get( '/api/myLines', ensureLoggedIn(), function (req, res) {
   });
 });
 
-
 app.post('/api/lines/edit/:forID', ensureLoggedIn(),  function(req, res) {
 
   revision(db).onUpdateRequest("lines", req).then(function(line){
@@ -595,7 +390,6 @@ app.post('/api/media/:mediaID/addline', function (req, res) {
 
 });
 
-
 app.post("/api/media/edit/:forID", function(req, res) {
 
   revision(db).onUpdateRequest("media", req).then(function(media){
@@ -604,11 +398,11 @@ app.post("/api/media/edit/:forID", function(req, res) {
 
 });
 
-
 MongoClient.connect(process.env.DB_URL, function(err, _db) {
-  assert.equal(null, err);
   console.log("Connected successfully to server");
   db = _db;
+
+  users.setDB(db);
 
   var port = (process.env.PORT || 3000);
   app.listen(port, function () {

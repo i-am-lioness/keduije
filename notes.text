@@ -31,13 +31,14 @@ revision: {
   target: {"media" || "lines"}
   date: {dateTime}
   mediaID: {ObjectID}, //for easy querying
-  changeset: 
+  changeset: {ObjectID}
 }
 
 changeset {
-	type: "new" || null,
+	type: "new" || "edit" || "rollback",
 	mediaID: "string" || null,
-	user: {ObjectID}
+	user: {ObjectID},
+	state: "undone"|| "undoing" || "active" || null
 }
 
 
@@ -170,3 +171,20 @@ Editing Control
 
 to avoid clashes, in the future, the more popular a song is,
  the fewer people will have the privilege of editing it
+
+
+ Rollback a changeset
+ -get changeset. change state to "undoing"
+ -for each revision, r0 or listing with changeset:
+ --make new revision r1 with old values
+ 	{
+		 newValues: r0.original,
+		 state: "pending",
+		 rollBackFor: {ObjectID(r0)},
+		 forID: r0.forID,
+		 ...
+	 }
+	-- apply revision to object and r0
+	 {}
+ 
+...or make snapshots
