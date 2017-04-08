@@ -12,8 +12,7 @@ module.exports = {
         "comma-dangle": [2, {
             "functions": "ignore",
             "objects": "always-multiline"
-        }]
-        //"comma-dangle": [2, {"functions": "ignore"}]
-       /* "comma-dangle": [2, {"functions": "never"}]*/
+        }],
+        "no-unused-vars": 1
     }
 };
