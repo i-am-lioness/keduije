@@ -6,9 +6,9 @@ const OUTPUT = path.resolve(__dirname, 'out');
 module.exports = {
   context: DEV,
   entry: {
-    history: './edits.js',
-    search: './search.js',
-    player: './media-player.js',
+    history: './edits.jsx',
+    search: './search.jsx',
+    player: './media-player.jsx',
     new_music: './new-music.jsx',
   },
   output: {
