@@ -5,9 +5,9 @@ function PencilIcon(props) {
   const hoveredClass = (props.hoveredIdx === props.idx) ? ' hover' : '';
 
   return (<span
-    className={'glyphicon glyphicon-pencil ' + hoveredClass}
+    className={`glyphicon glyphicon-pencil ${hoveredClass}`}
     aria-hidden="true"
-    onClick={this.props.onClick}
+    onClick={props.onClick}
   />);
 }
 
@@ -19,6 +19,7 @@ PencilIcon.defaultProps = {
 PencilIcon.propTypes = {
   hoveredIdx: PropTypes.number,
   idx: PropTypes.number,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default PencilIcon;
