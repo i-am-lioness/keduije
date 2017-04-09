@@ -4,8 +4,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import update from 'react-addons-update'; // todo: replace with https://github.com/kolodny/immutability-helper
 import PropTypes from 'prop-types';
-import JsDiff from 'diff';
 import KeduIje from './keduije';
+
+const JsDiff = require('diff');
 
 class Edits extends React.Component {
   constructor(props) {
