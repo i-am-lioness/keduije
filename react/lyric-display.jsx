@@ -3,7 +3,7 @@
 import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import PropTypes from 'prop-types';
-import PencilIcon from './pencil-icon.jsx';
+import PencilIcon from './pencil-icon';
 
 class LyricDisplay extends React.Component {
   constructor(props) {

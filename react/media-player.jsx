@@ -9,8 +9,8 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group'; // ES6
 import LyricDisplay from './lyric-display';
 import LyricEditor from './lyric-editor';
 import SongInfoForm from './song-info-form';
-import ProgressBar from './progress-bar.jsx';
-import PlayControl from './play-control.jsx';
+import ProgressBar from './progress-bar';
+import PlayControl from './play-control';
 
 function EditSwitch(props) {
   return (<label className="switch" htmlFor="edit-switch">
@@ -403,7 +403,7 @@ class MediaPlayer extends React.Component {
       <ProgressBar onSeekTo={this.seekTo} percentage={percentage} />
     </div>);
 
-    const artwork = (<div key="artwork" ref={(el) => { this.artwork = el; }} className="artwork" style={{ backgroundImage: `url(${  this.state.img  })` }}>
+    const artwork = (<div key="artwork" ref={(el) => { this.artwork = el; }} className="artwork" style={{ backgroundImage: `url(${this.state.img})` }}>
       <div className="gradient" />
       <PlayControl
         togglePlayState={this.togglePlayState}

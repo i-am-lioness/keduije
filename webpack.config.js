@@ -11,6 +11,9 @@ module.exports = {
     player: './media-player.jsx',
     new_music: './new-music.jsx',
   },
+  resolve: {
+    extensions: ['.js', '.jsx'],
+  },
   output: {
     filename: '[name].bundle.js',
     path: OUTPUT,
