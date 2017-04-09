@@ -1,9 +1,10 @@
 /* eslint-env browser */
-/* global JsDiff, mediaFromServer */
+/* global mediaFromServer */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import update from 'react-addons-update'; // todo: replace with https://github.com/kolodny/immutability-helper
 import PropTypes from 'prop-types';
+import JsDiff from 'diff';
 import KeduIje from './keduije';
 
 class Edits extends React.Component {
