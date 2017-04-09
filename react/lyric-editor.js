@@ -131,6 +131,10 @@ class LyricEditor extends React.Component {
   }
 }
 
+LyricEditor.defaultProps = {
+  originalText: '',
+};
+
 LyricEditor.propTypes = {
   percentage: PropTypes.number.isRequired,
   onDelete: PropTypes.func.isRequired,
@@ -140,7 +144,7 @@ LyricEditor.propTypes = {
   decrementTime: PropTypes.func.isRequired,
   value: PropTypes.string.isRequired,
   displayed: PropTypes.bool.isRequired,
-  originalText: PropTypes.string.isRequired,
+  originalText: PropTypes.string,
   editMode: PropTypes.bool.isRequired,
   mode: PropTypes.string.isRequired,
   close: PropTypes.func.isRequired,

@@ -19,20 +19,12 @@ html(lang='en')
     //  script(src='/time-spinner.js', type='text/babel')
     //  script(src='/lyric-editor.js', type='text/babel')
     script.
-      var onYouTubeIframeAPIReady;
       var mediaType = parseInt(#{mediaType});
-      var canEdit="#{canEdit}";
+      var canEdit=JSON.parse(#{canEdit});
       var mediaSrc = "#{src}";
       var videoID = "#{videoID}";
       
       KeduIje.init("#{mediaID}");
       
-      function setCallback(component){
-        window.test=component;
-        if (mediaType == KeduIje.mediaTypes.AUDIO) return;
-          
-        onYouTubeIframeAPIReady = component.onYouTubeIframeAPIReady;
-        $.getScript( "https://www.youtube.com/iframe_api" );
-      }
     script(src="/player.bundle.js")
 
