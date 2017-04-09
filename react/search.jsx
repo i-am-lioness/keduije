@@ -2,6 +2,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import KeduIje from './keduije';
 
 class Search extends React.Component {
   constructor(props) {
@@ -9,7 +10,7 @@ class Search extends React.Component {
     this.state = {
       active: false,
       results: [],
-      mobile: false
+      mobile: false,
     };
 
     this.toggleExpand = this.toggleExpand.bind(this);
@@ -21,81 +22,87 @@ class Search extends React.Component {
     this.mobile = this.mobile.bind(this);
   }
 
-  toggleExpand(val){
-    if(!val) //delay needed because it seems onBlur fires before onClick is processed for link
-     setTimeout(this.setState.bind(this, {active:false}), 500);
-    else
-      this.setState({active: val});
+  toggleExpand(val) {
+    if (!val) {
+      // delay needed because it seems onBlur fires before onClick is processed for link
+      setTimeout(this.setState.bind(this, { active: false }), 500);
+    } else {
+      this.setState({ active: val });
+    }
   }
 
-  query(e){
-    var q=e.target.value;
+  query(e) {
+    const q = e.target.value;
 
-    if (q)
-      KeduIje.search(q, this.listResults);
+    if (q) { KeduIje.search(q, this.listResults); }
   }
 
-  listResults(songs){
+  listResults(songs) {
     console.log(songs);
     this.setState({
-      results: songs
+      results: songs,
     });
   }
 
-  eachResult(result){
-    var url = "/music/" + result.slug;
-    var label = (result.artist)? result.artist + " - "+result.title : result.title;
-    return <div key={result.slug} className="search-result">
+  eachResult(result) {
+    const url = `/music/${result.slug}`;
+    const label = (result.artist) ? `${result.artist} - ${result.title}` : result.title;
+    return (<div key={result.slug} className="search-result">
       <a href={url} >{label}</a>
-    </div>;
+    </div>);
   }
 
-  showMobileSearch(mobile){
+  showMobileSearch(mobile) {
     this.setState({
       mobile: mobile,
-      results: []
+      results: [],
     });
   }
 
-  mobile(resultsDiv){
-    return <div className="mobile-search">
-      <span className= "glyphicon glyphicon-remove" aria-hidden="true" onClick={this.showMobileSearch.bind(this,false)}></span>
-      <div className= "glyphicon-search">
+  mobile(resultsDiv) {
+    return (<div className="mobile-search">
+      <span
+        className="glyphicon glyphicon-remove"
+        aria-hidden="true"
+        onClick={(e) => { this.showMobileSearch(false, e); }}
+      />
+      <div className="glyphicon-search">
         <input
-          className={"form-control"}
+          className={'form-control'}
           type="text"
           placeholder="  Search"
           onChange={this.query}
         />
       </div>
       {resultsDiv}
-    </div>;
+    </div>);
   }
 
-  desktop(resultsDiv){
-    return <span>
+  desktop(resultsDiv) {
+    return (<span>
       <input
-        className={"form-control"}
+        className={'form-control'}
         type="text"
         placeholder="  Search"
-        onFocus={this.toggleExpand.bind(this, true)}
-        onBlur={this.toggleExpand.bind(this, false)}
-        style={{width: (this.state.active)? "500px" : null}}
+        onFocus={(e) => { this.toggleExpand(true, e); }}
+        onBlur={(e) => { this.toggleExpand(false, e); }}
+        style={{ width: (this.state.active) ? '500px' : null }}
         onChange={this.query}
       />
-      <span className= "glyphicon glyphicon-search" aria-hidden="true" onClick={this.showMobileSearch.bind(this,true)}></span>
+      <span
+        className="glyphicon glyphicon-search"
+        aria-hidden="true"
+        onClick={(e) => { this.showMobileSearch(true, e); }}
+      />
       {resultsDiv}
-    </span>;
+    </span>);
   }
 
-  render () {
-    var results = this.state.results.map(this.eachResult);
-    var resultsDiv =  <div className="search-results">{results}</div>;
-    if(this.state.mobile)
-      return this.mobile(resultsDiv);
-    else
-      return this.desktop(resultsDiv)
-
+  render() {
+    const results = this.state.results.map(this.eachResult);
+    const resultsDiv = <div className="search-results">{results}</div>;
+    if (this.state.mobile) { return this.mobile(resultsDiv); }
+    return this.desktop(resultsDiv);
   }
 }
 

@@ -218,7 +218,8 @@ class MediaPlayer extends React.Component {
   }
 
   onYouTubeIframeAPIReady() {
-    if (this.props.mediaType !== KeduIjeMedia.mediaTypes.VIDEO) return; // todo: add sanity check here
+    // todo: add sanity check here
+    if (this.props.mediaType !== KeduIjeMedia.mediaTypes.VIDEO) return;
 
     this.media = new KeduIjeMedia.Media(
       this.iframe,
@@ -288,7 +289,8 @@ class MediaPlayer extends React.Component {
   handleResume() {
     this.timer = setInterval(this.onTimeout, 1000);
     this.setState({ isPlaying: true });
-    if ((!this.state.videoPlaybackMode) && (this.props.mediaType === KeduIjeMedia.mediaTypes.VIDEO)) {
+    if ((!this.state.videoPlaybackMode) &&
+      (this.props.mediaType === KeduIjeMedia.mediaTypes.VIDEO)) {
       this.setState({ videoPlaybackMode: true });
     }
   }
@@ -477,10 +479,11 @@ class MediaPlayer extends React.Component {
 }
 
 MediaPlayer.propTypes = {
-  mediaType: PropTypes.oneOf([KeduIjeMedia.mediaTypes.AUDIO, KeduIjeMedia.mediaTypes.VIDEO]).isRequired,
+  mediaType: PropTypes.oneOf(
+    [KeduIjeMedia.mediaTypes.AUDIO, KeduIjeMedia.mediaTypes.VIDEO]).isRequired,
   canEdit: PropTypes.bool.isRequired,
   src: PropTypes.string.isRequired,
-  videoID: PropTypes.string.isRequired
+  videoID: PropTypes.string.isRequired,
 };
 
 

@@ -1,4 +1,4 @@
-/* global $, getIDFromURL, gapi, queryYoutube */
+/* global $, getIDFromURL, gapi */
 import React from 'react';
 import PropTypes from 'prop-types';
 import KeduIjeMedia from './keduije-media';
@@ -54,7 +54,8 @@ class SongInfoForm extends React.Component {
     });
 
     if (this.props.newSong) {
-      updates.type = (this.state.videoID) ? KeduIjeMedia.mediaTypes.VIDEO : KeduIjeMedia.mediaTypes.AUDIO;
+      updates.type =
+        (this.state.videoID) ? KeduIjeMedia.mediaTypes.VIDEO : KeduIjeMedia.mediaTypes.AUDIO;
     }
 
     this.props.onSubmit(updates);

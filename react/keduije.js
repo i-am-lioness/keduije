@@ -4,7 +4,7 @@ const KeduIje = ((ki) => {
   let songID = null;
   let changesetID = null;
 
-  window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
+  window.onerror = (errorMsg, url, lineNumber, column, errorObj) => {
     if (window.location.hostname === 'localhost') return;
 
     const msg = 'Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber
@@ -116,7 +116,7 @@ const KeduIje = ((ki) => {
     return Math.floor(minutes) + ':' + seconds;
   }
 
-  ki.init = function (_songID) {
+  ki.init = (_songID) => {
     songID = _songID;
   };
 

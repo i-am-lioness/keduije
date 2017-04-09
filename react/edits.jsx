@@ -1,5 +1,5 @@
 /* eslint-env browser */
-/* global submitSongInfo, JsDiff, mediaFromServer */
+/* global JsDiff, mediaFromServer */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import update from 'react-addons-update'; // todo: replace with https://github.com/kolodny/immutability-helper
