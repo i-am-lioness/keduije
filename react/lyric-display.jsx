@@ -1,9 +1,10 @@
 /* eslint-env browser */
-/* global KeduIje, $ */
+/* global $ */
 import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import PropTypes from 'prop-types';
 import PencilIcon from './pencil-icon';
+import KeduIje from './keduije';
 
 class LyricDisplay extends React.Component {
   constructor(props) {

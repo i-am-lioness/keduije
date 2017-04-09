@@ -1,11 +1,11 @@
 /* eslint-env browser */
-/* global KeduIje, $, mediaType, canEdit, mediaSrc, videoID */
+/* global $, mediaType, canEdit, mediaSrc, videoID, mediaID */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group'; // ES6
-// todo replace with https://github.com/reactjs/react-transition-group
 
+import KeduIje from './keduije';
+import KeduIjeMedia from './keduije-media';
 import LyricDisplay from './lyric-display';
 import LyricEditor from './lyric-editor';
 import SongInfoForm from './song-info-form';
@@ -218,9 +218,9 @@ class MediaPlayer extends React.Component {
   }
 
   onYouTubeIframeAPIReady() {
-    if (this.props.mediaType !== KeduIje.mediaTypes.VIDEO) return; // todo: add sanity check here
+    if (this.props.mediaType !== KeduIjeMedia.mediaTypes.VIDEO) return; // todo: add sanity check here
 
-    this.media = new KeduIje.Media(
+    this.media = new KeduIjeMedia.Media(
       this.iframe,
       this.onPlayerReady,
       this.handlePaused,
@@ -247,13 +247,13 @@ class MediaPlayer extends React.Component {
     this.affixPoint = this.artwork.offsetTop + this.artwork.offsetHeight;
 
     // todo: add sanity check here
-    if (this.props.mediaType === KeduIje.mediaTypes.AUDIO) {
-      this.media = new KeduIje.Audio(
+    if (this.props.mediaType === KeduIjeMedia.mediaTypes.AUDIO) {
+      this.media = new KeduIjeMedia.Audio(
         this.audioElement,
         this.onPlayerReady,
         this.handlePaused,
         this.handleResume);
-    } else if (mediaType === KeduIje.mediaTypes.VIDEO) {
+    } else if (mediaType === KeduIjeMedia.mediaTypes.VIDEO) {
       window.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady;
       $.getScript('https://www.youtube.com/iframe_api');
     }
@@ -288,7 +288,7 @@ class MediaPlayer extends React.Component {
   handleResume() {
     this.timer = setInterval(this.onTimeout, 1000);
     this.setState({ isPlaying: true });
-    if ((!this.state.videoPlaybackMode) && (this.props.mediaType === KeduIje.mediaTypes.VIDEO)) {
+    if ((!this.state.videoPlaybackMode) && (this.props.mediaType === KeduIjeMedia.mediaTypes.VIDEO)) {
       this.setState({ videoPlaybackMode: true });
     }
   }
@@ -362,7 +362,7 @@ class MediaPlayer extends React.Component {
     const percentage = this.state.currentTime / this.maxTime;
     let mediaElement = null;
 
-    if (this.props.mediaType === KeduIje.mediaTypes.AUDIO) {
+    if (this.props.mediaType === KeduIjeMedia.mediaTypes.AUDIO) {
       mediaElement = (<audio ref={(audio) => { this.audioElement = audio; }}>
         <source src={this.props.src} type="audio/mpeg" />
       </audio>);
@@ -477,11 +477,14 @@ class MediaPlayer extends React.Component {
 }
 
 MediaPlayer.propTypes = {
-  mediaType: PropTypes.oneOf([KeduIje.mediaTypes.AUDIO, KeduIje.mediaTypes.VIDEO]).isRequired,
+  mediaType: PropTypes.oneOf([KeduIjeMedia.mediaTypes.AUDIO, KeduIjeMedia.mediaTypes.VIDEO]).isRequired,
   canEdit: PropTypes.bool.isRequired,
   src: PropTypes.string.isRequired,
   videoID: PropTypes.string.isRequired
 };
+
+
+KeduIje.init(mediaID);
 
 ReactDOM.render(
   <MediaPlayer

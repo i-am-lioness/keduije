@@ -1,5 +1,5 @@
-/* global YT, KeduIje:true */
-KeduIje = ((ki) => {
+/* global YT, */
+const KeduIjeMedia = ((ki) => {
   class Media { // todo: combine both classes
     constructor(iframe, onPlayerReady, handlePaused, handleResume) {
       this.video = new YT.Player(
@@ -79,4 +79,6 @@ KeduIje = ((ki) => {
   ki.Audio = Audio;
 
   return ki;
-})(KeduIje || {});
+})({});
+
+export default KeduIjeMedia;

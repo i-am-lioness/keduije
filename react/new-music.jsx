@@ -1,9 +1,10 @@
 /* eslint-env browser */
-/* global KeduIje, submitSongInfo */
+/* global submitSongInfo */
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import SongInfoForm from './song-info-form';
+import KeduIje from './keduije';
 
 ReactDOM.render(
   <SongInfoForm

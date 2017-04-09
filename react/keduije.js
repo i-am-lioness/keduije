@@ -1,6 +1,6 @@
 /* global $ */
 /* eslint-env browser */
-let KeduIje = ((ki) => {
+const KeduIje = ((ki) => {
   let songID = null;
   let changesetID = null;
 
@@ -140,3 +140,5 @@ let KeduIje = ((ki) => {
 
   return ki;
 })({});
+
+export default KeduIje;

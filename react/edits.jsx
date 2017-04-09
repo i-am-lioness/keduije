@@ -1,9 +1,10 @@
 /* eslint-env browser */
-/* global KeduIje, submitSongInfo, JsDiff, mediaFromServer */
+/* global submitSongInfo, JsDiff, mediaFromServer */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import update from 'react-addons-update'; // todo: replace with https://github.com/kolodny/immutability-helper
 import PropTypes from 'prop-types';
+import KeduIje from './keduije';
 
 class Edits extends React.Component {
   constructor(props) {
