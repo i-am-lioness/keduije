@@ -1,7 +1,6 @@
 /* eslint-env browser */
-/* global $, mediaType, canEdit, mediaSrc, videoID, mediaID */
+/* global $ */
 import React from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
 import KeduIje from './keduije';
@@ -242,6 +241,7 @@ class MediaPlayer extends React.Component {
   }
 
   componentDidMount() {
+    KeduIje.init(this.props.mediaID);
     KeduIje.loadLyrics(this.loadLyrics);
     KeduIje.loadSongInfo(this.displaySongInfo);
 
@@ -254,7 +254,7 @@ class MediaPlayer extends React.Component {
         this.onPlayerReady,
         this.handlePaused,
         this.handleResume);
-    } else if (mediaType === KeduIjeMedia.mediaTypes.VIDEO) {
+    } else if (this.props.mediaType === KeduIjeMedia.mediaTypes.VIDEO) {
       window.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady;
       $.getScript('https://www.youtube.com/iframe_api');
     }
@@ -484,17 +484,7 @@ MediaPlayer.propTypes = {
   canEdit: PropTypes.bool.isRequired,
   src: PropTypes.string.isRequired,
   videoID: PropTypes.string.isRequired,
+  mediaID: PropTypes.string.isRequired,
 };
 
-
-KeduIje.init(mediaID);
-
-ReactDOM.render(
-  <MediaPlayer
-    canEdit={canEdit}
-    src={mediaSrc}
-    videoID={videoID}
-    mediaType={mediaType}
-  />,
-  document.getElementById('root')
-);
+export default MediaPlayer;

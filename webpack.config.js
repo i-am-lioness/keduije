@@ -8,7 +8,7 @@ module.exports = {
   entry: {
     history: './edits.jsx',
     search: './search.jsx',
-    player: './media-player.jsx',
+    player: './player.jsx',
     new_music: './new-music.jsx',
   },
   resolve: {
