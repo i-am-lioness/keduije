@@ -1,5 +1,5 @@
 /* eslint-env browser */
-/* global KeduIje, $, mediaType */
+/* global KeduIje, $, mediaType, canEdit, mediaSrc, videoID */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
@@ -53,7 +53,6 @@ class MediaPlayer extends React.Component {
     this.media = null;
     this.saveStartTime = false; // accounts for "jumping" around, rename to "holdStartTime"
     this.timeMarksFrozen = false;
-    this.timer;
     this.lyricBeingEdited = null;
     this.stopAtSegmentEnd = false;
     this.originalSongInfo = null;
@@ -92,12 +91,12 @@ class MediaPlayer extends React.Component {
     this.lyricBeingEdited = data;
     const defaultValue = '[]';
     const headingText = prompt(data.heading ? 'Update Heading' : 'Please enter heading', data.heading || defaultValue);
-    if (headingText && (headingText != defaultValue)) { this.saveLyric(headingText); }
+    if (headingText && (headingText !== defaultValue)) { this.saveLyric(headingText); }
   }
 
   handleDelete(e) {
     const r = confirm(`Are you sure you want to delete '${this.state.originalText}'?`);
-    if (r == true) {
+    if (r === true) {
       KeduIje.deleteLyric(this.lyricBeingEdited, this.loadLyrics);
     }
   }
@@ -107,7 +106,9 @@ class MediaPlayer extends React.Component {
   }
 
   updateIfChanged(obj, field, stateName) {
-    if (this.state[stateName].toString() != this.lyricBeingEdited[field]) { obj[field] = this.state[stateName]; }
+    if (this.state[stateName].toString() !== this.lyricBeingEdited[field]) {
+      obj[field] = this.state[stateName];
+    }
   }
 
   saveLyric(headingText) {
@@ -121,7 +122,8 @@ class MediaPlayer extends React.Component {
         this.updateIfChanged(lyricChanges, 'endTime', 'segmentEnd');
       }
 
-      KeduIje.updateLyric(this.lyricBeingEdited, lyricChanges, this.loadLyrics); // to do: [semantics] back a "refresh" instead
+      // to do: [semantics] back a "refresh" instead
+      KeduIje.updateLyric(this.lyricBeingEdited, lyricChanges, this.loadLyrics);
     } else {
       const newLyric = {
         text: this.state.text,
@@ -216,13 +218,13 @@ class MediaPlayer extends React.Component {
   }
 
   onYouTubeIframeAPIReady() {
-    if (this.props.mediaType != KeduIje.mediaTypes.VIDEO) return; // todo: add sanity check here
+    if (this.props.mediaType !== KeduIje.mediaTypes.VIDEO) return; // todo: add sanity check here
 
-    this.media = new KeduIje.Media(this.iframe, this.onPlayerReady, this.handlePaused, this.handleResume);
-  }
-
-  loadAudio(audio) {
-    this.audioElement = audio;
+    this.media = new KeduIje.Media(
+      this.iframe,
+      this.onPlayerReady,
+      this.handlePaused,
+      this.handleResume);
   }
 
   componentWillMount() {
@@ -231,7 +233,11 @@ class MediaPlayer extends React.Component {
   }
 
   onScroll(e) {
-    if ((!this.state.affixed) && (window.scrollY > this.affixPoint)) { this.setState({ affixed: true }); } else if ((this.state.affixed) && (window.scrollY < this.affixPoint)) { this.setState({ affixed: false }); }
+    if ((!this.state.affixed) && (window.scrollY > this.affixPoint)) {
+      this.setState({ affixed: true });
+    } else if ((this.state.affixed) && (window.scrollY < this.affixPoint)) {
+      this.setState({ affixed: false });
+    }
   }
 
   componentDidMount() {
@@ -282,7 +288,7 @@ class MediaPlayer extends React.Component {
   handleResume() {
     this.timer = setInterval(this.onTimeout, 1000);
     this.setState({ isPlaying: true });
-    if ((!this.state.videoPlaybackMode) && (this.props.mediaType == KeduIje.mediaTypes.VIDEO)) {
+    if ((!this.state.videoPlaybackMode) && (this.props.mediaType === KeduIje.mediaTypes.VIDEO)) {
       this.setState({ videoPlaybackMode: true });
     }
   }
@@ -335,7 +341,7 @@ class MediaPlayer extends React.Component {
 
   displaySongInfo(songInfo) {
     this.originalSongInfo = songInfo;
-    this.historyLink = `/music/${songInfo.slug }/history`;// consider making state
+    this.historyLink = `/music/${songInfo.slug}/history`;// consider making state
     this.setState({
       title: songInfo.title || '',
       artist: songInfo.artist || '',
@@ -345,7 +351,7 @@ class MediaPlayer extends React.Component {
   }
 
   onKeyUp(e) {
-    if ((e.keyCode == 32) && (this.state.editMode)) { // space
+    if ((e.keyCode === 32) && (this.state.editMode)) { // space
       if ((!this.state.displayEditor) && (!this.state.editDialogIsOpen)) { this.togglePlayState(); }
     }
 
@@ -356,8 +362,8 @@ class MediaPlayer extends React.Component {
     const percentage = this.state.currentTime / this.maxTime;
     let mediaElement = null;
 
-    if (this.props.mediaType == KeduIje.mediaTypes.AUDIO) {
-      mediaElement = (<audio ref={this.loadAudio.bind(this)}>
+    if (this.props.mediaType === KeduIje.mediaTypes.AUDIO) {
+      mediaElement = (<audio ref={(audio) => { this.audioElement = audio; }}>
         <source src={this.props.src} type="audio/mpeg" />
       </audio>);
     } else {
@@ -376,16 +382,24 @@ class MediaPlayer extends React.Component {
       </div>);
     }
 
-    const affixed = this.state.videoPlaybackMode ? 'hold' : (this.state.affixed ? 'affix' : '');
+    let affixed = '';
+    if (this.state.videoPlaybackMode) {
+      affixed = 'hold';
+    } else if (this.state.affixed) {
+      affixed = 'affix';
+    }
 
-    const infoBar = (<div className={`info-bar ${  affixed}`}>
+    const infoBar = (<div className={`info-bar ${affixed}`}>
       <p className="title">{this.state.title}</p>
       <p className="artist">{this.state.artist}</p>
       <PlayControl
         togglePlayState={this.togglePlayState}
         isPlaying={this.state.isPlaying}
       />
-      {this.props.canEdit && <EditSwitch toggleEditMode={this.handleToggleEditMode} editMode={this.state.editMode} />}
+      {this.props.canEdit && (<EditSwitch
+        toggleEditMode={this.handleToggleEditMode}
+        editMode={this.state.editMode}
+      />)}
       <ProgressBar onSeekTo={this.seekTo} percentage={percentage} />
     </div>);
 
@@ -396,12 +410,18 @@ class MediaPlayer extends React.Component {
         isPlaying={this.state.isPlaying}
       />
       <ProgressBar onSeekTo={this.seekTo} percentage={percentage} />
-      {this.props.canEdit && <EditSwitch toggleEditMode={this.handleToggleEditMode} editMode={this.state.editMode} />}
+      {this.props.canEdit && (<EditSwitch
+        toggleEditMode={this.handleToggleEditMode}
+        editMode={this.state.editMode}
+      />)}
       <div className="song-info">
         <p className="artist">{this.state.artist}</p>
         <h1 className="title">{this.state.title}</h1>
 
-        {this.state.editMode && <a href="#" onClick={this.toggleSongInfoDialog.bind(this, true)}>(edit)</a>}
+        {this.state.editMode && (<a
+          href="#"
+          onClick={(e) => { this.toggleSongInfoDialog(true, e); }}
+        >(edit)</a>)}
         {this.props.canEdit && <a href={this.historyLink}>(history)</a>}
       </div>
     </div>);
@@ -411,18 +431,17 @@ class MediaPlayer extends React.Component {
         onSubmit={this.saveSongInfo}
         title={this.state.title}
         artist={this.state.artist}
-        onCancel={this.toggleSongInfoDialog.bind(this, false)}
+        onCancel={(e) => { this.toggleSongInfoDialog(false, e); }}
         img={this.state.img}
         onRemove={this.deleteThisSong}
       />}
       <LyricEditor
-        ref={this.props.registerEditor}
         segmentStart={this.state.segmentStart}
         segmentEnd={this.state.segmentEnd}
         incrementTime={this.incrementTime}
         decrementTime={this.decrementTime}
         percentage={percentage || 0}
-        playLyric={this.playSegment.bind(this, true)}
+        playLyric={(e) => { this.playSegment(true, e); }}
         displayed={this.state.displayEditor}
         originalText={this.state.originalText}
         editMode={this.state.editMode}
@@ -437,7 +456,7 @@ class MediaPlayer extends React.Component {
 
     const classIfVideo = (this.state.videoPlaybackMode) ? ' video-lyrics' : '';
     return (<div className="row">
-      <div id="lyric-column" className={`col-md-6 col-xs-12 col-md-offset-3${  classIfVideo}`}>
+      <div id="lyric-column" className={`col-md-6 col-xs-12 col-md-offset-3 ${classIfVideo}`}>
 
         {this.state.videoPlaybackMode || artwork}
         {mediaElement}
@@ -462,7 +481,7 @@ MediaPlayer.propTypes = {
   canEdit: PropTypes.bool.isRequired,
   src: PropTypes.string.isRequired,
   videoID: PropTypes.string.isRequired
-}
+};
 
 ReactDOM.render(
   <MediaPlayer
