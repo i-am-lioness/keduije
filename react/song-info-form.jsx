@@ -4,7 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import KeduIjeMedia from './keduije-media';
 
-
+/*
 window.googleApiClientReady = () => {
   gapi.client.init({
     apiKey: 'AIzaSyBLYlu4hbmzhr1iOCiD_o2PTrjzvQBuQUA',
@@ -14,7 +14,7 @@ window.googleApiClientReady = () => {
     });
   });
 };
-
+*/
 function getIDFromURL(url) {
   const res = url.match(/[?&]v=([^&]+)/);
   if (res) {

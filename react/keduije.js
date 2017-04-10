@@ -4,6 +4,7 @@ const KeduIje = ((ki) => {
   let songID = null;
   let changesetID = null;
 
+/*
   window.onerror = (errorMsg, url, lineNumber, column, errorObj) => {
     if (window.location.hostname === 'localhost') return;
 
@@ -12,7 +13,7 @@ const KeduIje = ((ki) => {
 
     $.post('/api/logError', { width: screen.width, height: screen.height, msg: msg });
   };
-
+*/
   function getRevisions(changeset, cb) {
     $.get('/api/revisions', { changeset: changeset }, cb);
   }

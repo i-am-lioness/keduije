@@ -6,7 +6,7 @@ html(lang='en')
     link(href='/css/lyric-editor.css', rel='stylesheet')
   body
     include nav-bar.pug
-    .container-fluid#root
+    .container-fluid#root!=react
     include footer.pug
     script(src="https://code.jquery.com/ui/1.12.1/jquery-ui.js")
     script(src='/js/ie10-viewport-bug-workaround.js')
@@ -18,11 +18,5 @@ html(lang='en')
     //if (canEdit)
     //  script(src='/time-spinner.js', type='text/babel')
     //  script(src='/lyric-editor.js', type='text/babel')
-    script.
-      var mediaType = parseInt(#{mediaType});
-      var canEdit=JSON.parse(#{canEdit});
-      var mediaSrc = "#{src}";
-      var videoID = "#{videoID}";
-      var mediaID = "#{mediaID}";      
     script(src="/player.bundle.js")
 

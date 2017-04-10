@@ -7,6 +7,7 @@ class LyricEditor extends React.Component {
   constructor(props) {
     super(props);
     this.dialogWidth = 500;
+    this.lyricEditor = null;
     this.handleSubmit = this.handleSubmit.bind(this);
     this.calculateTail = this.calculateTail.bind(this);
   }
@@ -24,7 +25,7 @@ class LyricEditor extends React.Component {
 
   calculateTail() {
     const tailWidth = 30;
-    this.dialogWidth = $(this.lyricEditor).outerWidth() || this.dialogWidth || 500;
+    this.dialogWidth = this.lyricEditor ? this.lyricEditor.offsetWidth : this.dialogWidth || 500;
     const offset = this.dialogWidth * this.props.percentage;
     const rightX = offset;
     const leftX = offset + tailWidth;

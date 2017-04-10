@@ -46,8 +46,21 @@ class MediaPlayer extends React.Component {
       isPlaying: false,
       videoPlaybackMode: false,
       affixed: false,
+      img: this.props.img,
+      mediaID: this.props.mediaID,
+      title: this.props.title,
+      artist: this.props.artist,
+      slug: this.props.slug,
     };
 
+    /* this.originalSongInfo = { // todo: may need to have whole copy of media Object as in db
+      img: this.props.img,
+      title: this.props.title,
+      artist: this.props.artist,
+    };
+
+    this.historyLink = `/music/${this.props.slug}/history`; // consider making state
+*/
     this.maxTime = null;
     this.media = null;
     this.saveStartTime = false; // accounts for "jumping" around, rename to "holdStartTime"
@@ -228,8 +241,7 @@ class MediaPlayer extends React.Component {
   }
 
   componentWillMount() {
-    window.onkeyup = this.onKeyUp;
-    window.onscroll = this.onScroll;
+    
   }
 
   onScroll(e) {
@@ -241,11 +253,14 @@ class MediaPlayer extends React.Component {
   }
 
   componentDidMount() {
-    KeduIje.init(this.props.mediaID);
+    KeduIje.init(this.state.mediaID);
     KeduIje.loadLyrics(this.loadLyrics);
     KeduIje.loadSongInfo(this.displaySongInfo);
 
     this.affixPoint = this.artwork.offsetTop + this.artwork.offsetHeight;
+
+    window.onkeyup = this.onKeyUp;
+    window.onscroll = this.onScroll;
 
     // todo: add sanity check here
     if (this.props.mediaType === KeduIjeMedia.mediaTypes.AUDIO) {
@@ -485,6 +500,10 @@ MediaPlayer.propTypes = {
   src: PropTypes.string.isRequired,
   videoID: PropTypes.string.isRequired,
   mediaID: PropTypes.string.isRequired,
+  img: PropTypes.string.isRequired,
+  artist: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  slug: PropTypes.string.isRequired,
 };
 
 export default MediaPlayer;

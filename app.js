@@ -1,4 +1,6 @@
 /* eslint-env node */
+import MediaPlayer from './react/media-player';
+
 require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
 const express = require('express');
@@ -12,6 +14,8 @@ const MongoStore = require('connect-mongo')(session);
 const revision = require('./lib/revision.js');
 const mail = require('./lib/mail.js');
 const users = require('./lib/users.js')(passport);
+const React = require('react');
+const ReactDOMServer = require('react-dom/server');
 
 const app = express();
 
@@ -183,15 +187,28 @@ app.get(
             return;
           }
 
+          const props = {
+            canEdit: (!!(req.user && req.user.isAdmin)),
+            src: media.src,
+            videoID: media.videoID || '',
+            mediaType: parseInt(media.type, 10),
+            mediaID: media._id.toString(),
+            img: media.img,
+            title: media.title,
+            artist: media.artist,
+            slug: media.slug,
+          };
+
+          const mediaPlayer = React.createElement(MediaPlayer, props);
+          const mediaPlayerHTML = ReactDOMServer.renderToString(mediaPlayer);
+
           const data = {
             title: `${media.title} | ${res.locals.title}`,
-            videoID: media.videoID,
+            react: `<div>${mediaPlayerHTML}</div>`,
             user: req.user || null,
-            canEdit: !!(req.user && req.user.isAdmin),
-            src: media.src,
-            mediaID: media._id,
-            mediaType: media.type,
+            props: props,
           };
+
           res.render('player', data);
         }
       );
