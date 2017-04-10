@@ -1,20 +1,9 @@
 /* eslint-env browser */
-/* global $, gapi */
+/* global $ */
 import React from 'react';
 import PropTypes from 'prop-types';
 import KeduIjeMedia from './keduije-media';
 
-/*
-window.googleApiClientReady = () => {
-  gapi.client.init({
-    apiKey: 'AIzaSyBLYlu4hbmzhr1iOCiD_o2PTrjzvQBuQUA',
-  }).then(() => {
-    gapi.client.load('youtube', 'v3', () => {
-      // handleAPILoaded();
-    });
-  });
-};
-*/
 function getIDFromURL(url) {
   const res = url.match(/[?&]v=([^&]+)/);
   if (res) {

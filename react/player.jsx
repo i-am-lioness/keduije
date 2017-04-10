@@ -8,7 +8,6 @@ ReactDOM.render(
   <MediaPlayer
     canEdit={props.canEdit}
     src={props.src}
-    videoID={props.videoID}
     mediaType={props.mediaType}
     mediaID={props.mediaID}
     img={props.img}

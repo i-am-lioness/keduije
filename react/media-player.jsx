@@ -384,16 +384,12 @@ class MediaPlayer extends React.Component {
         <source src={this.props.src} type="audio/mpeg" />
       </audio>);
     } else {
-      const src = `http://www.youtube.com/embed/${this.props.videoID
-        }?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=${
-           window.location.origin}&playsinline=1&rel=0&controls=0`;
-
       const iframeClass = this.state.videoPlaybackMode ? '' : ' hidden-video';
       mediaElement = (<div className={`embed-responsive embed-responsive-16by9${iframeClass}`}>
         <iframe
           ref={(iframe) => { this.iframe = iframe; }}
           className="embed-responsive-item"
-          src={src}
+          src={this.props.src}
           frameBorder="0"
         />
       </div>);
@@ -493,15 +489,18 @@ class MediaPlayer extends React.Component {
   }
 }
 
+MediaPlayer.defaultProps = {
+  artist: '',
+};
+
 MediaPlayer.propTypes = {
   mediaType: PropTypes.oneOf(
     [KeduIjeMedia.mediaTypes.AUDIO, KeduIjeMedia.mediaTypes.VIDEO]).isRequired,
   canEdit: PropTypes.bool.isRequired,
   src: PropTypes.string.isRequired,
-  videoID: PropTypes.string.isRequired,
   mediaID: PropTypes.string.isRequired,
   img: PropTypes.string.isRequired,
-  artist: PropTypes.string.isRequired,
+  artist: PropTypes.string,
   title: PropTypes.string.isRequired,
   slug: PropTypes.string.isRequired,
 };

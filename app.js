@@ -1,5 +1,6 @@
 /* eslint-env node */
 import MediaPlayer from './react/media-player';
+import KeduIjeMedia from './react/keduije-media.js';
 
 require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
@@ -187,10 +188,16 @@ app.get(
             return;
           }
 
+          let src = media.src;
+          if (parseInt(media.type, 10) === KeduIjeMedia.mediaTypes.VIDEO) {
+            src = `http://www.youtube.com/embed/${media.videoID
+              }?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=${req.protocol}://${
+                req.get('host')}&playsinline=1&rel=0&controls=0`;
+          }
+
           const props = {
             canEdit: (!!(req.user && req.user.isAdmin)),
-            src: media.src,
-            videoID: media.videoID || '',
+            src: src,
             mediaType: parseInt(media.type, 10),
             mediaID: media._id.toString(),
             img: media.img,
@@ -290,7 +297,9 @@ app.get('/music/:slug/history', ensureLoggedIn(), (req, res) => {
 
     const data = {
       title: 'History | ' + media.title + ' | ' + res.locals.title,
-      mediaID: media._id,
+      props: {
+        mediaID: media._id,
+      },
     };
 
     res.render('media_history', data);

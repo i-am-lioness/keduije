@@ -1,5 +1,5 @@
 /* eslint-env browser */
-/* global mediaFromServer */
+/* global props */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import update from 'react-addons-update'; // todo: replace with https://github.com/kolodny/immutability-helper
@@ -330,8 +330,8 @@ Edits.propTypes = {
 
 ReactDOM.render(
   <Edits
-    byUser=""
-    media={mediaFromServer}
+    byUser={props.byUser}
+    media={props.mediaID}
   />,
   document.getElementById('root')
 );
