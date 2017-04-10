@@ -8,25 +8,152 @@ import KeduIje from './keduije';
 
 const JsDiff = require('diff');
 
+function processEdit(type, el) {
+  el.type = type;
+
+  if (type === 'edit') {
+    if ('deleted' in el.newValues) {
+      if ((el.newValues.deleted === true) || (el.newValues.deleted === 'true')) {
+        el.type = 'deletion';
+      } else { // todo: for now treat lyric recoveries like brand new adds
+        el.type = 'add';
+        el.text = el.newValues.text; // todo: should Object.assign()
+      }
+    } else if (el.target === 'media') { // todo: reorganize
+      el.type = 'info';
+      if (el.newValues.status === 'deleted') {
+        el.type = 'removal'; // song deletion, todo: organize semantics
+      }
+    }
+  }
+
+  el.time = parseInt(el.original ? (el.original.startTime || -1) : el.startTime, 10);
+}
+
+function eachDiff(diff, i) {
+  let className = null;
+  if (diff.added) {
+    className = 'added';
+  } else if (diff.removed) {
+    className = 'removed';
+  }
+
+  return <span className={className} key={i}>{diff.value}</span>;
+}
+
+function changedInfo(name, edit) {
+  return (<p>
+    {name}:
+    {edit.original[name]}
+    <span className="glyphicon glyphicon-arrow-right" aria-hidden="true" />
+    {edit.newValues[name]}
+  </p>);
+}
+
+function changedTimeMark(label, edit, field, timeUrl) {
+  if (edit.newValues[field]) {
+    const formatedTimeOld = KeduIje.convertToTime(edit.original[field]);
+    const formatedTimeNew = KeduIje.convertToTime(edit.newValues[field]);
+    return (<p>
+      {label}
+      <a href={timeUrl}>({formatedTimeOld})</a>
+      <span className="glyphicon glyphicon-arrow-right" aria-hidden="true" />
+      <a href={timeUrl}>({formatedTimeNew})</a>
+    </p>);
+  }
+  return null;
+}
+
+function eachEdit(songUrl, edit, idx) {
+  let output = null;
+  const startTime = KeduIje.convertToTime(edit.time);
+
+  if (edit.type === 'edit') {
+    let textChange = null;
+    let startTimeChange = null;
+    let endTimeChange = null;
+    if (edit.newValues.text) { // if a line edit
+      const diff = JsDiff.diffChars(edit.original.text, edit.newValues.text);
+      const changes = diff.map(eachDiff);
+      textChange = (<p>
+        <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
+        <span className="glyphicon glyphicon-pencil" aria-hidden="true" />
+        <strong>{changes}</strong>
+      </p>);
+    }
+
+    if (edit.newValues.startTime) {
+      startTimeChange = (<p>
+        start time moved to <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
+      </p>);
+    }
+    startTimeChange = changedTimeMark('Start :', edit, 'startTime', `${songUrl}#${edit.time}`);
+    endTimeChange = changedTimeMark('End :', edit, 'endTime', `${songUrl}#${edit.time}`);
+
+    output = (<span data-id={edit._id}>
+      {textChange}
+      {startTimeChange}
+      {endTimeChange}
+    </span>);
+  } else if (edit.type === 'deletion') { // if a deletion
+    output = (<p className="deleted-line">
+      <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
+      <span className="glyphicon glyphicon-trash" aria-hidden="true" />
+      <strong >{edit.original.text}</strong>
+    </p>);
+  } else if (edit.type === 'info') { // if an info edit
+    let textOutput = null;
+    let artistOutput = null;
+    let imgOutput = null;
+    if (edit.newValues.title) {
+      textOutput = changedInfo('title', edit);
+    }
+
+    if (edit.newValues.artist) {
+      artistOutput = changedInfo('artist', edit);
+    }
+
+    if (edit.newValues.img) {
+      imgOutput = <p>changed art work</p>;
+    }
+
+    output = <span>{textOutput} {artistOutput} {imgOutput}</span>;
+  } else if (edit.type === 'add') {
+    output = (<p>
+      <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
+      <span className="glyphicon glyphicon-plus" aria-hidden="true" />
+      <strong>{edit.text}</strong>
+    </p>);
+  } else if (edit.type === 'removal') { // todo: should have own panel
+    output = (<p>
+      Removed this song
+    </p>);
+  }
+
+  const debug = false;
+  return (<li className="list-group-item" key={edit._id}>
+    {output}
+    {debug && <pre>{JSON.stringify(edit)}</pre>}
+  </li>);
+}
+
+
 class Edits extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      listings: {}, // media by changeset
       changesets: [],
-      songs: {}, // media by _id
+      mediaByChangeset: {},
+      mediaById: {},
       edits: {},
       adds: {},
       showMoreBtn: true,
     };
 
-    this.eachEdit = this.eachEdit.bind(this);
-    this.eachDiff = this.eachDiff.bind(this);
     this.setEdits = this.setEdits.bind(this);
     this.setAdds = this.setAdds.bind(this);
     this.saveSongInfo = this.saveSongInfo.bind(this);
-    this.processEdit = this.processEdit.bind(this);
     this.setChangesets = this.setChangesets.bind(this);
     this.eachChangeset = this.eachChangeset.bind(this);
     this.processSession = this.processSession.bind(this);
@@ -65,7 +192,7 @@ class Edits extends React.Component {
   }
 
   setEdits(changesetID, edits) {
-    edits.forEach(this.processEdit.bind(this, 'edit'));
+    edits.forEach(processEdit.bind(this, 'edit'));
     edits.sort((a, b) => (b.date - a.date));
 
     const updateObj = {};
@@ -76,11 +203,11 @@ class Edits extends React.Component {
   saveSongInfo(songInfo) {
     const updateObj = {};
     updateObj[songInfo._id] = { $set: songInfo };
-    this.setState({ songs: update(this.state.songs, updateObj) });
+    this.setState({ mediaById: update(this.state.mediaById, updateObj) });
   }
 
   setAdds(changesetID, adds) {
-    adds.forEach(this.processEdit.bind(this, 'add'));
+    adds.forEach(processEdit.bind(this, 'add'));
     adds.sort((a, b) => (b.date - a.date));
 
     const updateObj = {};
@@ -91,29 +218,7 @@ class Edits extends React.Component {
   setListing(changesetID, media) { // todo, make more efficient
     const updateObj = {};
     updateObj[changesetID] = { $set: media };
-    this.setState({ listings: update(this.state.listings, updateObj) });
-  }
-
-  processEdit(type, el) {
-    el.type = type;
-
-    if (type === 'edit') {
-      if ('deleted' in el.newValues) {
-        if ((el.newValues.deleted === true) || (el.newValues.deleted === 'true')) {
-          el.type = 'deletion';
-        } else { // todo: for now treat lyric recoveries like brand new adds
-          el.type = 'add';
-          el.text = el.newValues.text; // todo: should Object.assign()
-        }
-      } else if (el.target === 'media') { // todo: reorganize
-        el.type = 'info';
-        if (el.newValues.status === 'deleted') {
-          el.type = 'removal'; // song deletion, todo: organize semantics
-        }
-      }
-    }
-
-    el.time = parseInt(el.original ? (el.original.startTime || -1) : el.startTime, 10);
+    this.setState({ mediaByChangeset: update(this.state.mediaByChangeset, updateObj) });
   }
 
   processSession(el) {
@@ -129,7 +234,7 @@ class Edits extends React.Component {
     } else {
       const mediaID = el.mediaID;
 
-      if (!this.state.songs[mediaID]) {
+      if (!this.state.mediaById[mediaID]) {
         KeduIje.getMediaInfo(mediaID, this.saveSongInfo);
       }
 
@@ -138,119 +243,12 @@ class Edits extends React.Component {
     }
   }
 
-  eachDiff(diff, i) {
-    let className = null;
-    if (diff.added) {
-      className = 'added';
-    } else if (diff.removed) {
-      className = 'removed';
-    }
-
-    return <span className={className} key={i}>{diff.value}</span>;
-  }
-
-  changedInfo(name, edit) {
-    return (<p>
-      {name}:
-      {edit.original[name]}
-      <span className="glyphicon glyphicon-arrow-right" aria-hidden="true" />
-      {edit.newValues[name]}
-    </p>);
-  }
-
-  changedTimeMark(label, edit, field, timeUrl) {
-    if (edit.newValues[field]) {
-      const formatedTimeOld = KeduIje.convertToTime(edit.original[field]);
-      const formatedTimeNew = KeduIje.convertToTime(edit.newValues[field]);
-      return (<p>
-        {label}
-        <a href={timeUrl}>({formatedTimeOld})</a>
-        <span className="glyphicon glyphicon-arrow-right" aria-hidden="true" />
-        <a href={timeUrl}>({formatedTimeNew})</a>
-      </p>);
-    }
-    return null;
-  }
-
-  eachEdit(songUrl, edit, idx) {
-    let output = null;
-    const startTime = KeduIje.convertToTime(edit.time);
-
-    if (edit.type === 'edit') {
-      let textChange = null;
-      let startTimeChange = null;
-      let endTimeChange = null;
-      if (edit.newValues.text) { // if a line edit
-        const diff = JsDiff.diffChars(edit.original.text, edit.newValues.text);
-        const changes = diff.map(this.eachDiff);
-        textChange = (<p>
-          <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
-          <span className="glyphicon glyphicon-pencil" aria-hidden="true" />
-          <strong>{changes}</strong>
-        </p>);
-      }
-
-      if (edit.newValues.startTime) {
-        startTimeChange = (<p>
-          start time moved to <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
-        </p>);
-      }
-      startTimeChange = this.changedTimeMark('Start :', edit, 'startTime', `${songUrl}#${edit.time}`);
-      endTimeChange = this.changedTimeMark('End :', edit, 'endTime', `${songUrl}#${edit.time}`);
-
-      output = (<span data-id={edit._id}>
-        {textChange}
-        {startTimeChange}
-        {endTimeChange}
-      </span>);
-    } else if (edit.type === 'deletion') { // if a deletion
-      output = (<p className="deleted-line">
-        <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
-        <span className="glyphicon glyphicon-trash" aria-hidden="true" />
-        <strong >{edit.original.text}</strong>
-      </p>);
-    } else if (edit.type === 'info') { // if an info edit
-      let textOutput = null;
-      let artistOutput = null;
-      let imgOutput = null;
-      if (edit.newValues.title) {
-        textOutput = this.changedInfo('title', edit);
-      }
-
-      if (edit.newValues.artist) {
-        artistOutput = this.changedInfo('artist', edit);
-      }
-
-      if (edit.newValues.img) {
-        imgOutput = <p>changed art work</p>;
-      }
-
-      output = <span>{textOutput} {artistOutput} {imgOutput}</span>;
-    } else if (edit.type === 'add') {
-      output = (<p>
-        <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
-        <span className="glyphicon glyphicon-plus" aria-hidden="true" />
-        <strong>{edit.text}</strong>
-      </p>);
-    } else if (edit.type === 'removal') { // todo: should have own panel
-      output = (<p>
-        Removed this song
-      </p>);
-    }
-
-    const debug = false;
-    return (<li className="list-group-item" key={edit._id}>
-      {output}
-      {debug && <pre>{JSON.stringify(edit)}</pre>}
-    </li>);
-  }
-
   listEdits(changesetID, songUrl) {
     const edits = (this.state.adds[changesetID] || [])
       .concat((this.state.edits[changesetID] || []));
     edits.sort((a, b) => (a.time - b.time));
 
-    const editsHTML = edits.map(this.eachEdit.bind(this, songUrl));
+    const editsHTML = edits.map(eachEdit.bind(this, songUrl));
 
     return editsHTML.length ? <ul className="list-group">{editsHTML}</ul> : null;
   }
@@ -263,7 +261,7 @@ class Edits extends React.Component {
     let output = null;
 
     if (changeset.type === 'new') {
-      song = this.state.listings[changeset._id];
+      song = this.state.mediaByChangeset[changeset._id];
 
       if (song) {
         songUrl = `/music/${song.slug}`;
@@ -284,7 +282,7 @@ class Edits extends React.Component {
         </div>);
       }
     } else {
-      song = this.state.songs[changeset.mediaID];
+      song = this.state.mediaById[changeset.mediaID];
       if (song) {
         songUrl = `/music/${song.slug}`;
         songTitle = <a className="song-title" href={songUrl}>{song.title}</a>;
