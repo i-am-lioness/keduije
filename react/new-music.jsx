@@ -18,7 +18,7 @@ window.googleApiClientReady = () => {
 function submitSongInfo(data) {
   data.changeset = changesetID;
   KeduIje.createSong(data, (slug) => {
-    window.location = '/music/' + slug;
+    window.location = `/music/${slug}`;
   });
 }
 

@@ -209,7 +209,11 @@ class MediaPlayer extends React.Component {
   }
 
   togglePlayState() {
-    (this.state.isPlaying) ? this.media.pause() : this.media.play();
+    if (this.state.isPlaying) {
+      this.media.pause();
+    } else {
+      this.media.play();
+    }
   }
 
   seekTo(percentage) {
@@ -284,18 +288,12 @@ class MediaPlayer extends React.Component {
     this.setState({ isPlaying: false });
     if (this.timeMarksFrozen) return; // revisit
 
-    let segmentStart = this.state.segmentStart;
-    let segmentEnd = this.state.segmentEnd;
-
-    if (!this.saveStartTime) {
-      this.setState({
-        segmentStart: segmentEnd,
-      });
-      segmentStart = segmentEnd;
-    }
+    const segmentStart = this.saveStartTime ? this.state.segmentStart : this.state.segmentEnd;
+    const segmentEnd = Math.floor(this.media.getCurrentTime());
     this.saveStartTime = false; // turn off switch
-    segmentEnd = Math.floor(this.media.getCurrentTime());
+
     this.setState({
+      segmentStart: segmentStart,
       segmentEnd: segmentEnd,
       displayEditor: true,
     });

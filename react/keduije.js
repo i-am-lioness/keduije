@@ -4,16 +4,19 @@ const KeduIje = ((ki) => {
   let songID = null;
   let changesetID = null;
 
-/*
-  window.onerror = (errorMsg, url, lineNumber, column, errorObj) => {
+  function onError(errorMsg, url, lineNumber, column, errorObj) {
     if (window.location.hostname === 'localhost') return;
 
     const msg = 'Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber
       + ' Column: ' + column + ' StackTrace: ' + errorObj;
 
     $.post('/api/logError', { width: screen.width, height: screen.height, msg: msg });
-  };
-*/
+  }
+
+  if (typeof window !== 'undefined') {
+    window.onerror = onError;
+  }
+
   function getRevisions(changeset, cb) {
     $.get('/api/revisions', { changeset: changeset }, cb);
   }
