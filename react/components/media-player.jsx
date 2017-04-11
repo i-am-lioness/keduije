@@ -1,5 +1,4 @@
 /* eslint-env browser */
-/* global $ */
 import React from 'react';
 import PropTypes from 'prop-types';
 
@@ -10,6 +9,8 @@ import LyricEditor from './lyric-editor';
 import SongInfoForm from './song-info-form';
 import ProgressBar from './progress-bar';
 import PlayControl from './play-control';
+
+const $ = require('jquery');
 
 function EditSwitch(props) {
   return (<label className="switch" htmlFor="edit-switch">

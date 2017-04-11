@@ -10,6 +10,7 @@ module.exports = {
     search: './search.jsx',
     player: './player.jsx',
     new_music: './new-music.jsx',
+    global: './global.js',
   },
   resolve: {
     extensions: ['.js', '.jsx'],

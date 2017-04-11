@@ -1,7 +1,7 @@
-/* global $ */
 import React from 'react';
 import PropTypes from 'prop-types';
 
+const $ = require('jquery');
 
 class ProgressBar extends React.Component {
   constructor(props) {
