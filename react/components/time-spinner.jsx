@@ -24,7 +24,7 @@ class TimeSpinner extends React.Component {
     return (<div className="spinner-container">
       <div className="label">{this.props.label}</div>
       <div className="inner-spinner">
-        <span className="display segmentStart">{displayedTimeMark}</span>
+        <span className="display">{displayedTimeMark}</span>
         <a onClick={this.increment} tabIndex="-1" aria-hidden="true" className="spinner-button">
           <span className="glyphicon glyphicon-triangle-top" aria-hidden="true" />
         </a>
