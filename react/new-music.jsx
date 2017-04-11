@@ -2,7 +2,7 @@
 /* global changesetID, gapi */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import SongInfoForm from './song-info-form';
+import SongInfoForm from './components/song-info-form';
 import KeduIje from './keduije';
 
 window.googleApiClientReady = () => {

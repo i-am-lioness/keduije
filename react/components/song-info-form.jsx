@@ -2,7 +2,7 @@
 /* global $, gapi */
 import React from 'react';
 import PropTypes from 'prop-types';
-import KeduIjeMedia from './keduije-media';
+import KeduIjeMedia from '../keduije-media';
 
 function getIDFromURL(url) {
   const res = url.match(/[?&]v=([^&]+)/);

@@ -1,6 +1,6 @@
 /* eslint-env node */
-import MediaPlayer from './react/media-player';
-import KeduIjeMedia from './react/keduije-media.js';
+import MediaPlayer from './react/components/media-player.jsx';
+import KeduIjeMedia from './react/keduije-media';
 
 require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;

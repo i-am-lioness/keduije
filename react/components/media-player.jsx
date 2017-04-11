@@ -3,8 +3,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import KeduIje from './keduije';
-import KeduIjeMedia from './keduije-media';
+import KeduIje from '../keduije';
+import KeduIjeMedia from '../keduije-media';
 import LyricDisplay from './lyric-display';
 import LyricEditor from './lyric-editor';
 import SongInfoForm from './song-info-form';

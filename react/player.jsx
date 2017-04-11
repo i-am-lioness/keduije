@@ -2,7 +2,7 @@
 /* global props */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import MediaPlayer from './media-player';
+import MediaPlayer from './components/media-player';
 
 ReactDOM.render(
   <MediaPlayer

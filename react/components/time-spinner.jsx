@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import KeduIje from './keduije';
+import KeduIje from '../keduije';
 
 class TimeSpinner extends React.Component {
   constructor(props) {
