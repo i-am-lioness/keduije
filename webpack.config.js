@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const path = require('path');
 
 const DEV = path.resolve(__dirname, 'react');
@@ -11,6 +12,7 @@ module.exports = {
     player: './player.jsx',
     new_music: './new-music.jsx',
     global: './global.js',
+    home: './home.js',
   },
   resolve: {
     extensions: ['.js', '.jsx'],
@@ -25,4 +27,10 @@ module.exports = {
       loader: 'babel-loader',
     }],
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jQuery: 'jquery',
+    })
+  ],
 };

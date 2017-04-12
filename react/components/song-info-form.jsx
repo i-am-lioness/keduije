@@ -1,10 +1,8 @@
 /* eslint-env browser */
-/* global gapi */
+/* global $, gapi */
 import React from 'react';
 import PropTypes from 'prop-types';
 import KeduIjeMedia from '../keduije-media';
-
-const $ = require('jquery');
 
 function getIDFromURL(url) {
   const res = url.match(/[?&]v=([^&]+)/);

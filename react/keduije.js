@@ -1,6 +1,5 @@
 /* eslint-env browser */
-
-const $ = require('jquery');
+/* global $ */
 
 const KeduIje = ((ki) => {
   let songID = null;

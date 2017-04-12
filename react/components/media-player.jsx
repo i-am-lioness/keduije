@@ -1,4 +1,5 @@
 /* eslint-env browser */
+/* global $ */
 import React from 'react';
 import PropTypes from 'prop-types';
 
@@ -10,7 +11,8 @@ import SongInfoForm from './song-info-form';
 import ProgressBar from './progress-bar';
 import PlayControl from './play-control';
 
-const $ = require('jquery');
+// require('jquery-ui');
+// require('jquery-ui/ui/widgets/draggable');
 
 function EditSwitch(props) {
   return (<label className="switch" htmlFor="edit-switch">
@@ -70,6 +72,7 @@ class MediaPlayer extends React.Component {
     this.stopAtSegmentEnd = false;
     this.originalSongInfo = null;
     this.historyLink = '';
+    this.mediaLoaded = false;
 
     this.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady.bind(this);
     this.onPlayerReady = this.onPlayerReady.bind(this);
@@ -282,6 +285,7 @@ class MediaPlayer extends React.Component {
 
   onPlayerReady(event) {
     this.maxTime = this.media.getDuration();
+    this.mediaLoaded = true;
   }
 
   handlePaused() {

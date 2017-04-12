@@ -249,8 +249,12 @@ app.post('/api/logError', (req, res) => {
 });
 
 app.get('/api/carousel', (req, res) => {
-  db.collection('media').find({ img: { $exists: false }, status: 'published' }, { videoID: 1, title: 1, img: 1, slug: 1 }).toArray((err, videos) => {
-    res.render('sub/carousel', { videos: videos.slice(0, 3), carouselIDquery: '#main-carousel' });
+  db.collection('media').find({ type: KeduIjeMedia.mediaTypes.VIDEO.toString(), status: 'published' }).toArray((err, videos) => {
+    if (videos.length > 0) {
+      res.render('sub/carousel', { videos: videos.slice(0, 3), carouselIDquery: '#main-carousel' });
+    } else {
+      res.send(null); // to do: better handler
+    }
   });
 });
 

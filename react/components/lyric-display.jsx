@@ -1,15 +1,14 @@
 /* eslint-env browser */
+/* global $ */
 import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import PropTypes from 'prop-types';
 import PencilIcon from './pencil-icon';
 import KeduIje from '../keduije';
 
-const $ = require('jquery');
-
 class LyricDisplay extends React.Component {
   constructor(props) {
-    super(props); // currentTime, editMode, lyrics
+    super(props);
 
     this.state = {
       hoveredIdx: -1,
@@ -21,6 +20,8 @@ class LyricDisplay extends React.Component {
     this.hoverStart = this.hoverStart.bind(this);
     this.hoverEnd = this.hoverEnd.bind(this);
     this.editLyric = this.editLyric.bind(this);
+
+    this.currentLine = null;
   }
 
   componentDidUpdate(prevProps, prevState) {

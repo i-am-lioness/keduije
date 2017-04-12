@@ -1,8 +1,7 @@
+/* global $ */
 import React from 'react';
 import PropTypes from 'prop-types';
 import TimeSpinner from './time-spinner';
-
-const $ = require('jquery');
 
 class LyricEditor extends React.Component {
   constructor(props) {
