@@ -11,8 +11,7 @@ import SongInfoForm from './song-info-form';
 import ProgressBar from './progress-bar';
 import PlayControl from './play-control';
 
-// require('jquery-ui');
-// require('jquery-ui/ui/widgets/draggable');
+
 
 function EditSwitch(props) {
   return (<label className="switch" htmlFor="edit-switch">
@@ -261,6 +260,8 @@ class MediaPlayer extends React.Component {
   }
 
   componentDidMount() {
+    require('jquery-ui/ui/widgets/draggable');
+
     KeduIje.init(this.state.mediaID);
     KeduIje.loadLyrics(this.loadLyrics);
     KeduIje.loadSongInfo(this.displaySongInfo);
