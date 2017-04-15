@@ -10,10 +10,13 @@
   "scripts": {
     "test": "mocha test/**/*.spec.js --compilers js:babel-register",
     "test-debug": "mocha --debug-brk --inspect test/**/*.spec.js --compilers js:babel-register",
-    "start-debug": "babel-node --debug-brk --inspect --presets es2015  app.js",
-    "build": "webpack",
-    "heroku-postbuild": "webpack",
-    "start": "babel-node --presets es2015  app.js"
+    "start-debug": "babel-node --debug-brk --inspect lib/app.js",
+    "build-front": "webpack",
+    "build-back": "babel lib -d dist",
+    "build": "webpack && babel lib -d dist",
+    "heroku-postbuild": "webpack && babel lib -d dist",
+    "start-dev": "nodemon lib/app.js --exec babel-node ",
+    "start": "node dist/app.js"
   },
   "author": "Udegbunam, Nnenna",
   "license": "ISC",

@@ -260,7 +260,7 @@ class MediaPlayer extends React.Component {
   }
 
   componentDidMount() {
-    require('jquery-ui/ui/widgets/draggable');
+    // require('jquery-ui/ui/widgets/draggable');
 
     KeduIje.init(this.state.mediaID);
     KeduIje.loadLyrics(this.loadLyrics);

@@ -81,4 +81,6 @@ const KeduIjeMedia = ((ki) => {
   return ki;
 })({});
 
-export default KeduIjeMedia;
+// export default KeduIjeMedia;
+module.exports = KeduIjeMedia;
+
