@@ -3,7 +3,7 @@ import React from 'react';
 import { expect, assert } from 'chai';
 import { mount, shallow } from 'enzyme';
 import sinon from 'sinon';
-import Search from '../react/search';
+// import Search from '../react/search';
 
 describe('<Edits />', () => {
   it('shows diff for changed text', function () {

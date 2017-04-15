@@ -9,6 +9,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha test/**/*.spec.js --compilers js:babel-register",
+    "test-debug": "mocha --debug-brk --inspect test/**/*.spec.js --compilers js:babel-register",
+    "start-debug": "babel-node --debug-brk --inspect --presets es2015  app.js",
     "build": "webpack",
     "heroku-postbuild": "webpack",
     "start": "babel-node --presets es2015  app.js"
@@ -70,6 +72,7 @@
     "eslint-plugin-react": "^6.10.3",
     "jest": "^19.0.2",
     "mocha": "^3.2.0",
+    "mocha-loader": "^1.1.1",
     "nodemon": "^1.11.0",
     "react-addons-test-utils": "^15.5.1",
     "react-test-renderer": "^15.5.4",

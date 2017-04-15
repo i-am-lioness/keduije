@@ -1,15 +1,16 @@
 /* eslint-env mocha, browser */
 import React from 'react';
 import { expect, assert } from 'chai';
-import { mount, shallow } from 'enzyme';
+import { mount, shallow, render } from 'enzyme';
 import sinon from 'sinon';
 import LyricDisplay from '../react/components/lyric-display';
 import KeduIjeMedia from '../react/keduije-media';
+import { lyrics } from './utils/data';
 
-describe('<LyricDisplay />', () => {
-  it('displays all the lyrics', (done) => {
+describe.only('<LyricDisplay />', () => {
+  it('displays all the lyrics', () => {
     const display = (<LyricDisplay
-      lyrics={this.state.lyrics}
+      lyrics={lyrics}
       currentTime={0}
       editMode={false}
       jumpTo={() => {}}
@@ -18,101 +19,71 @@ describe('<LyricDisplay />', () => {
       videoIsPlaying={false}
     />);
 
+    const lyricsCnt = lyrics.length;
+    console.log(lyricsCnt);
+
     sinon.spy(LyricDisplay.prototype, 'eachLyric');
 
-    const wrapper = shallow(display);
-    sinon.spy(window, 'onYouTubeIframeAPIReady');
+    const wrap = shallow(display);
 
-    expect(LyricDisplay.prototype.eachLyric).to.equal(true);
+    expect(LyricDisplay.prototype.eachLyric.callCount).to.be.at.least(lyricsCnt);
+    expect(wrap.find('.lyric-line')).to.have.length(lyricsCnt);
   });
 
   it('initially hides the edit buttons', () => {
-
-    const wrapper = mount( <MediaPlayer
-      canEdit={false}
-      src={"http://www.youtube.com/embed/x-q9uCRheWQ?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://keduije1.herokuapp.com&playsinline=1&rel=0&controls=0"}
-      mediaType={1}
-      mediaID={"58e638a2d300e060f9cdd6ca"}
-      img={"https://i.scdn.co/image/a526d11a5add256cbb4940b39c630df4c6af5cc1"}
-      artist={"Luther"}
-      title={"Ada"}
-      slug={"Ada"}
+    const display = (<LyricDisplay
+      lyrics={lyrics}
+      currentTime={0}
+      editMode={true}
+      jumpTo={() => {}}
+      showEditDialog={() => {}}
+      showEditHeaderDialog={() => {}}
+      videoIsPlaying={false}
     />);
 
-    expect(wrapper.find('.song-info .title').text()).to.equal('Ada');
+    const lyricsCnt = lyrics.length;
+    const wrap = render(display);
+
+    expect(wrap.find('.glyphicon-pencil')).to.have.length(lyricsCnt + 1);
   });
 
-  it('scrolls when lyrics are off the screen ', () => {
-
-  });
-
-  it('plays the right lyric when clicked ', () => {
-
-  });
-
-  it('shows media during karoke mode ', () => {
+  it('displays lyrics in chronological order ', function () {
 
   });
 
-  it('has exactly one lyric highlighted at a time ', () => {
+  it('scrolls when lyrics are off the screen ');
 
-  });
+  it('plays the right lyric when clicked ');
 
-  it('displays lyrics in chronological order ', () => {
+  it('shows media during karoke mode ');
 
-  });
+  it('has exactly one lyric highlighted at a time ');
 
-  it('allows user to locally edit lyric ', () => {
+  it('allows user to locally edit lyric ');
 
-  });
+  it('only allows editing during edit mode ');
 
-  it('only allows editing during edit mode ', () => {
+  it('shows different dialog for editing vs creating lines ');
 
-  });
+  it('shows original text for editing old lyric ');
 
-  it('shows different dialog for editing vs creating lines ', () => {
+  it('displays headings');
 
-  });
+  it('shows edit header dialog when add header button clicked');
 
-  it('shows original text for editing old lyric ', () => {
+  it('only highlights lyrics when not in edit mode');
 
-  });
+  it('shows hover effect on mouse over');
 
-  it('displays headings', () => {
+  it('does not show hover effect on touch');
 
-  });
+  // https://github.com/nnennaude/keduije/commit/a4607b727fd39214c86378d34e0e667b32e27de4
+  it('only scrolls during playback');
 
-  it('shows edit header dialog when add header button clicked', () => {
+  // does not copy button text, when not in edit-mode
+  it('allows for pretty copying of lyrics');
 
-  });
+  it('shows edit icons during edit mode on small screens');
 
-  it('only highlights lyrics when not in edit mode', () => {
-
-  });
-
-  it('shows hover effect on mouse over', () => {
-
-  });
-
-  it('does not show hover effect on touch', () => {
-
-  });
-
-  it('only scrolls during playback', () => {
-    // https://github.com/nnennaude/keduije/commit/a4607b727fd39214c86378d34e0e667b32e27de4
-
-  });
-
-  it('allows for pretty copying of lyrics', () => {
-    // does not copy button text, when not in edit-mode
-
-  });
-
-  it('shows edit icons during edit mode on small screens', () => {
-
-  });
-
-  it('does not show deleted lines', () => {
-
-  });
+  it('does not show deleted lines');
 });

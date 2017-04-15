@@ -7,7 +7,8 @@ import MediaPlayer from '../react/components/media-player';
 import KeduIjeMedia from '../react/keduije-media';
 
 describe('<MediaPlayer />', () => {
-  it('loads youtube iframe API', (done) => {
+  it.only('loads youtube iframe API', (done) => {
+    debugger;
     const player = (<MediaPlayer
       canEdit={false}
       src={'http://www.youtube.com/embed/x-q9uCRheWQ?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://keduije1.herokuapp.com&playsinline=1&rel=0&controls=0'}
@@ -19,16 +20,19 @@ describe('<MediaPlayer />', () => {
       slug={'Ada'}
     />);
 
+    let wrapper = null;
+
     setTimeout(() => {
-      expect(window.onYouTubeIframeAPIReady.calledOnce).to.equal(true);
-      // expect(MediaPlayer.prototype.onPlayerReady.calledOnce).to.equal(true);
+      console.log(wrapper);
+      expect(window.onYouTubeIframeAPIReady.calledOnce).to.be.true;
+      //expect(MediaPlayer.prototype.onPlayerReady.calledOnce).to.be.true;
       done();
     }, 600);
 
     sinon.spy(MediaPlayer.prototype, 'componentDidMount');
     sinon.spy(MediaPlayer.prototype, 'onPlayerReady');
 
-    const wrapper = mount(player);
+    wrapper = mount(player, { attachTo: document.getElementsByTagName('body')[0] });
     sinon.spy(window, 'onYouTubeIframeAPIReady');
 
     expect(MediaPlayer.prototype.componentDidMount.calledOnce).to.equal(true);
