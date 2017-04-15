@@ -4,13 +4,31 @@ import { expect, assert } from 'chai';
 import { mount, shallow } from 'enzyme';
 import sinon from 'sinon';
 
-describe('The backend', () => {
-  it('loads environment variables', (done) => {
+describe.only('The backend', () => {
+  let server;
+  let err = null;
 
+  beforeEach(function (done) {
+    require('../lib/app').then((app) => {
+      server = app;
+      done();
+    }).catch((error) => {
+      err = error;
+      done();
+    });
   });
 
-  it('connects to db', (done) => {
+  afterEach(function () {
+    // server.close();
+  });
 
+  it('loads environment variables', (done) => {
+    // const server = require('../lib/app');
+  });
+
+  it.only('server connects', () => {
+    expect(err).to.be.null;
+    expect(server).to.exist;
   });
 
   it('restricts pages by user', (done) => {

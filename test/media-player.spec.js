@@ -23,7 +23,7 @@ describe('<MediaPlayer />', () => {
     let wrapper = null;
 
     setTimeout(() => {
-      console.log(wrapper);
+      // console.log(wrapper);
       expect(window.onYouTubeIframeAPIReady.calledOnce).to.be.true;
       //expect(MediaPlayer.prototype.onPlayerReady.calledOnce).to.be.true;
       done();
