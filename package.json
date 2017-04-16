@@ -12,7 +12,7 @@
     "test-debug": "mocha --debug-brk --inspect test/**/*.spec.js --compilers js:babel-register",
     "test-browser": "webpack && nodemon lib/app.js --exec babel-node",
     "start-debug": "babel-node --debug-brk --inspect lib/app.js",
-    "build-front": "webpack",
+    "build-front": "webpack --watch",
     "build-back": "babel lib -d dist",
     "build": "webpack && babel lib -d dist",
     "heroku-postbuild": "webpack && babel lib -d dist",
