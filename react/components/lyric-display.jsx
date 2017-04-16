@@ -32,13 +32,15 @@ class LyricDisplay extends React.Component {
   }
 
   jumpTo(data, e) {
-    e.preventDefault();
+    if (e) {
+      e.preventDefault();
+      const currentLine = e.currentTarget;
+      $('.current').removeClass('current'); // may not be necessary if the sampling rate increases
+      $(currentLine).addClass('current'); // may not be necessary if the sampling rate increases
+    }
     this.setState({ hoveredIdx: -1 }); // in case touch screen triggered hover setting
-    const currentLine = e.currentTarget;
     const currentLineStartTime = parseInt(data.startTime, 10);
     const currentLineEndTime = parseInt(data.endTime, 10);
-    $('.current').removeClass('current'); // may not be necessary if the sampling rate increases
-    $(currentLine).addClass('current'); // may not be necessary if the sampling rate increases
     this.props.jumpTo(currentLineStartTime, currentLineEndTime);
   }
 
@@ -58,7 +60,7 @@ class LyricDisplay extends React.Component {
   }
 
   editLyric(data, index, forHeader, e) {
-    e.stopPropagation();
+    e && e.stopPropagation();
     if ((this.state.hoveredIdx === index) && this.props.editMode) {
       if (forHeader) {
         this.props.showEditHeaderDialog(data);

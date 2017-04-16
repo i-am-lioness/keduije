@@ -11,7 +11,7 @@ chai.use(chaiHttp);
 
 const request = chai.request;
 
-describe.only('The backend', () => {
+describe('The backend', () => {
   let server;
   let err = null;
   let env = null;
@@ -59,7 +59,6 @@ describe.only('The backend', () => {
   });
 
   describe('authorization', function () {
-    console.log("server", server);
     it('should redirect anonymous user to login for restricted page', function (done) {
       request(server)
       .get('/new_music')
@@ -69,7 +68,7 @@ describe.only('The backend', () => {
       });
     });
 
-    describe.only('with admin user', function () {
+    describe('with admin user', function () {
       beforeEach(function (done) {
         request(server)
           .post('/login/test')

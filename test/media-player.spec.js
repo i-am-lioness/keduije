@@ -125,6 +125,10 @@ describe('<MediaPlayer />', () => {
     it('shows seeker guide on progress bar during mouse over');
 
     it('keeps time markers consistent while editing an old lyric');
+
+    it('shows different dialog for editing vs creating lines ');
+
+    it('shows original text for editing old lyric ');
   });
 
   describe('CRUD [integration]', function () {
