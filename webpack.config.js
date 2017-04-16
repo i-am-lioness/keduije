@@ -3,6 +3,7 @@ const path = require('path');
 
 const DEV = path.resolve(__dirname, 'react');
 const OUTPUT = path.resolve(__dirname, 'out');
+const TEST = path.resolve(__dirname, 'test');
 
 module.exports = {
   context: DEV,
@@ -13,6 +14,7 @@ module.exports = {
     new_music: './new-music.jsx',
     global: './global.js',
     home: './home.js',
+    test: './test-runner.js',
   },
   resolve: {
     extensions: ['.js', '.jsx'],
@@ -23,7 +25,7 @@ module.exports = {
   },
   module: {
     loaders: [{
-      include: DEV,
+      include: [DEV, TEST],
       loader: 'babel-loader',
     }],
   },
@@ -33,4 +35,10 @@ module.exports = {
       jQuery: 'jquery',
     })
   ],
+  externals: {
+    'cheerio': 'window',
+    'react/addons': true,
+    'react/lib/ExecutionEnvironment': true,
+    'react/lib/ReactContext': true
+  },
 };
