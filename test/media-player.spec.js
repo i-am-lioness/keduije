@@ -7,7 +7,7 @@ import MediaPlayer from '../react/components/media-player';
 import KeduIjeMedia from '../react/keduije-media';
 
 describe('<MediaPlayer />', () => {
-  it.only('loads youtube iframe API', (done) => {
+  it('loads youtube iframe API', (done) => {
     debugger;
     const player = (<MediaPlayer
       canEdit={false}

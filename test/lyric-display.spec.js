@@ -7,7 +7,7 @@ import LyricDisplay from '../react/components/lyric-display';
 import KeduIjeMedia from '../react/keduije-media';
 import { lyrics } from './utils/data';
 
-describe.only('<LyricDisplay />', () => {
+describe('<LyricDisplay />', () => {
   it('displays all the lyrics', () => {
     const display = (<LyricDisplay
       lyrics={lyrics}
