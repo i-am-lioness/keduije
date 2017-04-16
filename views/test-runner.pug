@@ -1,10 +1,10 @@
 doctype html
 html(lang='en')
   head
+    title Tests
     include head.pug
     link(href='/css/media-player.css', rel='stylesheet')
     link(href='/css/lyric-editor.css', rel='stylesheet')
-    title Tests
     link(href='https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.css', rel='stylesheet')
     script(src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js')
   body
@@ -14,18 +14,13 @@ html(lang='en')
     script(src='https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.js')
     script.
-      mocha.setup('bdd');
+      mocha.setup({
+        ui: 'bdd',
+        ignoreLeaks: true
+      });
     script(src="/test.bundle.js")
     script.
-      const expect = chai.expect;
-      describe("overall", () => {
-        it("should pass", () => {
-          expect(true).to.be.true;
-          //assert.equal(-1, [1,2,3].indexOf(4));
-        });
-      });
-    script.
-      mocha.checkLeaks();
-      mocha.globals(['jQuery', 'onYouTubeIframeAPIReady', 'YT', 'YTConfig', 'onYTReady', 'yt', 'ytDomDomGetNextId', 'ytEventsEventsListeners', 'ytEventsEventsCounter']);
+      //mocha.checkLeaks();
+      //mocha.globals(['jQuery', 'onYouTubeIframeAPIReady', 'YT', 'YTConfig', 'onYTReady', 'yt', 'ytDomDomGetNextId', 'ytEventsEventsListeners', 'ytEventsEventsCounter']);
       mocha.run();
 

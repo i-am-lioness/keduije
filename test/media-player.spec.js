@@ -10,7 +10,7 @@ describe('<MediaPlayer />', () => {
   it('loads youtube iframe API', (done) => {
     const player = (<MediaPlayer
       canEdit={false}
-      src={'http://www.youtube.com/embed/x-q9uCRheWQ?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://keduije1.herokuapp.com&playsinline=1&rel=0&controls=0'}
+      src={'https://www.youtube.com/embed/x-q9uCRheWQ?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://localhost:3000&playsinline=1&rel=0&controls=0'}
       mediaType={KeduIjeMedia.mediaTypes.VIDEO}
       mediaID={'58e638a2d300e060f9cdd6ca'}
       img={'https://i.scdn.co/image/a526d11a5add256cbb4940b39c630df4c6af5cc1'}
@@ -19,29 +19,28 @@ describe('<MediaPlayer />', () => {
       slug={'Ada'}
     />);
 
-    let wrapper = null;
-
     setTimeout(() => {
       // console.log(wrapper);
       expect(window.onYouTubeIframeAPIReady.calledOnce).to.be.true;
-      //expect(MediaPlayer.prototype.onPlayerReady.calledOnce).to.be.true;
+      expect(MediaPlayer.prototype.onPlayerReady.calledOnce).to.be.true;
       done();
-    }, 600);
+    }, 1900);
 
     sinon.spy(MediaPlayer.prototype, 'componentDidMount');
     sinon.spy(MediaPlayer.prototype, 'onPlayerReady');
 
     const container = document.getElementById('react') || document.getElementsByTagName('body')[0];
-    wrapper = mount(player, { attachTo: container });
+    mount(player, { attachTo: container });
     sinon.spy(window, 'onYouTubeIframeAPIReady');
 
     expect(MediaPlayer.prototype.componentDidMount.calledOnce).to.equal(true);
   });
 
+  // todo: where did https come from?
   it('displays correct artist name', () => {
     const wrapper = mount(<MediaPlayer
       canEdit={false}
-      src={'http://www.youtube.com/embed/x-q9uCRheWQ?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://keduije1.herokuapp.com&playsinline=1&rel=0&controls=0'}
+      src={'https://www.youtube.com/embed/x-q9uCRheWQ?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://localhost:3000&playsinline=1&rel=0&controls=0'}
       mediaType={1}
       mediaID={'58e638a2d300e060f9cdd6ca'}
       img={'https://i.scdn.co/image/a526d11a5add256cbb4940b39c630df4c6af5cc1'}
