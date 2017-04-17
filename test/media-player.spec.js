@@ -36,6 +36,11 @@ describe('<MediaPlayer />', () => {
   });
 
   describe('playing video', function () {
+    before(function () {
+      if (process.env.NODE_ENV === 'test') {
+        this.skip();
+      }
+    });
     const player = (<MediaPlayer
       canEdit={false}
       src={'https://www.youtube.com/embed/x-q9uCRheWQ?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://localhost:3000&playsinline=1&rel=0&controls=0'}
