@@ -33,22 +33,27 @@ describe('<ProgressBar />', () => {
 
   describe('interaction', function () {
     before(function () {
-      const display = (<ProgressBar onSeekTo={seekTo} percentage={0} />);
-      const div = document.createElement('DIV');
-      document.body.appendChild(div);
-      div.style.width = '670px';
-      div.style.height = '50px';
-      wrap = mount(display, { attachTo: div });
+      if (process.env.NODE_ENV === 'test') {
+        this.skip();
+      } else {
+        const display = (<ProgressBar onSeekTo={seekTo} percentage={0} />);
+        const container = document.getElementById('react');
+        wrap = mount(display, { attachTo: container });
+      }
     });
 
-    it('plays the right lyric when clicked ', function () {
-      wrap.find('.seeking-bar').at(0).simulate('click', { clientX: 50 });
+    it('jumps to respective point in media when clicked ', function () {
+      const xOffset = document.body.offsetWidth * 0.4;
+      wrap.find('.seeking-bar').at(0).simulate('click', { clientX: xOffset });
+      // debugger;
       expect(seekTo.calledOnce).to.be.true;
+      expect(seekTo.lastCall.calledWith(0.4)).to.be.true;
     });
 
     it('guide follows mouse during mouse over', function () {
-      wrap.find('.seeking').at(0).simulate('mouseMove', { clientX: 50 });
-      expect(wrap.find('.seeking-bar-guide').get(0).style.width).not.to.equal('0%');
+      const xOffset = 500;
+      wrap.find('.seeking').at(0).simulate('mouseMove', { clientX: xOffset });
+      expect(wrap.find('.seeking-bar-guide').get(0).style.width).to.equal(`${xOffset}px`);
     });
 
     it('guide clears when mouse leaves', function () {

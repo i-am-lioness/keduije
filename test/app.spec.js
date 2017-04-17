@@ -11,7 +11,7 @@ chai.use(chaiHttp);
 
 const request = chai.request;
 
-describe('The backend', () => {
+describe.skip('The backend', () => {
   let server;
   let err = null;
   let env = null;
