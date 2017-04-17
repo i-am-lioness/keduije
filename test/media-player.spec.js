@@ -109,7 +109,6 @@ describe('<MediaPlayer />', () => {
   });
 
   describe('user interactions', function () {
-
     it('can cancel edit dialog');
 
     it('can use editor even after editing old lyric');

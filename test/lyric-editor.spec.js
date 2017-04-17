@@ -11,7 +11,7 @@ import { lyrics } from './utils/data';
 
 const event = { preventDefault: () => undefined };
 
-describe.only('<LyricEditor />', () => {
+describe('<LyricEditor />', () => {
   describe('basic rendering', function () {
     const handleDelete = sinon.spy();
     const handleTextChange = sinon.spy();

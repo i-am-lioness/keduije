@@ -7,7 +7,7 @@ import LyricDisplay from '../react/components/lyric-display';
 import PencilIcon from '../react/components/pencil-icon';
 import { lyrics } from './utils/data';
 
-describe.only('<LyricDisplay />', () => {
+describe('<LyricDisplay />', () => {
   const seekTo = sinon.spy();
   const showEditDialog = sinon.spy();
   const showEditHeaderDialog = sinon.spy();
