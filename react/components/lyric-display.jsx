@@ -32,12 +32,10 @@ class LyricDisplay extends React.Component {
   }
 
   jumpTo(data, e) {
-    if (e) {
-      e.preventDefault();
-      const currentLine = e.currentTarget;
-      $('.current').removeClass('current'); // may not be necessary if the sampling rate increases
-      $(currentLine).addClass('current'); // may not be necessary if the sampling rate increases
-    }
+    e.preventDefault();
+    const currentLine = e.currentTarget;
+    $('.current').removeClass('current'); // may not be necessary if the sampling rate increases
+    $(currentLine).addClass('current'); // may not be necessary if the sampling rate increases
     this.setState({ hoveredIdx: -1 }); // in case touch screen triggered hover setting
     const currentLineStartTime = parseInt(data.startTime, 10);
     const currentLineEndTime = parseInt(data.endTime, 10);
@@ -60,7 +58,7 @@ class LyricDisplay extends React.Component {
   }
 
   editLyric(data, index, forHeader, e) {
-    e && e.stopPropagation();
+    e.stopPropagation();
     if ((this.state.hoveredIdx === index) && this.props.editMode) {
       if (forHeader) {
         this.props.showEditHeaderDialog(data);
@@ -139,7 +137,7 @@ class LyricDisplay extends React.Component {
     if (this.props.videoIsPlaying) {
       for (let i = 0; i < this.props.lyrics.length; i += 1) {
         curr = this.props.lyrics[i];
-        const displayStartTime = curr.startTime - 1;
+        const displayStartTime = curr.startTime;
         const displayEndTime
           = (this.props.lyrics[i + 1]) ? this.props.lyrics[i + 1].startTime - 1 : curr.endTime;
         if ((displayStartTime <= this.props.currentTime)
@@ -168,7 +166,7 @@ class LyricDisplay extends React.Component {
         }
         forDisplay.key = curr._id;
         forDisplay.displayEndTime
-          = (this.props.lyrics[i + 1]) ? this.props.lyrics[i + 1].startTime : forDisplay.endTime;
+          = (this.props.lyrics[i + 1]) ? this.props.lyrics[i + 1].startTime - 1 : forDisplay.endTime;
 
         rows.push(forDisplay);
       }

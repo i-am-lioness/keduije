@@ -40,7 +40,9 @@ describe.only('<LyricDisplay />', () => {
     });
 
     it('plays the right lyric when clicked ', function () {
-      wrap.find('.lyric-line').at(2).simulate('click');
+      const line = wrap.find('.lyric-line').at(2);
+      const e = { preventDefault: () => {}, currentTarget: line.node };
+      line.simulate('click', e);
       expect(seekTo.calledWithExactly(34, 37)).to.be.true;
     });
 
@@ -50,6 +52,7 @@ describe.only('<LyricDisplay />', () => {
   describe('edit mode', function () {
     let line = null;
     let newHeaderBtn = null;
+    const clickEvent = { stopPropagation: () => undefined };
 
     before(function () {
       const display = (<LyricDisplay
@@ -70,8 +73,15 @@ describe.only('<LyricDisplay />', () => {
       expect(wrap.instance().state.hoveredIdx).to.equal(3); // because of header
     });
 
+    it('only allows editing during edit mode ', function () {
+      wrap.setProps({ editMode: false });
+      line.find(PencilIcon).simulate('click', clickEvent);
+      expect(showEditDialog.called).to.be.false;
+    });
+
     it('allows user to locally edit lyric ', function () {
-      line.find(PencilIcon).simulate('click');
+      wrap.setProps({ editMode: true });
+      line.find(PencilIcon).simulate('click', clickEvent);
       expect(showEditDialog.calledWithExactly(lyrics[2])).to.be.true;
     });
 
@@ -84,7 +94,7 @@ describe.only('<LyricDisplay />', () => {
     it('shows edit header dialog when add header button clicked', function () {
       line = wrap.find('.lyric-line').at(3);
       line.simulate('mouseEnter');
-      newHeaderBtn.simulate('click');
+      newHeaderBtn.simulate('click', clickEvent);
       expect(showEditHeaderDialog.calledWithExactly(lyrics[3])).to.be.true;
     });
 
@@ -95,13 +105,21 @@ describe.only('<LyricDisplay />', () => {
     });
 
     it('allows user to edit header ', function () {
-      line.find(PencilIcon).simulate('click');
+      line.find(PencilIcon).simulate('click', clickEvent);
       expect(showEditHeaderDialog.calledWithExactly(lyrics[1])).to.be.true;
     });
 
-    it('does not show deleted lines');
+    it('removes hover effect on when mouse leaves add-header-btn', function () {
+      newHeaderBtn.simulate('mouseLeave');
+      expect(wrap.instance().state.hoveredLinkIdx).to.equal(-1);
+    });
 
-    it('only allows editing during edit mode ');
+    it('removes hover effect for pencil when mouse leaves display', function () {
+      wrap.simulate('mouseLeave');
+      expect(wrap.instance().state.hoveredIdx).to.equal(-1);
+    });
+
+    it('does not show deleted lines');
 
     it('shows edit icons during edit mode on small screens');
 
@@ -113,7 +131,50 @@ describe.only('<LyricDisplay />', () => {
   });
 
   describe('interaction', function () {
-    it('has exactly one lyric highlighted at a time ');
+    const seekTo = sinon.spy();
+    const showEditDialog = sinon.spy();
+    const showEditHeaderDialog = sinon.spy();
+    let wrap = null;
+
+    before(function () {
+      const display = (<LyricDisplay
+        lyrics={lyrics}
+        currentTime={0}
+        editMode={false}
+        jumpTo={seekTo}
+        showEditDialog={showEditDialog}
+        showEditHeaderDialog={showEditHeaderDialog}
+        videoIsPlaying={false}
+      />);
+
+      wrap = mount(display);
+    });
+
+    it('has no more than one lyric highlighted at a time ', function () {
+      for (let i = 0; i < 500; i += 1) {
+        wrap.setProps({ currentTime: i });
+        const len = wrap.find('.current').nodes.length;
+        if (len > 1) {
+          console.log(`multiple lines are highlighted at time = ${i}`);
+          debugger;
+        }
+        expect(len).not.to.be.above(1);
+      }
+    });
+
+    it('in karoke mode, has no more than one lyric highlighted at a time ', function () {
+      wrap.setProps({ videoIsPlaying: true });
+      for (let i = 0; i < 500; i += 1) {
+        wrap.setProps({ currentTime: i });
+        const len = wrap.find('.current').nodes.length;
+        if (len > 1) {
+          console.log(`multiple lines are highlighted at time = ${i}`);
+          debugger;
+        }
+        expect(len).not.to.be.above(1);
+      }
+    });
+
     it('only highlights lyrics when not in edit mode');
 
     it('scrolls when lyrics are off the screen ');
