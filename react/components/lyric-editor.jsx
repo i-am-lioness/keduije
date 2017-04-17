@@ -25,16 +25,16 @@ class LyricEditor extends React.Component {
 
   calculateTail() {
     const tailWidth = 30;
-    this.dialogWidth = this.lyricEditor ? this.lyricEditor.offsetWidth : this.dialogWidth || 500;
+    this.dialogWidth = this.lyricEditor ? this.lyricEditor.offsetWidth : this.dialogWidth;
     const offset = this.dialogWidth * this.props.percentage;
     const rightX = offset;
     const leftX = offset + tailWidth;
     const bottomX = offset + 20;
 
-
+    // to do: validate
     const points = `${leftX},0 ${rightX},0 ${bottomX},50`;
 
-    return (points || '');
+    return points;
   }
 
   render() {

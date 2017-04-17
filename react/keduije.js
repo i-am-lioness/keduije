@@ -143,6 +143,11 @@ const KeduIje = ((ki) => {
   ki.createSong = createSong;
   ki.getMediaByChangeset = getMediaByChangeset;
 
+  ki.editModes = {
+    ADD: 'add',
+    UPDATE: 'save',
+  };
+
   return ki;
 })({});
 
