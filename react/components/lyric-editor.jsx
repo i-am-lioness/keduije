@@ -3,6 +3,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TimeSpinner from './time-spinner';
 
+require('jquery-ui/ui/widgets/draggable');
+
 class LyricEditor extends React.Component {
   constructor(props) {
     super(props);

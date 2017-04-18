@@ -1,3 +1,4 @@
+/* eslint-env browser */
 /* global $, gapi */
 const KeduIjeUtil = ((ki) => {
   function searchImages(q) {
@@ -34,6 +35,11 @@ const KeduIjeUtil = ((ki) => {
     });
   }
 
+  function loadYoutubeIFrameAPI(cb) {
+    window.onYouTubeIframeAPIReady = cb;
+    $.getScript('https://www.youtube.com/iframe_api');
+  }
+
   ki.mediaTypes = {
     AUDIO: 0,
     VIDEO: 1,
@@ -41,6 +47,7 @@ const KeduIjeUtil = ((ki) => {
 
   ki.searchImages = searchImages;
   ki.getYTdata = getYTdata;
+  ki.loadYoutubeIFrameAPI = loadYoutubeIFrameAPI;
 
   return ki;
 })({});

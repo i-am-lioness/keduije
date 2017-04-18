@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 
 import KeduIje from '../keduije';
 import KeduIjeMedia from '../keduije-media';
+import { loadYoutubeIFrameAPI } from '../keduije-util';
 import LyricDisplay from './lyric-display';
 import LyricEditor from './lyric-editor';
 import SongInfoForm from './song-info-form';
@@ -260,8 +261,6 @@ class MediaPlayer extends React.Component {
   }
 
   componentDidMount() {
-    // require('jquery-ui/ui/widgets/draggable');
-
     KeduIje.init(this.state.mediaID);
     KeduIje.loadLyrics(this.loadLyrics);
     KeduIje.loadSongInfo(this.displaySongInfo);
@@ -279,8 +278,11 @@ class MediaPlayer extends React.Component {
         this.handlePaused,
         this.handleResume);
     } else if (this.props.mediaType === KeduIjeMedia.mediaTypes.VIDEO) {
+      /*
       window.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady;
       $.getScript('https://www.youtube.com/iframe_api');
+      */
+      loadYoutubeIFrameAPI(this.onYouTubeIframeAPIReady);
     }
   }
 

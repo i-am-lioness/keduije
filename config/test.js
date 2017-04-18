@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const path = require('path');
 
 const REACT = path.resolve(__dirname, '../react');
@@ -22,6 +23,12 @@ module.exports = env => ({
       loader: 'babel-loader',
     }],
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jQuery: 'jquery',
+    })
+  ],
   externals: {
     'cheerio': 'window',
     'react/addons': true,

@@ -113,12 +113,12 @@ describe('<LyricEditor />', () => {
 
     let wrap = null;
 
-    it('mounts and displays (with draggable error for now)', function () {
+    it('mounts and displays, and draggable works properly', function () {
       wrap = mount(editorClass);
       wrap.setProps({ displayed: true });
       expect(() => {
         wrap.setProps({ editMode: true });
-      }).to.Throw(TypeError);
+      }).not.to.Throw(TypeError);
     });
 
     it('shows different dialog for editing vs creating lines ', function () {
