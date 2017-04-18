@@ -1,17 +1,8 @@
 /* eslint-env browser */
-/* global $, gapi */
 import React from 'react';
 import PropTypes from 'prop-types';
 import KeduIjeMedia from '../keduije-media';
-
-function getIDFromURL(url) {
-  const res = url.match(/[?&]v=([^&]+)/);
-  if (res) {
-    return res[1];
-  }
-  return false;
-  // alert("error with url provided");
-}
+import { searchImages, getYTdata } from '../keduije-util';
 
 class SongInfoForm extends React.Component {
   constructor(props) {
@@ -19,6 +10,7 @@ class SongInfoForm extends React.Component {
 
     this.resetState = {
       images: new Set(this.props.img ? [this.props.img] : null),
+      isAudio: false,
       title: { value: '', edited: false },
       artist: { value: '', edited: false },
       src: { value: '', edited: false },
@@ -26,8 +18,6 @@ class SongInfoForm extends React.Component {
       videoID: '',
     };
     this.state = this.resetState;
-
-    this.ytThumbnail = null;
 
     this.handleClick = this.handleClick.bind(this);
     this.eachImage = this.eachImage.bind(this);
@@ -38,17 +28,18 @@ class SongInfoForm extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.displayValue = this.displayValue.bind(this);
     this.addValue = this.addValue.bind(this);
+    this.storeImageResults = this.storeImageResults.bind(this);
+    this.convertFormToAudio = this.convertFormToAudio.bind(this);
+
+    this.searchImages = searchImages;
+    this.getYTdata = getYTdata;
   }
 
   addValue(obj, name) {
-    if (this.state[name].edited === true) {
+    if ((typeof this.state[name].edited !== 'undefined') && (this.state[name].edited === true)) {
       obj[name] = this.state[name].value;
-    } else if (this.state[name].edited === false) {
-      return;
-    } else if (this.state[name]) {
+    } else if ((typeof this.state[name].edited === 'undefined') && (this.state[name])) {
       obj[name] = this.state[name];
-    } else if (name === 'img' && this.ytThumbnail) {
-      obj.img = this.ytThumbnail;
     }
   }
 
@@ -58,7 +49,7 @@ class SongInfoForm extends React.Component {
     const updates = {};
 
     Object.keys(this.state).forEach((key) => {
-      if (key !== 'images') {
+      if ((key !== 'images') && (key !== 'isAudio')) { // to do: make white list, instead of black list
         this.addValue(updates, key);
       }
     });
@@ -94,37 +85,27 @@ class SongInfoForm extends React.Component {
   }
 
   search(e) {
-    const q = e.currentTarget.value;
-    if (!q) return;
+    const q = e.target.value;
+    if (q) {
+      this.searchImages(q).then(this.storeImageResults);
+    }
+  }
 
-    $.get('https://api.spotify.com/v1/search', { type: 'track', q: q }, (data) => {
-      console.log(data);
-
-      const images = data.tracks.items.map(el => el.album.images[0].url);
-
-      const originalImages = Array.from(this.state.images);
-      this.setState({
-        images: new Set(images.concat(originalImages)),
-      });
+  storeImageResults(images) {
+    const originalImages = Array.from(this.state.images);
+    this.setState({
+      images: new Set(images.concat(originalImages)),
     });
   }
 
-  queryYoutube(e) {
-    const q = getIDFromURL(e.target.value);
-    if (!q) {
-      this.setState({ isAudio: true });
-      return;
-    }
-    const request = gapi.client.youtube.videos.list({
-      id: q,
-      part: 'snippet',
-    });
+  convertFormToAudio() {
+    this.setState({ isAudio: true });
+  }
 
-    request.execute((response) => {
-      if (response.items) {
-        this.displayVideoInfo(response.items[0]);
-      }
-    });
+  queryYoutube(e) {
+    const url = e.target.value;
+
+    this.getYTdata(url).then(this.displayVideoInfo).catch(this.convertFormToAudio);
   }
 
   displayVideoInfo(res) {
@@ -138,10 +119,10 @@ class SongInfoForm extends React.Component {
     const tns = video.thumbnails;
 
     const images = Array.from(this.state.images);
-    this.ytThumbnail = tns.medium.url;
-    images.push(this.ytThumbnail);
+    images.push(tns.medium.url);
     this.setState({
       images: new Set(images),
+      img: tns.medium.url,
     });
   }
 
@@ -182,6 +163,7 @@ class SongInfoForm extends React.Component {
               className="form-control input-lg"
               name="src"
               placeholder="Link to youtube video"
+              id="src-input"
             />
             <input value={this.state.videoID} id="video-id-input" name="videoID" type="hidden" />
           </div>}
