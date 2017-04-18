@@ -10,12 +10,12 @@
   "scripts": {
     "test": "cross-env NODE_ENV=test nyc mocha test/**/*.spec.js --compilers js:babel-register",
     "test-debug": "NODE_ENV=test mocha --debug-brk --inspect test/**/*.spec.js --compilers js:babel-register",
-    "test-browser": "webpack && nodemon lib/app.js --exec babel-node",
+    "test-browser": "webpack --env=test && npm run start-dev",
     "start-debug": "babel-node --debug-brk --inspect lib/app.js",
-    "build-front": "webpack --watch",
+    "build-front": "webpack --env=prod",
     "build-back": "babel lib -d dist",
-    "build": "webpack && babel lib -d dist",
-    "heroku-postbuild": "webpack && babel lib -d dist",
+    "build": "npm run build-front && npm run build-back",
+    "heroku-postbuild": "npm run build",
     "start-dev": "nodemon lib/app.js --exec babel-node ",
     "start": "node dist/app.js"
   },

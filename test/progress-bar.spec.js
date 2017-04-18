@@ -42,6 +42,10 @@ describe('<ProgressBar />', () => {
       }
     });
 
+    it('initially has width of 0', () => {
+      // for integration testing?
+    });
+
     it('jumps to respective point in media when clicked ', function () {
       const xOffset = document.body.offsetWidth * 0.4;
       wrap.find('.seeking-bar').at(0).simulate('click', { clientX: xOffset });
