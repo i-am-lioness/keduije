@@ -30,9 +30,6 @@ class SongInfoForm extends React.Component {
     this.addValue = this.addValue.bind(this);
     this.storeImageResults = this.storeImageResults.bind(this);
     this.convertFormToAudio = this.convertFormToAudio.bind(this);
-
-    this.searchImages = searchImages;
-    this.getYTdata = getYTdata;
   }
 
   addValue(obj, name) {
@@ -87,7 +84,7 @@ class SongInfoForm extends React.Component {
   search(e) {
     const q = e.target.value;
     if (q) {
-      this.searchImages(q).then(this.storeImageResults);
+      searchImages(q).then(this.storeImageResults);
     }
   }
 
@@ -105,7 +102,7 @@ class SongInfoForm extends React.Component {
   queryYoutube(e) {
     const url = e.target.value;
 
-    this.getYTdata(url).then(this.displayVideoInfo).catch(this.convertFormToAudio);
+    getYTdata(url).then(this.displayVideoInfo).catch(this.convertFormToAudio);
   }
 
   displayVideoInfo(res) {

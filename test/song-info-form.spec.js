@@ -1,12 +1,17 @@
 /* eslint-env mocha, browser */
 import React from 'react';
 import { expect } from 'chai';
-import { mount, shallow } from 'enzyme';
+import { shallow } from 'enzyme';
 import sinon from 'sinon';
 import SongInfoForm from '../react/components/song-info-form';
 import { processed as imageData } from './utils/data/spotifyData';
 import { data as ytData } from './utils/data/youtube-data';
 import { mediaTypes } from '../react/keduije-media';
+
+const searchImageFunc = sinon.stub();
+const getYTdata = sinon.stub();
+SongInfoForm.__Rewire__('searchImages', searchImageFunc);
+SongInfoForm.__Rewire__('getYTdata', getYTdata);
 
 describe('<SongInfoForm />', function () {
   describe('updating new media: ', function () {
@@ -60,7 +65,6 @@ describe('<SongInfoForm />', function () {
     it('generates image results from artist', function (done) {
       expect(wrap.find('.thumbnail')).to.have.lengthOf(1);
 
-      const searchImageFunc = sinon.stub(wrap.instance(), 'searchImages');
       searchImageFunc.resolves(imageData);
       const processResultsFunc = sinon.spy(wrap.instance(), 'storeImageResults');
 
@@ -68,8 +72,8 @@ describe('<SongInfoForm />', function () {
       event.target.value = newArtistValue;
       wrap.find('#artist-input').at(0).simulate('blur', event);
 
-      expect(searchImageFunc.called).to.be.true;
-      expect(searchImageFunc.calledWith(newArtistValue)).to.be.true;
+      expect(searchImageFunc.calledOnce).to.be.true;
+      expect(searchImageFunc.lastCall.calledWith(newArtistValue)).to.be.true;
       setTimeout(() => {
         expect(processResultsFunc.called).to.be.true;
         expect(processResultsFunc.calledWith(imageData)).to.be.true;
@@ -111,7 +115,6 @@ describe('<SongInfoForm />', function () {
     />);
 
     let wrap = null;
-    const newArtistValue = 'Selebobo';
     const newTitleValue = 'Miracle Girl';
     const newUrl = 'https://www.youtube.com/watch?v=W5dkXGuR8Tk';
 
@@ -143,7 +146,6 @@ describe('<SongInfoForm />', function () {
     it('finds video info from yt url', function (done) {
       expect(wrap.find('#video-id-input').get(0).props.value).to.be.empty;
 
-      const getYTdata = sinon.stub(wrap.instance(), 'getYTdata');
       getYTdata.resolves(ytData.processedResponse);
       const displayVideoInfo = sinon.spy(wrap.instance(), 'displayVideoInfo');
 
@@ -184,7 +186,7 @@ describe('<SongInfoForm />', function () {
         type: mediaTypes.VIDEO,
         videoID: ytData.videoID,
       };
-      console.log(submitSongInfo.lastCall.args[0]);
+      
       expect(submitSongInfo.lastCall.calledWithExactly(expectedObj)).to.be.true;
     });
 
@@ -197,8 +199,6 @@ describe('<SongInfoForm />', function () {
     it('stores image that user selected');
 
     it('only saves values that changed');
-
-    it('displays artwork input only for non youtube video');
   });
 
   describe('creating new audio listing: ', function () {
@@ -217,7 +217,6 @@ describe('<SongInfoForm />', function () {
     />);
 
     let wrap = null;
-    const newArtistValue = 'Selebobo';
     const newTitleValue = 'Miracle Girl';
     const newUrl = 'https://song.mp3';
 
@@ -232,7 +231,6 @@ describe('<SongInfoForm />', function () {
     it('attemps to finds video info from yt url', function (done) {
       expect(wrap.find('#video-id-input').get(0).props.value).to.be.empty;
 
-      const getYTdata = sinon.stub(wrap.instance(), 'getYTdata');
       getYTdata.rejects();
 
       event.target.name = 'src';
@@ -264,7 +262,6 @@ describe('<SongInfoForm />', function () {
     it('generates image results from title', function (done) {
       expect(wrap.find('.thumbnail')).to.have.lengthOf(0);
 
-      const searchImageFunc = sinon.stub(wrap.instance(), 'searchImages');
       searchImageFunc.resolves(imageData);
       const storeImageResults = sinon.spy(wrap.instance(), 'storeImageResults');
 
@@ -303,11 +300,14 @@ describe('<SongInfoForm />', function () {
         artist: '',
         type: mediaTypes.AUDIO,
       };
-      console.log(submitSongInfo.lastCall.args[0]);
-      debugger;
       expect(submitSongInfo.lastCall.calledWithExactly(expectedObj)).to.be.true;
     });
 
     it('handles empty yet "edited" values');
+  });
+
+  afterEach(function () {
+    searchImageFunc.reset();
+    getYTdata.reset();
   });
 });
