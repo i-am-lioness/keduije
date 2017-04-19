@@ -369,8 +369,10 @@ class MediaPlayer extends React.Component {
     }
 
     let affixed = '';
+    let progressBarLayout = 'bottom';
     if (this.state.videoPlaybackMode) {
       affixed = 'hold';
+      progressBarLayout = 'top';
     } else if (this.state.affixed) {
       affixed = 'affix';
     }
@@ -386,7 +388,7 @@ class MediaPlayer extends React.Component {
         toggleEditMode={this.handleToggleEditMode}
         editMode={this.state.editMode}
       />)}
-      <ProgressBar onSeekTo={this.seekTo} percentage={percentage} />
+      <ProgressBar onSeekTo={this.seekTo} percentage={percentage} layout={progressBarLayout} />
     </div>);
 
     const artwork = (<div key="artwork" ref={(el) => { this.artwork = el; }} className="artwork" style={{ backgroundImage: `url(${this.state.img})` }}>

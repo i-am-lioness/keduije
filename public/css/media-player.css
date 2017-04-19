@@ -205,10 +205,11 @@ body > .container-fluid{
     padding-top: 20px;
     top: initial;
   }
-    .info-bar.hold .seeking{
+   /* .info-bar.hold .seeking{
       top: 0;
       bottom: initial;
-    }
+    } */
+    
     .info-bar.hold .play-button{
       top: initial;
       bottom: 0;

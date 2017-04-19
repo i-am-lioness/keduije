@@ -36,9 +36,15 @@ class ProgressBar extends React.Component {
       width: '100%',
       display: 'block',
       position: 'absolute',
-      bottom: 0,
+      // bottom: 0,
       overflow: 'auto',
     };
+
+    if (this.props.layout === 'top') {
+      progressBarContainerStyle.top = 0;
+    } else { // react props already ensures that only other value is 'bottom'
+      progressBarContainerStyle.bottom = 0;
+    }
 
     const progressBarStyle = {
       height: '10px',
@@ -66,7 +72,12 @@ class ProgressBar extends React.Component {
 
     progressBarMeterStyle.width = `${100 * this.props.percentage}%`;
 
-    return (<div className="seeking" style={progressBarContainerStyle} onMouseMove={this.followMouse} onMouseLeave={this.clearGuide}>
+    return (<div
+      className="seeking"
+      style={progressBarContainerStyle}
+      onMouseMove={this.followMouse}
+      onMouseLeave={this.clearGuide}
+    >
       <div
         className="seeking-bar"
         ref={(element) => { this.seekerBar = element; }}
@@ -86,9 +97,14 @@ class ProgressBar extends React.Component {
 
 }
 
+ProgressBar.defaultProps = {
+  layout: 'bottom',
+};
+
 ProgressBar.propTypes = {
   onSeekTo: PropTypes.func.isRequired,
   percentage: PropTypes.number.isRequired,
+  layout: PropTypes.oneOf(['bottom', 'top']),
 };
 
 export default ProgressBar;
