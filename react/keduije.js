@@ -40,7 +40,7 @@ const KeduIje = ((ki) => {
 
   function startEditSession(isStart, cb) {
     if (isStart) {
-      $.get('/api/start_edit/' + songID, (resp) => { changesetID = resp; cb(true);})
+      $.get('/api/start_edit/' + songID, (resp) => { changesetID = resp; cb(true); })
       .fail((err) => {
         console.log(err);
         alert('you cannot edit at this time');
@@ -147,17 +147,12 @@ const KeduIje = ((ki) => {
   ki.createSong = createSong;
   ki.getMediaByChangeset = getMediaByChangeset;
 
-  ki.editModes = {
-    ADD: 'add',
-    UPDATE: 'save',
-  };
-
   return ki;
 })({});
 
-// export default KeduIje;
-module.exports = {
-  default: KeduIje,
-  editModes: KeduIje.editModes,
+const editModes = {
+  ADD: 'add',
+  UPDATE: 'save',
 };
 
+export { KeduIje as default, editModes };

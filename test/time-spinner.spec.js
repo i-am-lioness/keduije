@@ -39,11 +39,4 @@ describe('<TimeSpinner />', () => {
     
   });
 
-  it('does not go below (minumum time)', () => {
-    
-  });
-
-  it('does not go below (minumum time)', () => {
-    
-  });
 });

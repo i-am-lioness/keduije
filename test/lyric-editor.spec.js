@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { mount, shallow } from 'enzyme';
 import sinon from 'sinon';
 import LyricEditor from '../react/components/lyric-editor';
-import Keduije from '../react/keduije';
+import { editModes } from '../react/keduije';
 import TimeSpinner from '../react/components/time-spinner';
 
 import { lyrics } from './utils/data';
@@ -35,7 +35,7 @@ describe('<LyricEditor />', () => {
       displayed={false}
       originalText={null}
       editMode={false}
-      mode={Keduije.editModes.ADD}
+      mode={editModes.ADD}
       close={close}
       saveLyric={saveLyric}
       value={''}
@@ -103,7 +103,7 @@ describe('<LyricEditor />', () => {
       displayed={false}
       originalText={currentLine.text}
       editMode={false}
-      mode={Keduije.editModes.UPDATE}
+      mode={editModes.UPDATE}
       close={close}
       saveLyric={saveLyric}
       value={currentLine.text}
