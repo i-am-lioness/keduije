@@ -8,6 +8,7 @@ import LyricDisplay from '../react/components/lyric-display';
 import MediaPlayer from '../react/components/media-player';
 import LyricEditor from '../react/components/lyric-editor';
 import SongInfoForm from '../react/components/song-info-form';
+import ProgressBar from '../react/components/progress-bar';
 import { mediaTypes } from '../react/keduije-media';
 import { lyrics, songInfo } from './utils/data';
 import { KeduIje, Media, Audio, videoDuration, audioDuration } from './utils/mocks';
@@ -55,6 +56,12 @@ describe('<MediaPlayer />', () => {
     it('always displays artwork');
 
     it('renders all elements');
+
+    describe('all child components have valid properties-', function () {
+      it('initializes progress bar with valid percentage of 0', function () {
+        expect(wrapper.find(ProgressBar).at(0).dive().instance().props.percentage).to.equal(0);
+      });
+    });
   });
 
   describe('loading video- ', function () {

@@ -349,7 +349,7 @@ class MediaPlayer extends React.Component {
   }
 
   render() {
-    const percentage = this.state.currentTime / this.maxTime;
+    const percentage = (this.state.currentTime / this.maxTime) || 0;
     let mediaElement = null;
 
     if (this.props.mediaType === mediaTypes.AUDIO) {

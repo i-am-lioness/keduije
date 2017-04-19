@@ -137,6 +137,7 @@ class LyricEditor extends React.Component {
 
 LyricEditor.defaultProps = {
   originalText: '',
+  mode: editModes.ADD,
 };
 
 LyricEditor.propTypes = {
@@ -150,8 +151,7 @@ LyricEditor.propTypes = {
   displayed: PropTypes.bool.isRequired,
   originalText: PropTypes.string,
   editMode: PropTypes.bool.isRequired,
-  mode: PropTypes.oneOf(
-    [editModes.ADD, editModes.UPDATE]).isRequired,
+  mode: PropTypes.oneOf([editModes.ADD, editModes.UPDATE]),
   close: PropTypes.func.isRequired,
   saveLyric: PropTypes.func.isRequired,
   playLyric: PropTypes.func.isRequired,

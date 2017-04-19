@@ -20,7 +20,7 @@ module.exports = env => ({
   module: {
     loaders: [{
       include: [TEST, REACT],
-      loader: 'babel-loader',
+      loader: 'babel-loader?plugins=babel-plugin-rewire',
     }],
   },
   plugins: [

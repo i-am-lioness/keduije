@@ -1,3 +1,3 @@
 
-require('./media-player.spec.js');
-// require('./progress-bar.spec.js');
+// require('./media-player.spec.js');
+require('./progress-bar.spec.js');
