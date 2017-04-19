@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 import { expect } from 'chai';
-import APP from '../lib/app';
 // import sinon from 'sinon';
 
 const chai = require('chai');
@@ -9,26 +8,15 @@ const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const request = chai.request;
 
-function autoAuthenticate(req, res, next) {
-  req.user = {
-    _id: '58f2e137f36d287eae034c5f',
-  };
-  next();
-}
-
-APP.__Rewire__('ensureLoggedIn', autoAuthenticate);
-
-describe.only('The backend', () => {
+describe.skip('The backend', () => {
   let server;
   let err = null;
   let env = null;
-  let app = null;
 
   before(function (done) {
-    APP().then((result) => {
+    require('../lib/app').then((result) => {
       server = result.server;
       env = result.env;
-      app = result.app;
       done();
     }).catch((error) => {
       err = error;
@@ -65,17 +53,6 @@ describe.only('The backend', () => {
       .then(function (res) {
         expect(res).to.have.status(200);
       });
-  });
-
-  describe('ajax requests- ', function () {
-    before(function () {
-      // automatically authorize request
-      // app.use();
-    });
-
-    it('/api/changesets/list', function () {
-
-    });
   });
 
   describe('authorization', function () {

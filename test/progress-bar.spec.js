@@ -71,8 +71,12 @@ describe('<ProgressBar />', () => {
       }
     });
 
-    it('initially has width of 0', () => {
+    it('initially has width of 0', function () {
       // for integration testing?
+    });
+
+    it('always has height of 10px', function () {
+      /* needs to be tested with all css */
     });
 
     it('jumps to respective point in media when clicked ', function () {
