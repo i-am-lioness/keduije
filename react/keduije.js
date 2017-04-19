@@ -40,10 +40,14 @@ const KeduIje = ((ki) => {
 
   function startEditSession(isStart, cb) {
     if (isStart) {
-      $.get('/api/start_edit/' + songID, (resp) => { changesetID = resp; })
-      .fail((err) => { cb && cb(err); });
+      $.get('/api/start_edit/' + songID, (resp) => { changesetID = resp; cb(true);})
+      .fail((err) => {
+        console.log(err);
+        alert('you cannot edit at this time');
+      });
     } else {
       changesetID = null;
+      cb(false);
     }
   }
 
@@ -151,4 +155,9 @@ const KeduIje = ((ki) => {
   return ki;
 })({});
 
-export default KeduIje;
+// export default KeduIje;
+module.exports = {
+  default: KeduIje,
+  editModes: KeduIje.editModes,
+};
+

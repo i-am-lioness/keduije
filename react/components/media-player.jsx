@@ -1,35 +1,16 @@
 /* eslint-env browser */
-/* global $ */
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import KeduIje from '../keduije';
-import KeduIjeMedia from '../keduije-media';
+import KeduIje, { editModes } from '../keduije';
+import { mediaTypes, Media, Audio } from '../keduije-media';
 import { loadYoutubeIFrameAPI } from '../keduije-util';
 import LyricDisplay from './lyric-display';
 import LyricEditor from './lyric-editor';
 import SongInfoForm from './song-info-form';
 import ProgressBar from './progress-bar';
 import PlayControl from './play-control';
-
-
-
-function EditSwitch(props) {
-  return (<label className="switch" htmlFor="edit-switch">
-    <input
-      id="edit-switch"
-      type="checkbox"
-      checked={props.editMode}
-      onChange={props.toggleEditMode}
-    />
-    <div className="slider" />
-  </label>);
-}
-
-EditSwitch.propTypes = {
-  editMode: PropTypes.bool.isRequired,
-  toggleEditMode: PropTypes.func.isRequired,
-};
+import EditSwitch from './edit-switch';
 
 class MediaPlayer extends React.Component {
   constructor(props) {
@@ -42,7 +23,7 @@ class MediaPlayer extends React.Component {
       originalText: '',
       text: '',
       editMode: false,
-      editType: 'add',
+      editType: null,
       lyrics: [],
       showEditDialog: false,
       editDialogIsOpen: false,
@@ -98,7 +79,7 @@ class MediaPlayer extends React.Component {
     this.onKeyUp = this.onKeyUp.bind(this);
     this.onScroll = this.onScroll.bind(this);
     this.updateIfChanged = this.updateIfChanged.bind(this);
-    this.cancelEditMode = this.cancelEditMode.bind(this);
+    this.setEditMode = this.setEditMode.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.deleteThisSong = this.deleteThisSong.bind(this);
   }
@@ -154,35 +135,25 @@ class MediaPlayer extends React.Component {
   }
 
   handleToggleEditMode() {
-    KeduIje.startEditSession(!this.state.editMode, this.cancelEditMode);
-      // todo: wait for callback before setting state. or better handle asynchronicity
-
-    this.setState((prevState, props) => ({
-      editMode: !prevState.editMode,
-    }));
+    const newEditMode = !this.state.editMode;
+    KeduIje.startEditSession(newEditMode, this.setEditMode);
   }
 
-  cancelEditMode(err) {
-    console.log(err);
-    alert('you cannot edit at this time');
-    this.setState({ editMode: false });
+  setEditMode(newEditMode) {
+    this.setState({ editMode: newEditMode });
   }
 
   showEditDialog(data) {
     this.lyricBeingEdited = data;
 
-    let mode = 'add';
-    let originalText = null;
-    if (data.text) {
-      this.timeMarksFrozen = true;
-      mode = 'save';
-      originalText = `original: "${data.text}"`;
-    }
+    // TODO: consider making sure that data has text
+    this.timeMarksFrozen = true;
+    const originalText = `original: "${data.text}"`;
 
     this.setState({
       displayEditor: true,
       originalText: originalText,
-      editType: mode,
+      editType: editModes.UPDATE,
       text: data.text,
       segmentStart: parseInt(data.startTime, 10),
       segmentEnd: parseInt(data.endTime, 10),
@@ -193,7 +164,7 @@ class MediaPlayer extends React.Component {
     this.setState({
       displayEditor: false,
       originalText: null,
-      editType: 'add',
+      editType: null,
       text: '',
     });
 
@@ -203,10 +174,13 @@ class MediaPlayer extends React.Component {
   loadLyrics(lyrics) {
     lyrics.sort((a, b) => parseInt(a.startTime, 10) - parseInt(b.startTime, 10));
 
+    // to do: make a state reset object
     this.setState({
       lyrics: lyrics,
       displayEditor: false,
       text: '',
+      originalText: null,
+      editType: null,
     });
 
     this.timeMarksFrozen = false;
@@ -220,7 +194,7 @@ class MediaPlayer extends React.Component {
     }
   }
 
-  seekTo(percentage) {
+  seekTo(percentage) { // to do: reimpliment as a "jumpTo" wrapper
     const time = percentage * this.maxTime;
     this.setState({ currentTime: time });
     this.media.seekTo(time);
@@ -238,24 +212,19 @@ class MediaPlayer extends React.Component {
   }
 
   onYouTubeIframeAPIReady() {
-    // todo: add sanity check here
-    if (this.props.mediaType !== KeduIjeMedia.mediaTypes.VIDEO) return;
+    // todo: consider doing a sanity check here
 
-    this.media = new KeduIjeMedia.Media(
+    this.media = new Media(
       this.iframe,
       this.onPlayerReady,
       this.handlePaused,
       this.handleResume);
   }
 
-  componentWillMount() {
-    
-  }
-
   onScroll(e) {
-    if ((!this.state.affixed) && (window.scrollY > this.affixPoint)) {
+    if ((!this.state.affixed) && (scrollY > this.affixPoint)) {
       this.setState({ affixed: true });
-    } else if ((this.state.affixed) && (window.scrollY < this.affixPoint)) {
+    } else if ((this.state.affixed) && (scrollY < this.affixPoint)) {
       this.setState({ affixed: false });
     }
   }
@@ -270,18 +239,14 @@ class MediaPlayer extends React.Component {
     window.onkeyup = this.onKeyUp;
     window.onscroll = this.onScroll;
 
-    // todo: add sanity check here
-    if (this.props.mediaType === KeduIjeMedia.mediaTypes.AUDIO) {
-      this.media = new KeduIjeMedia.Audio(
+    // todo: consider adding sanity check here, or swapping
+    if (this.props.mediaType === mediaTypes.AUDIO) {
+      this.media = new Audio(
         this.audioElement,
         this.onPlayerReady,
         this.handlePaused,
         this.handleResume);
-    } else if (this.props.mediaType === KeduIjeMedia.mediaTypes.VIDEO) {
-      /*
-      window.onYouTubeIframeAPIReady = this.onYouTubeIframeAPIReady;
-      $.getScript('https://www.youtube.com/iframe_api');
-      */
+    } else { // (this.props.mediaType === mediaTypes.VIDEO)
       loadYoutubeIFrameAPI(this.onYouTubeIframeAPIReady);
     }
   }
@@ -304,6 +269,7 @@ class MediaPlayer extends React.Component {
       segmentStart: segmentStart,
       segmentEnd: segmentEnd,
       displayEditor: true,
+      editType: editModes.ADD,
     });
   }
 
@@ -311,7 +277,7 @@ class MediaPlayer extends React.Component {
     this.timer = setInterval(this.onTimeout, 1000);
     this.setState({ isPlaying: true });
     if ((!this.state.videoPlaybackMode) &&
-      (this.props.mediaType === KeduIjeMedia.mediaTypes.VIDEO)) {
+      (this.props.mediaType === mediaTypes.VIDEO)) {
       this.setState({ videoPlaybackMode: true });
     }
   }
@@ -341,7 +307,8 @@ class MediaPlayer extends React.Component {
   }
 
   incrementTime(variableName) {
-    if (this.state[variableName] < this.maxTime) {
+    // todo: consider handling if maxTime not set (in case where media is not loaded)
+    if (this.state[variableName] < (this.maxTime || Infinity)) {
       this.setState((prevState, props) => {
         const newState = {};
         newState[variableName] = prevState[variableName] + 1;
@@ -385,7 +352,7 @@ class MediaPlayer extends React.Component {
     const percentage = this.state.currentTime / this.maxTime;
     let mediaElement = null;
 
-    if (this.props.mediaType === KeduIjeMedia.mediaTypes.AUDIO) {
+    if (this.props.mediaType === mediaTypes.AUDIO) {
       mediaElement = (<audio ref={(audio) => { this.audioElement = audio; }}>
         <source src={this.props.src} type="audio/mpeg" />
       </audio>);
@@ -438,6 +405,7 @@ class MediaPlayer extends React.Component {
         <h1 className="title">{this.state.title}</h1>
 
         {this.state.editMode && (<a
+          id="edit-song-info-btn"
           href="#"
           onClick={(e) => { this.toggleSongInfoDialog(true, e); }}
         >(edit)</a>)}
@@ -501,7 +469,7 @@ MediaPlayer.defaultProps = {
 
 MediaPlayer.propTypes = {
   mediaType: PropTypes.oneOf(
-    [KeduIjeMedia.mediaTypes.AUDIO, KeduIjeMedia.mediaTypes.VIDEO]).isRequired,
+    [mediaTypes.AUDIO, mediaTypes.VIDEO]).isRequired,
   canEdit: PropTypes.bool.isRequired,
   src: PropTypes.string.isRequired,
   mediaID: PropTypes.string.isRequired,

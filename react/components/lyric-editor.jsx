@@ -2,6 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import TimeSpinner from './time-spinner';
+import { editModes } from '../keduije';
 
 require('jquery-ui/ui/widgets/draggable');
 
@@ -50,7 +51,7 @@ class LyricEditor extends React.Component {
       <span className="glyphicon glyphicon-play" aria-hidden="true" />
     </a>);
 
-    const btnText = (this.props.mode === 'add') ? 'Add' : 'Update';
+    const btnText = (this.props.mode === editModes.ADD) ? 'Add' : 'Update';
     const originalText = this.props.originalText ?
       <div className="originalText">{this.props.originalText}</div> : null;
     const dialog = (<form id="lyricEditor" style={{ visibility: this.props.displayed ? 'visible' : 'hidden' }} ref={(el) => { this.lyricEditor = el; }} className="editor-bg-color kezie-editor" onSubmit={this.handleSubmit}>
@@ -149,7 +150,8 @@ LyricEditor.propTypes = {
   displayed: PropTypes.bool.isRequired,
   originalText: PropTypes.string,
   editMode: PropTypes.bool.isRequired,
-  mode: PropTypes.string.isRequired,
+  mode: PropTypes.oneOf(
+    [editModes.ADD, editModes.UPDATE]).isRequired,
   close: PropTypes.func.isRequired,
   saveLyric: PropTypes.func.isRequired,
   playLyric: PropTypes.func.isRequired,
