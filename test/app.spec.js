@@ -1,7 +1,11 @@
 /* eslint-env mocha */
 import { expect } from 'chai';
 import request from 'supertest';
+import cheerio from 'cheerio';
+import sinon from 'sinon';
 import APP from '../lib/app';
+
+let $;
 
 const testUser = {
   // _id: '58f2e137f36d287eae034c5f',
@@ -14,9 +18,11 @@ const autoAuthenticate = (req, res, next) => {
   next();
 };
 
-const dummyMiddleware = (req, res, next) => { next(); };
+// const dummyMiddleware = (req, res, next) => { next(); };
+const passportInitialize = (req, res, next) => { next(); }; // for debugging purposes
+const passportSession = (req, res, next) => { next(); }; // for debugging purposes
 
-const login = (req, res, next, vendor) => {
+const login = (vendor, req, res, next) => {
   if (req.query.code) {
     next();
   } else {
@@ -27,15 +33,27 @@ const login = (req, res, next, vendor) => {
 const ensureLoggedIn = () => autoAuthenticate;
 
 const passport = {
-  initialize: () => autoAuthenticate,
-  session: () => dummyMiddleware,
+  initialize: () => passportInitialize,
+  session: () => passportSession,
   authenticate: vendor => login.bind(null, vendor),
+};
+
+const users = {
+  log: sinon.stub(),
+  setDB: sinon.stub(),
+};
+users.log.callsArg(1);
+
+const mail = {
+  send: sinon.stub(),
 };
 
 APP.__Rewire__('ensureLoggedIn', ensureLoggedIn);
 APP.__Rewire__('passport', passport);
+APP.__Rewire__('users', users);
+APP.__Rewire__('mail', mail);
 
-describe('app.js', () => {
+describe.only('app.js', () => {
   let server;
   let env = null;
   let app = null;
@@ -84,8 +102,10 @@ describe('app.js', () => {
     return request(server)
       .get('/music/Ada')
       .expect(200)
-      .end(function (res) {
-        expect(res.body).to.be.an('object');
+      .then(function (res) {
+        $ = cheerio.load(res.text);
+        expect($('nav').length).to.equal(1);
+        expect($('#root').length).to.equal(1);
       });
   });
 
@@ -93,10 +113,23 @@ describe('app.js', () => {
     return request(server)
       .get('/music/Adamsfs')
       .expect(404)
-      .end(function (res) {
+      .then(function (res) {
         expect(res.text).to.equal('not found');
       });
   });
+
+  it('responds to /music/:slug/history', function () {
+    return request(server)
+      .get('/music/Ada/history')
+      .expect(200);
+  });
+
+  it('responds to /music/:slug/history when not found', function () {
+    return request(server)
+      .get('/music/Adamsfs/history')
+      .expect(404);
+  });
+
 
   describe('ajax requests- ', function () {
     before(function () {
@@ -106,40 +139,172 @@ describe('app.js', () => {
 
     it('/api/changesets/list', function () {
       return request(server)
-        .get('/api/changesets/list')
+        .get('/api/changesets/list?user')
         .expect(200)
         .then(function (res) {
           expect(res.body).to.be.an('array');
         });
     });
+
+    it('/api/changesets/list', function () {
+      return request(server)
+        .get('/api/changesets/list?media=58e638a2d300e060f9cdd6ca')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('array');
+        });
+    });
+
+    it('/api/changesets/list', function () {
+      return request(server)
+        .get('/api/changesets/list?media=58e638a2d300e060f9cdd6ca&from=58eb3cceb1dd4ced9f759083')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('array');
+        });
+    });
+
+    it('/api/search', function () {
+      return request(server)
+        .get('/api/search?query=phyno')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('array');
+        });
+    });
+
+    it('/api/search with blank query should return empty object', function () {
+      return request(server)
+        .get('/api/search?query=')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('object');
+        });
+    });
+
+    it('/api/media', function () {
+      return request(server)
+        .get('/api/media?changeset=58e745c92f1435db632f81f9')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('object');
+        });
+    });
+
+    it('/api/revisions', function () {
+      return request(server)
+        .get('/api/revisions?changeset=58e745c92f1435db632f81f9')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('array');
+        });
+    });
+
+    it('/api/myLines renders for logged in user', function () {
+      return request(server)
+        .get('/api/myLines?changeset=58e745c92f1435db632f81f9')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('array');
+        });
+    });
+
+    it('/api/lines', function () {
+      return request(server)
+        .get('/api/lines/58e638a2d300e060f9cdd6ca')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('array');
+        });
+    });
+
+    it('/api/media/list shows list for logged in user', function () {
+      return request(server)
+        .get('/api/media/list')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('array');
+        });
+    });
+
+    it('/api/media/:mediaID', function () {
+      return request(server)
+        .get('/api/media/58e638a2d300e060f9cdd6ca')
+        .expect(200)
+        .then(function (res) {
+          expect(res.body).to.be.an('object');
+        });
+    });
+
+    it('/api/rankings', function () {
+      return request(server)
+        .get('/api/rankings')
+        .expect(200);
+    });
+
+    it('/api/list/audio', function () {
+      return request(server)
+        .get('/api/list/audio')
+        .expect(200);
+    });
+
+    it('/api/carousel', function () {
+      return request(server)
+        .get('/api/carousel')
+        .expect(200);
+    });
   });
 
-  it.skip('[internal]counts views for songs', function () {
-    return request(server)
-      .get('/music/Ada')
-      .expect(200)
-      .then(function (res) {
-        expect(res.body).to.be.an('object');
-
-        const count = res.body.views;
-        return request(server)
-          .get('/music/Ada')
-          .expect(200)
-          .then(function (res2) {
-            expect(res2.body.views).to.equal(count + 1);
-          });
-      });
-  });
-
-  describe('authorization', function () {
+  describe('authorization routing', function () {
     it('should redirect anonymous user to login for restricted page', function () {
       return request(server)
         .get('/new_music')
-        .expect(403)
+        .expect(403);
+    });
+
+    it('should permit admin user to add new music', function () {
+      testUser.role = 'admin'; // to do: restore
+      return request(server)
+        .get('/new_music')
+        .expect(200);
+    });
+
+    it('should log out and redirect', function () {
+      return request(server)
+        .get('/logout')
+        .expect(302);
+    });
+
+    it('should serve login page', function () {
+      return request(server)
+        .get('/login')
+        .expect(200);
+    });
+
+    it('should allow twitter login', function () {
+      return request(server)
+        .get('/login/twitter')
+        .expect(302)
         .then(function (res) {
-          expect(res).to.redirect;
+          expect(res.headers.location).to.equal('/login/twitter/return?code=111');
+          return request(server).get(res.headers.location).expect(302).then(function (res2) {
+            expect(res2.headers.location).to.equal('/');
+          });
         });
     });
+
+    it('should allow facebook login', function () {
+      return request(server)
+        .get('/login/facebook')
+        .expect(302)
+        .then(function (res) {
+          expect(res.headers.location).to.equal('/login/facebook/return?code=111');
+          return request(server).get(res.headers.location).expect(302).then(function (res2) {
+            expect(res2.headers.location).to.equal('/');
+          });
+        });
+    });
+
 
     describe.skip('with admin user', function () {
       beforeEach(function (done) {
@@ -148,13 +313,10 @@ describe('app.js', () => {
           .field('username', 'test-admin')
           .field('password', 'pw')
           .then(function (res) {
-            debugger;
             expect(res).to.redirectTo('/');
             done();
           })
           .catch((error) => {
-            debugger;
-            // console.log(error);
             done();
           });
       });
@@ -178,7 +340,6 @@ describe('app.js', () => {
           .field('password', 'pw')
           .then(function (res) {
             console.log(res);
-            debugger;
             expect(res).to.redirectTo('/');
             done();
           });
