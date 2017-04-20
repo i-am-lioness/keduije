@@ -1,20 +1,20 @@
 /* eslint-env mocha */
-import chai, { expect, request } from 'chai';
-import chaiHttp from 'chai-http';
+import { expect } from 'chai';
+import request from 'supertest';
 import APP from '../lib/app';
 
-chai.use(chaiHttp);
-
-const dummyMiddleware = (req, res, next) => { next(); };
+const testUser = {
+  // _id: '58f2e137f36d287eae034c5f',
+  _id: '58e451206b5df803808e5912',
+  role: 'member',
+};
 
 const autoAuthenticate = (req, res, next) => {
-  console.log('pseudo- authentication');
-  req.user = {
-    // _id: '58f2e137f36d287eae034c5f',
-    _id: '58e451206b5df803808e5912',
-  };
+  req.user = testUser;
   next();
 };
+
+const dummyMiddleware = (req, res, next) => { next(); };
 
 const login = (req, res, next, vendor) => {
   if (req.query.code) {
@@ -35,7 +35,7 @@ const passport = {
 APP.__Rewire__('ensureLoggedIn', ensureLoggedIn);
 APP.__Rewire__('passport', passport);
 
-describe.only('app.js', () => {
+describe('app.js', () => {
   let server;
   let env = null;
   let app = null;
@@ -77,25 +77,23 @@ describe.only('app.js', () => {
   it('responds to /', function () {
     return request(server)
       .get('/')
-      .then(function (res) {
-        expect(res).to.have.status(200);
-      });
+      .expect(200);
   });
 
   it('responds to /music/:slug', function () {
     return request(server)
       .get('/music/Ada')
-      .then(function (res) {
-        expect(res).to.have.status(200);
+      .expect(200)
+      .end(function (res) {
         expect(res.body).to.be.an('object');
       });
   });
 
-  it.only('responds to /music/:slug when not found', function () {
+  it('responds to /music/:slug when not found', function () {
     return request(server)
       .get('/music/Adamsfs')
-      .then(function (res) {
-        expect(res).to.have.status(404);
+      .expect(404)
+      .end(function (res) {
         expect(res.text).to.equal('not found');
       });
   });
@@ -109,24 +107,41 @@ describe.only('app.js', () => {
     it('/api/changesets/list', function () {
       return request(server)
         .get('/api/changesets/list')
+        .expect(200)
         .then(function (res) {
-          expect(res).to.have.status(200);
           expect(res.body).to.be.an('array');
         });
     });
   });
 
-  describe.skip('authorization', function () {
-    it('should redirect anonymous user to login for restricted page', function (done) {
-      request(server)
-      .get('/new_music')
+  it.skip('[internal]counts views for songs', function () {
+    return request(server)
+      .get('/music/Ada')
+      .expect(200)
       .then(function (res) {
-        expect(res).to.redirect;
-        done();
+        expect(res.body).to.be.an('object');
+
+        const count = res.body.views;
+        return request(server)
+          .get('/music/Ada')
+          .expect(200)
+          .then(function (res2) {
+            expect(res2.body.views).to.equal(count + 1);
+          });
       });
+  });
+
+  describe('authorization', function () {
+    it('should redirect anonymous user to login for restricted page', function () {
+      return request(server)
+        .get('/new_music')
+        .expect(403)
+        .then(function (res) {
+          expect(res).to.redirect;
+        });
     });
 
-    describe('with admin user', function () {
+    describe.skip('with admin user', function () {
       beforeEach(function (done) {
         request(server)
           .post('/login/test')
@@ -182,10 +197,6 @@ describe.only('app.js', () => {
   it('distinguisehs between two media with the same title/slug');
 
   it('never loads deleted songs');
-
-  it('counts views for songs', function () {
-
-  });
 
   it('does not allow editing of stale line');
 
