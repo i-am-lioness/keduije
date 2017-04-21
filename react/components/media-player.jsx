@@ -125,9 +125,9 @@ class MediaPlayer extends React.Component {
       const newLyric = {
         text: this.state.text,
         endTime: this.state.segmentEnd,
-        deleted: false,
+        deleted: false, // to do: move to backend
         startTime: this.state.segmentStart,
-        heading: null,
+        heading: null, // to do: move to backend
       };
       KeduIje.addLyric(newLyric, this.loadLyrics);
     }
