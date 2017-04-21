@@ -40,7 +40,7 @@ const KeduIje = ((ki) => {
 
   function startEditSession(isStart, cb) {
     if (isStart) {
-      $.get('/api/start_edit/' + songID, (resp) => { changesetID = resp; cb(true); })
+      $.post('/api/start_edit/' + songID, (resp) => { changesetID = resp; cb(true); })
       .fail((err) => {
         console.log(err);
         alert('you cannot edit at this time');

@@ -39,16 +39,14 @@ const login = (vendor, req, res, next) => {
   }
 };
 
-const passport = {
+const users = {
+  log: sinon.stub(),
+  setDB: sinon.stub(),
   initialize: () => passportInitialize,
   session: () => passportSession,
   authenticate: vendor => login.bind(null, vendor),
 };
-
-const users = {
-  log: sinon.stub(),
-  setDB: sinon.stub(),
-};
+users.log.resolves();
 
 const mail = {
   send: sinon.stub(),
@@ -77,13 +75,12 @@ function Revision(db) {
 require('dotenv').config();
 
 APP.__Rewire__('ensureLoggedIn', () => ensureLoggedIn);
-APP.__Rewire__('passport', passport);
 APP.__Rewire__('users', users);
 APP.__Rewire__('mail', mail);
 APP.__Rewire__('Revision', Revision);
 APP.__Rewire__('DB_URL', process.env.TEST_DB_URL);
 
-describe('app.js', () => {
+describe.only('app.js', () => {
   let server;
   let env;
   let db;
@@ -243,7 +240,7 @@ describe('app.js', () => {
 
     it('should start edit session', function () {
       return request(server)
-        .get(`/api/start_edit/${newMedia._id}`)
+        .post(`/api/start_edit/${newMedia._id}`)
         .expect(200)
         .then(function (res) {
           expect(res.text).to.be.a('string');
@@ -510,13 +507,9 @@ describe('app.js', () => {
     });
 
     it('can handle a server error', function () {
-      users.log.throws();
       return request(server)
-        .get('/')
-        .expect(500)
-        .then(() => {
-          users.log.resetBehavior();
-        });
+        .get('/api/media/----')
+        .expect(500);
     });
   });
 

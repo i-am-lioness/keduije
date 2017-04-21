@@ -3,7 +3,7 @@
 const KeduIjeUtil = ((ki) => {
   function searchImages(q) {
     const query = { type: 'track', q: q };
-    return $.get('https://api.spotify.com/v1/search', query).done((data) => {
+    return $.get('https://api.spotify.com/v1/search', query).then((data) => {
       const images = data.tracks.items.map(el => el.album.images[0].url);
       return images;
     });
@@ -27,11 +27,13 @@ const KeduIjeUtil = ((ki) => {
       part: 'snippet',
     });
 
-    return request.then((response) => {
-      if (response.items) {
-        return response.items[0];
-      }
-      return null; // to do: consider throwing error
+    return new Promise((resolve, reject) => {
+      request.execute((response) => {
+        if (response.items) {
+          resolve(response.items[0]);
+        }
+        return null; // to do: consider throwing error
+      });
     });
   }
 
