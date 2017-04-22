@@ -1,8 +1,60 @@
 /* global YT, */
 const KeduIjeMedia = ((ki) => {
-  class Media { // todo: combine both classes
+  const mediaTypes = {
+    AUDIO: 0,
+    VIDEO: 1,
+  };
+
+  class Media {
+    constructor(type, media) {
+      this.type = type;
+      this.media = media;
+
+      this._play = ['play', 'playVideo'];
+      this._pause = ['pause', 'pauseVideo'];
+    }
+
+    play() {
+      this.media[this._play[this.type]]();
+    }
+
+    pause() {
+      this.media[this._pause[this.type]]();
+    }
+
+    getCurrentTime() {
+      let currentTime;
+      if (this.type === mediaTypes.VIDEO) {
+        currentTime = this.media.getCurrentTime();
+      } else {
+        currentTime = this.media.currentTime;
+      }
+      return currentTime;
+    }
+
+    seekTo(pos, buffer) {
+      if (this.type === mediaTypes.VIDEO) {
+        this.media.seekTo(pos, buffer);
+      } else {
+        this.media.currentTime = pos;
+      }
+    }
+
+    getDuration() {
+      let duration;
+      if (this.type === mediaTypes.VIDEO) {
+        duration = this.media.getDuration();
+      } else {
+        duration = this.media.duration;
+      }
+      return duration;
+    }
+  }
+
+  class Video extends Media {
     constructor(iframe, onPlayerReady, handlePaused, handleResume) {
-      this.video = new YT.Player(
+      super(mediaTypes.VIDEO, null);
+      const video = new YT.Player(
         iframe,
         { events: {
           onReady: onPlayerReady,
@@ -10,7 +62,7 @@ const KeduIjeMedia = ((ki) => {
         },
         }
       );
-
+      this.media = video;
       this.handlePaused = handlePaused;
       this.handleResume = handleResume;
     }
@@ -21,66 +73,25 @@ const KeduIjeMedia = ((ki) => {
         this.handleResume();
       }
     }
-
-    play() {
-      this.video.playVideo();
-    }
-    pause() {
-      this.video.pauseVideo();
-    }
-
-    getCurrentTime() {
-      return this.video.getCurrentTime();
-    }
-
-    seekTo(pos, buffer) {
-      this.video.seekTo(pos, buffer);
-    }
-
-    getDuration() {
-      return this.video.getDuration();
-    }
   }
 
-  class Audio {
+  class Audio extends Media {
     constructor(audio, playerReadyHandler, pausedHandler, resumeHandler) {
-      this.audio = audio;
-      this.audio.oncanplay = playerReadyHandler;
-      this.audio.onpause = pausedHandler;
-      this.audio.onplay = resumeHandler;
-      this.audio.load();
-    }
-    play() {
-      this.audio.play();
-    }
-    pause() {
-      this.audio.pause();
-    }
+      super(mediaTypes.AUDIO, audio);
 
-    getCurrentTime() {
-      return this.audio.currentTime;
-    }
-
-    seekTo(pos, buffer) {
-      this.audio.currentTime = pos;
-    }
-
-    getDuration() {
-      return this.audio.duration;
+      audio.oncanplay = playerReadyHandler;
+      audio.onpause = pausedHandler;
+      audio.onplay = resumeHandler;
+      audio.load();
     }
   }
 
-  ki.mediaTypes = {
-    AUDIO: 0,
-    VIDEO: 1,
-  };
-
-  ki.Media = Media;
+  ki.Media = Video;
   ki.Audio = Audio;
+  ki.mediaTypes = mediaTypes;
 
   return ki;
 })({});
 
-// export default KeduIjeMedia;
 module.exports = KeduIjeMedia;
 
