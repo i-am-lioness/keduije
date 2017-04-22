@@ -26,7 +26,7 @@ KeduIje.deleteLyric.callsArgWith(1, lyrics);
 KeduIje.saveSongInfo.callsArgWith(2, songInfo);
 KeduIje.convertToTime.returns('0:00');
 
-const mockMedia = function (iframe, onPlayerReady, handlePaused, handleResume) {
+const mockVideo = function (iframe, onPlayerReady, handlePaused, handleResume) {
   const mediaPlay = sinon.stub();
   const mediaPause = sinon.stub();
   const mediaSeek = sinon.stub();
@@ -83,7 +83,7 @@ const mockAudio = function (audio, playerReadyHandler, pausedHandler, resumeHand
   setTimeout(playerReadyHandler, 5);
 };
 
-const Media = sinon.stub().callsFake(mockMedia);
+const Video = sinon.stub().callsFake(mockVideo);
 const Audio = sinon.stub().callsFake(mockAudio);
 
 
@@ -92,4 +92,4 @@ confirm = sinon.stub();
 alert = sinon.stub();
 confirm.returns(true);
 
-export { KeduIje, Media, Audio, videoDuration, audioDuration };
+export { KeduIje, Video, Audio, videoDuration, audioDuration };

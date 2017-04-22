@@ -3,7 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import KeduIje, { editModes } from '../keduije';
-import { mediaTypes, Media, Audio } from '../keduije-media';
+import { mediaTypes, Audio, Video } from '../keduije-media';
 import { loadYoutubeIFrameAPI } from '../keduije-util';
 import LyricDisplay from './lyric-display';
 import LyricEditor from './lyric-editor';
@@ -212,9 +212,7 @@ class MediaPlayer extends React.Component {
   }
 
   onYouTubeIframeAPIReady() {
-    // todo: consider doing a sanity check here
-
-    this.media = new Media(
+    this.media = new Video(
       this.iframe,
       this.onPlayerReady,
       this.handlePaused,

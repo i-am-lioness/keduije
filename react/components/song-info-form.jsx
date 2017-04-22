@@ -1,7 +1,7 @@
 /* eslint-env browser */
 import React from 'react';
 import PropTypes from 'prop-types';
-import KeduIjeMedia from '../keduije-media';
+import { mediaTypes } from '../keduije-media';
 import { searchImages, getYTdata } from '../keduije-util';
 
 class SongInfoForm extends React.Component {
@@ -53,7 +53,7 @@ class SongInfoForm extends React.Component {
 
     if (this.props.newSong) {
       updates.type =
-        (this.state.videoID) ? KeduIjeMedia.mediaTypes.VIDEO : KeduIjeMedia.mediaTypes.AUDIO;
+        (this.state.videoID) ? mediaTypes.VIDEO : mediaTypes.AUDIO;
     }
 
     this.props.onSubmit(updates);

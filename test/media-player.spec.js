@@ -11,12 +11,12 @@ import SongInfoForm from '../react/components/song-info-form';
 import ProgressBar from '../react/components/progress-bar';
 import { mediaTypes } from '../react/keduije-media';
 import { lyrics, songInfo } from './utils/data';
-import { KeduIje, Media, Audio, videoDuration, audioDuration } from './utils/mocks';
+import { KeduIje, Video, Audio, videoDuration, audioDuration } from './utils/mocks';
 
 const loadYoutubeIFrameAPI = sinon.stub();
 
 MediaPlayer.__Rewire__('loadYoutubeIFrameAPI', loadYoutubeIFrameAPI);
-MediaPlayer.__Rewire__('Media', Media);
+MediaPlayer.__Rewire__('Video', Video);
 MediaPlayer.__Rewire__('Audio', Audio);
 MediaPlayer.__Rewire__('KeduIje', KeduIje);
 TimeSpinner.__Rewire__('KeduIje', KeduIje);
@@ -90,7 +90,7 @@ describe('<MediaPlayer />', () => {
       expect(loadYoutubeIFrameAPI.calledOnce).to.be.true;
       const cb = wrapper.instance().onYouTubeIframeAPIReady;
       expect(loadYoutubeIFrameAPI.calledWith(cb)).to.be.true;
-      expect(Media.called).to.be.true;
+      expect(Video.called).to.be.true;
       setTimeout(function () {
         expect(wrapper.instance().maxTime).to.equal(videoDuration);
         expect(wrapper.instance().mediaLoaded).to.be.true;
