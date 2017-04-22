@@ -1,5 +1,8 @@
 /* eslint-env browser */
-/* global $, gapi */
+/* global $ */
+
+const API_KEY = 'AIzaSyBLYlu4hbmzhr1iOCiD_o2PTrjzvQBuQUA';
+
 const KeduIjeUtil = ((ki) => {
   function searchImages(q) {
     const query = { type: 'track', q: q };
@@ -19,21 +22,26 @@ const KeduIjeUtil = ((ki) => {
 
   function getYTdata(url) {
     const q = getIDFromURL(url);
-    if (!q) {
-      throw Error;
-    }
-    const request = gapi.client.youtube.videos.list({
+
+    const query = {
       id: q,
       part: 'snippet',
-    });
+      key: API_KEY,
+    };
 
     return new Promise((resolve, reject) => {
-      request.execute((response) => {
-        if (response.items) {
-          resolve(response.items[0]);
-        }
-        return null; // to do: consider throwing error
-      });
+      if (!q) {
+        reject(new Error('No Video ID found.'));
+      }
+
+      $.get('https://www.googleapis.com/youtube/v3/videos', query)
+        .then((response) => {
+          if (response.items && (response.items.length > 0)) {
+            resolve(response.items[0]);
+          } else {
+            reject(new Error('Video data not found.'));
+          }
+        });
     });
   }
 

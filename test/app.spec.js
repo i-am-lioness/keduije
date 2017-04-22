@@ -80,7 +80,7 @@ APP.__Rewire__('mail', mail);
 APP.__Rewire__('Revision', Revision);
 APP.__Rewire__('DB_URL', process.env.TEST_DB_URL);
 
-describe.only('app.js', () => {
+describe('app.js', () => {
   let server;
   let env;
   let db;

@@ -1,19 +1,9 @@
 /* eslint-env browser */
-/* global changesetID, gapi */
+/* global changesetID */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import SongInfoForm from './components/song-info-form';
 import KeduIje from './keduije';
-
-window.googleApiClientReady = () => {
-  gapi.client.init({
-    apiKey: 'AIzaSyBLYlu4hbmzhr1iOCiD_o2PTrjzvQBuQUA',
-  }).then(() => {
-    gapi.client.load('youtube', 'v3', () => {
-      // handleAPILoaded();
-    });
-  });
-};
 
 function submitSongInfo(data) {
   data.changeset = changesetID;
