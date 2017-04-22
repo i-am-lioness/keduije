@@ -85,4 +85,5 @@ class Audio extends Media {
   }
 }
 
-export { mediaTypes, Audio, Video };
+// es5 syntax to keep it compliant with server
+module.exports = { mediaTypes, Audio, Video };

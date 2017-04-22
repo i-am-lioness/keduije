@@ -248,8 +248,6 @@ describe('<MediaPlayer />', () => {
         text: 'my my my. my cherie koko',
         startTime: 68,
         endTime: 71,
-        deleted: false,
-        heading: null,
       };
 
       wrapper.instance().setState({
@@ -279,8 +277,6 @@ describe('<MediaPlayer />', () => {
         text: 'we meant to be together',
         startTime: 98,
         endTime: 81,
-        deleted: false,
-        heading: null,
       };
 
       const originalState = wrapper.instance().state;

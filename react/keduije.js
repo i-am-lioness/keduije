@@ -18,8 +18,8 @@ const KeduIje = ((ki) => {
     window.onerror = onError;
   }
 
-  function getRevisions(changeset, cb) {
-    $.get('/api/revisions', { changeset: changeset }, cb);
+  function getRevisions(cs, cb) {
+    $.get('/api/revisions', { changesetID: cs }, cb);
   }
 
   function search(q, cb) {
@@ -30,8 +30,8 @@ const KeduIje = ((ki) => {
     $.get('/api/lines/' + songID, cb);
   }
 
-  function myLines(changeset, cb) {
-    $.get('/api/myLines/', { changeset: changeset }, cb);
+  function myLines(cs, cb) {
+    $.get('/api/myLines/', { changesetID: cs }, cb);
   }
 
   function getChangesets(cb, query) {
@@ -60,11 +60,11 @@ const KeduIje = ((ki) => {
   }
 
   function getMediaByChangeset(cs, cb) {
-    $.get('/api/media', { changeset: cs }, cb);
+    $.get('/api/media', { changesetID: cs }, cb);
   }
 
   function addLyric(newLyric, cb) {
-    newLyric.changeset = changesetID;
+    newLyric.changesetID = changesetID;
     $.post(`/api/media/${songID}/addline`, newLyric, cb);
   }
 
@@ -74,7 +74,7 @@ const KeduIje = ((ki) => {
       original: oldLyricObj,
       changes: newLyricObj,
       mediaID: songID,
-      changeset: changesetID,
+      changesetID,
     };
 
     $.post('/api/lines/edit/' + oldLyricObj._id, postData, cb);
@@ -88,8 +88,8 @@ const KeduIje = ((ki) => {
     // todo: postdata should be validated
     const postData = {
       original: original,
-      changes: changes,
-      changeset: changesetID,
+      changes,
+      changesetID,
       mediaID: songID, // for easy querying
     };
 

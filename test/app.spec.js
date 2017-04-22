@@ -10,7 +10,7 @@ const ObjectId = require('mongodb').ObjectId;
 let $;
 
 let testUser = {
-  _id: '58e451206b5df803808e5912',
+  _id: ObjectId('58e451206b5df803808e5912'),
   role: 'member',
 };
 
@@ -56,7 +56,7 @@ let newMedia = null;
 let newLine = null;
 
 function Revision(db) {
-  function onUpdateRequest(target, req) {
+  function onUpdateRequest(collectionName, req) {
     const queryObj = { _id: ObjectId(req.params.forID) };
     const updateObj = {
       $currentDate: { lastModified: true },
@@ -64,7 +64,7 @@ function Revision(db) {
       $inc: { version: 1 },
     };
 
-    return db.collection(target)
+    return db.collection(collectionName)
       .findOneAndUpdate(queryObj, updateObj, { returnOriginal: false })
       .then(result => result.value);
   }
@@ -86,14 +86,16 @@ describe('app.js', () => {
   let db;
 
   before(function () {
-    const skip = this.skip;
     return APP().then((result) => {
       server = result.server;
       env = result.env;
       db = result.db;
-    }).catch((error) => {
-      skip();
-    });
+    }).catch(function (error) {
+      debugger;
+      this.skip();
+      console.error(error);
+      throw error;
+    }.bind(this));
   });
 
   after(function (done) {
@@ -143,13 +145,13 @@ describe('app.js', () => {
     it('can handle db connection failure', function () {
       //  will throw EADDRINUSE error
       return APP().catch((err) => {
-        expect(err).to.be.null;
+        expect(err.message).to.equal('listen EADDRINUSE :::3000');
       });
     });
   });
 
   describe('post requests- ', function () {
-    let changeset;
+    let changesetID;
     let newMedia2;
 
     it('POST /api/media/new should fail for unauthorized user', function () {
@@ -209,7 +211,7 @@ describe('app.js', () => {
           const props = JSON.parse(matches[1]);
           expect(props.title).to.equal(newMedia.title);
           expect(props.canEdit).to.be.false;
-          newMedia._id = props.mediaID;
+          newMedia.mediaID = props.mediaID;
         });
     });
 
@@ -234,18 +236,19 @@ describe('app.js', () => {
           expect(props.title).to.not.equal(newMedia.title);
           expect(props.title).to.equal(newMedia2.title);
           expect(props.canEdit).to.be.true;
-          newMedia2._id = props.mediaID;
+          newMedia2.mediaID = props.mediaID;
         });
     });
 
     it('should start edit session', function () {
       return request(server)
-        .post(`/api/start_edit/${newMedia._id}`)
+        .post(`/api/start_edit/${newMedia.mediaID}`)
         .expect(200)
         .then(function (res) {
           expect(res.text).to.be.a('string');
           expect(res.text).not.to.be.empty;
-          changeset = res.text;
+          debugger;
+          changesetID = res.text;
         });
     });
 
@@ -255,11 +258,11 @@ describe('app.js', () => {
       };
 
       return request(server)
-        .post(`/api/media/edit/${newMedia._id}`)
+        .post(`/api/media/edit/${newMedia.mediaID}`)
         .send({
           changes: mediaChange,
-          changeset,
-          mediaID: newMedia._id,
+          changesetID,
+          mediaID: newMedia.mediaID,
         })
         .expect(200)
         .then((res) => {
@@ -275,11 +278,11 @@ describe('app.js', () => {
       };
 
       return request(server)
-        .post(`/api/media/edit/${newMedia._id}`)
+        .post(`/api/media/edit/${newMedia.mediaID}`)
         .send({
           changes: mediaChange,
-          changeset,
-          mediaID: newMedia._id,
+          changesetID,
+          mediaID: newMedia.mediaID,
         })
         .expect(200)
         .then((res) => {
@@ -295,19 +298,19 @@ describe('app.js', () => {
         startTime: 5,
         endTime: 6,
         text: 'whoever you are. girl, bye',
-        deleted: false,
-        changeset,
+        changesetID,
       };
 
       return request(server)
-        .post(`/api/media/${newMedia._id}/addline`)
+        .post(`/api/media/${newMedia.mediaID}/addline`)
         .send(newLine)
         .expect(200)
         .then((res) => {
           expect(res.body).to.be.an('array');
+          debugger;
           const thisLine = res.body[0];
           expect(thisLine.text).to.equal(newLine.text);
-          newLine._id = thisLine._id;
+          newLine.lineID = thisLine._id;
         });
     });
 
@@ -317,16 +320,17 @@ describe('app.js', () => {
       };
 
       return request(server)
-        .post(`/api/lines/edit/${newLine._id}`)
+        .post(`/api/lines/edit/${newLine.lineID}`)
         .send({
           changes: lineChange,
-          changeset,
-          mediaID: newMedia._id,
+          changesetID,
+          mediaID: newMedia.mediaID,
         })
         .expect(200)
         .then((res) => {
           expect(res.body).to.be.an('array');
           const thisLine = res.body[0];
+          debugger;
           expect(thisLine.text).to.equal(lineChange.text);
           expect(thisLine.text).not.to.equal(newLine.text);
           newLine.text = lineChange.text;
@@ -429,7 +433,7 @@ describe('app.js', () => {
 
     it('/api/media', function () {
       return request(server)
-        .get('/api/media?changeset=58e745c92f1435db632f81f9')
+        .get('/api/media?changesetID=58e745c92f1435db632f81f9')
         .expect(200)
         .then(function (res) {
           expect(res.body).to.be.an('object');
@@ -438,7 +442,7 @@ describe('app.js', () => {
 
     it('/api/revisions', function () {
       return request(server)
-        .get('/api/revisions?changeset=58e745c92f1435db632f81f9')
+        .get('/api/revisions?changesetID=58e745c92f1435db632f81f9')
         .expect(200)
         .then(function (res) {
           expect(res.body).to.be.an('array');
@@ -447,7 +451,7 @@ describe('app.js', () => {
 
     it('/api/myLines renders for logged in user', function () {
       return request(server)
-        .get('/api/myLines?changeset=58e745c92f1435db632f81f9')
+        .get('/api/myLines?changesetID=58e745c92f1435db632f81f9')
         .expect(200)
         .then(function (res) {
           expect(res.body).to.be.an('array');

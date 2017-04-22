@@ -8,6 +8,12 @@ can add headings or lyrics
 <0:15> Aga m agbachazi nbo gbara aka laa
 <>Imana mu na Chi m so
 
+:: On Document References ::
+*Document references are always stored as ObjectId, never as their string representation
+*Any time a string representation is used, the variable name has the ‘-ID’ suffix
+*hence ObjectIds are always generated on an ‘-ID’ variable
+ and stored on a variable without the ‘-ID’ suffix, or directly on a property called ‘_id’
+
 line {
   pendingRevisions: [],
   mediaID:
@@ -23,12 +29,12 @@ line {
 
 //id can change until annotated or edited
 revision: {
-  forID: {ObjectID},
+  for: {ObjectID},
   state: {"pending" || "applied" || "done"},
   newValues : <update doc>,
   original: {line}
   user: {ObjectID}
-  target: {"media" || "lines"}
+  collectionName: {"media" || "lines"}
   date: {dateTime}
   mediaID: {ObjectID}, //for easy querying
   changeset: {ObjectID}
@@ -36,7 +42,7 @@ revision: {
 
 changeset {
 	type: "new" || "edit" || "rollback",
-	mediaID: "string" || null,
+	(media: {ObjectID},)
 	user: {ObjectID},
 	state: "undone"|| "undoing" || "active" || null
 }
@@ -55,14 +61,13 @@ media: {
 	history: [/*viewing history*/]
 	type: 0 || 1, /* audio= 0, video=1 */
 	/*for audio type */
-	src: "string", /*formally 'url' */
+	src: "string", /*formerly 'url' */
 
 }
 
 
 1***Editing lyric:
--r=Revisions.insert(({state: "pending", targe: "lines"}))
-==>can optimisticly be displayed at this point
+-r=Revisions.insert(({state: "pending", collectionName: "lines"}))
 -Songs.find({id: revisions.songID}, (song)=>{
 	song.update({
 		$set: {"lyric.$": r.new},
@@ -73,6 +78,7 @@ media: {
 -Revisions.find({_id: r.id}, (revision)=>{
 	revision.state = "applied"
 })
+==>can optimisticly be displayed at this point
 -Songs.find({id: revisions.songID}, (song)=>{
 	song.pendingRevisions.pull(r.id),
 })

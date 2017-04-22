@@ -164,10 +164,10 @@ class Edits extends React.Component {
 
     this.query = {};
 
-    if (this.props.media) {
-      this.query.media = this.props.media;
+    if (this.props.mediaID) {
+      this.query.mediaID = this.props.mediaID;
     } else {
-      this.query.user = this.props.byUser;
+      this.query.userID = this.props.userID;
     }
   }
 
@@ -176,7 +176,7 @@ class Edits extends React.Component {
   }
 
   loadMoreChangesets() {
-    this.query.from = this.lastChangesetID;
+    this.query.fromID = this.lastChangesetID;
     KeduIje.getChangesets(this.setChangesets, this.query);
   }
 
@@ -317,19 +317,19 @@ class Edits extends React.Component {
 }
 
 Edits.defaultProps = {
-  media: null,
-  byUser: null,
+  mediaID: null,
+  userID: null,
 };
 
 Edits.propTypes = {
-  media: PropTypes.string,
-  byUser: PropTypes.string,
+  mediaID: PropTypes.string,
+  userID: PropTypes.string,
 };
 
 ReactDOM.render(
   <Edits
-    byUser={props.byUser}
-    media={props.mediaID}
+    userID={props.userID}
+    mediaID={props.mediaID}
   />,
   document.getElementById('root')
 );
