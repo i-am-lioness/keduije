@@ -7,8 +7,11 @@ let changesetID = null;
 function onError(errorMsg, url, lineNumber, column, errorObj) {
   if (window.location.hostname === 'localhost') return;
 
-  const msg = 'Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber
-    + ' Column: ' + column + ' StackTrace: ' + errorObj;
+  const msg = `Error: ${errorMsg
+  } Script: ${url
+  } Line: ${lineNumber
+  } Column: ${column
+  } StackTrace: ${errorObj}`;
 
   $.post('/api/logError', { width: screen.width, height: screen.height, msg: msg });
 }
@@ -17,57 +20,60 @@ if (typeof window !== 'undefined') {
   window.onerror = onError;
 }
 
-function getRevisions(cs, cb) {
-  $.get('/api/revisions', { changesetID: cs }, cb);
+function getRevisions(cs) {
+  return $.get('/api/revisions', { changesetID: cs });
 }
 
-function search(q, cb) {
-  $.get('/api/search', { query: q }, cb);
+function search(q) {
+  return $.get('/api/search', { query: q });
 }
 
-function loadLyrics(cb) {
-  $.get('/api/lines/' + songID, cb);
+function loadLyrics() {
+  return $.get('/api/lines/' + songID);
 }
 
-function myLines(cs, cb) {
-  $.get('/api/myLines/', { changesetID: cs }, cb);
+function myLines(cs) {
+  return $.get('/api/myLines/', { changesetID: cs });
 }
 
-function getChangesets(cb, query) {
-  $.get('/api/changesets/list', query, cb);
+function getChangesets(query) {
+  return $.get('/api/changesets/list', query);
 }
 
-function startEditSession(isStart, cb) {
+function startEditSession(isStart) {
   if (isStart) {
-    $.post('/api/start_edit/' + songID, (resp) => { changesetID = resp; cb(true); })
-    .fail((err) => {
-      console.log(err);
-      alert('you cannot edit at this time');
-    });
-  } else {
-    changesetID = null;
-    cb(false);
+    return $.post(`/api/start_edit/${songID}`)
+      .done((resp) => {
+        changesetID = resp;
+        return true;
+      })
+      .fail((err) => {
+        console.error(err);
+        alert('You cannot edit at this time.');
+      });
   }
+  changesetID = null;
+  return Promise.resolve(false);
 }
 
-function getMediaInfo(mediaID, cb) {
-  $.get('/api/media/' + mediaID, cb);
+function getMediaInfo(mediaID) {
+  return $.get(`/api/media/${mediaID}`);
 }
 
-function loadSongInfo(cb) {
-  getMediaInfo(songID, cb);
+function loadSongInfo() {
+  return getMediaInfo(songID);
 }
 
-function getMediaByChangeset(cs, cb) {
-  $.get('/api/media', { changesetID: cs }, cb);
+function getMediaByChangeset(cs) {
+  return $.get('/api/media', { changesetID: cs });
 }
 
-function addLyric(newLyric, cb) {
+function addLyric(newLyric) {
   newLyric.changesetID = changesetID;
-  $.post(`/api/media/${songID}/addline`, newLyric, cb);
+  return $.post(`/api/media/${songID}/addline`, newLyric);
 }
 
-function updateLyric(oldLyricObj, newLyricObj, cb) {
+function updateLyric(oldLyricObj, newLyricObj) {
   // todo: postdata should be validated
   const postData = {
     original: oldLyricObj,
@@ -76,14 +82,14 @@ function updateLyric(oldLyricObj, newLyricObj, cb) {
     changesetID,
   };
 
-  $.post('/api/lines/edit/' + oldLyricObj._id, postData, cb);
+  return $.post(`/api/lines/edit/${oldLyricObj._id}`, postData);
 }
 
-function deleteLyric(oldLyricObj, cb) {
-  updateLyric(oldLyricObj, { deleted: true }, cb);
+function deleteLyric(oldLyricObj) {
+  return updateLyric(oldLyricObj, { deleted: true });
 }
 
-function saveSongInfo(original, changes, cb) {
+function saveSongInfo(original, changes) {
   // todo: postdata should be validated
   const postData = {
     original: original,
@@ -92,15 +98,16 @@ function saveSongInfo(original, changes, cb) {
     mediaID: songID, // for easy querying
   };
 
-  $.post('/api/media/edit/' + songID, postData, cb);
+  return $.post(`/api/media/edit/${songID}`, postData);
 }
 
-function createSong(songInfo, cb) {
-  $.post('/api/media/new', songInfo, cb);
+function createSong(songInfo) {
+  return $.post('/api/media/new', songInfo);
 }
 
 function deleteSong(original) {
-  saveSongInfo(original, { status: 'deleted' }, () => { window.location = '/'; });
+  return saveSongInfo(original, { status: 'deleted' })
+    .done(() => { window.location = '/'; });
   // todo: catch error
 }
 
@@ -109,6 +116,11 @@ const ki = {};
 ki.init = (_songID) => {
   songID = _songID;
 };
+
+// to do: consider using
+/* function wrap(func) {
+  return wrap.catch((err) => { console.log(err); });
+} */
 
 ki.loadLyrics = loadLyrics;
 ki.loadSongInfo = loadSongInfo;

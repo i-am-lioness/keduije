@@ -94,7 +94,7 @@ class MediaPlayer extends React.Component {
   handleDelete(e) {
     const r = confirm(`Are you sure you want to delete '${this.state.originalText}'?`);
     if (r === true) {
-      KeduIje.deleteLyric(this.lyricBeingEdited, this.loadLyrics);
+      KeduIje.deleteLyric(this.lyricBeingEdited).then(this.loadLyrics);
     }
   }
 
@@ -120,21 +120,21 @@ class MediaPlayer extends React.Component {
       }
 
       // to do: [semantics] back a "refresh" instead
-      KeduIje.updateLyric(this.lyricBeingEdited, lyricChanges, this.loadLyrics);
+      KeduIje.updateLyric(this.lyricBeingEdited, lyricChanges).then(this.loadLyrics);
     } else {
       const newLyric = {
         text: this.state.text,
         endTime: this.state.segmentEnd,
         startTime: this.state.segmentStart,
       };
-      KeduIje.addLyric(newLyric, this.loadLyrics);
+      KeduIje.addLyric(newLyric).then(this.loadLyrics);
     }
     this.lyricBeingEdited = null;
   }
 
   handleToggleEditMode() {
     const newEditMode = !this.state.editMode;
-    KeduIje.startEditSession(newEditMode, this.setEditMode);
+    KeduIje.startEditSession(newEditMode).then(this.setEditMode);
   }
 
   setEditMode(newEditMode) {
@@ -227,8 +227,8 @@ class MediaPlayer extends React.Component {
 
   componentDidMount() {
     KeduIje.init(this.state.mediaID);
-    KeduIje.loadLyrics(this.loadLyrics);
-    KeduIje.loadSongInfo(this.displaySongInfo);
+    KeduIje.loadLyrics().then(this.loadLyrics);
+    KeduIje.loadSongInfo().then(this.displaySongInfo);
 
     this.affixPoint = this.artwork.offsetTop + this.artwork.offsetHeight;
 
@@ -318,7 +318,7 @@ class MediaPlayer extends React.Component {
   }
 
   saveSongInfo(songInfo) {
-    KeduIje.saveSongInfo(this.originalSongInfo, songInfo, this.displaySongInfo);
+    KeduIje.saveSongInfo(this.originalSongInfo, songInfo).then(this.displaySongInfo);
   }
 
   deleteThisSong() {

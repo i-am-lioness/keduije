@@ -173,12 +173,12 @@ class Edits extends React.Component {
   }
 
   componentWillMount() {
-    KeduIje.getChangesets(this.setChangesets, this.query);
+    KeduIje.getChangesets(this.query).then(this.setChangesets);
   }
 
   loadMoreChangesets() {
     this.query.fromID = this.lastChangesetID;
-    KeduIje.getChangesets(this.setChangesets, this.query);
+    KeduIje.getChangesets(this.query).then(this.setChangesets);
   }
 
   setChangesets(changesets) {
@@ -231,16 +231,16 @@ class Edits extends React.Component {
     this.lastChangesetID = changesetID;
 
     if (el.type === 'new') {
-      KeduIje.getMediaByChangeset(changesetID, this.setListing.bind(this, changesetID));
+      KeduIje.getMediaByChangeset(changesetID).then(this.setListing.bind(this, changesetID));
     } else {
       const mediaID = el.mediaID;
 
       if (!this.state.mediaById[mediaID]) {
-        KeduIje.getMediaInfo(mediaID, this.saveSongInfo);
+        KeduIje.getMediaInfo(mediaID).then(this.saveSongInfo);
       }
 
-      KeduIje.getRevisions(changesetID, this.setEdits.bind(this, changesetID));
-      KeduIje.myLines(changesetID, this.setAdds.bind(this, changesetID));
+      KeduIje.getRevisions(changesetID).then(this.setEdits.bind(this, changesetID));
+      KeduIje.myLines(changesetID).then(this.setAdds.bind(this, changesetID));
     }
   }
 

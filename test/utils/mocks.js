@@ -16,12 +16,13 @@ const KeduIje = {
   deleteSong: sinon.spy(),
 };
 
-KeduIje.loadLyrics.callsArgWith(0, lyrics);
-KeduIje.loadSongInfo.callsArgWith(0, songInfo);
-KeduIje.updateLyric.callsArgWith(2, lyrics);
-KeduIje.addLyric.callsArgWith(1, lyrics);
-KeduIje.deleteLyric.callsArgWith(1, lyrics);
-KeduIje.saveSongInfo.callsArgWith(2, songInfo);
+KeduIje.loadLyrics.resolves(lyrics);
+KeduIje.startEditSession.resolves(true);
+KeduIje.loadSongInfo.resolves(songInfo);
+KeduIje.updateLyric.resolves(lyrics);
+KeduIje.addLyric.resolves(lyrics);
+KeduIje.deleteLyric.resolves(lyrics);
+KeduIje.saveSongInfo.resolves(songInfo);
 
 /* KeduijeUtil */
 const convertToTime = sinon.stub();

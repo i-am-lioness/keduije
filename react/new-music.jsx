@@ -7,7 +7,7 @@ import KeduIje from './keduije';
 
 function submitSongInfo(data) {
   data.changeset = changesetID;
-  KeduIje.createSong(data, (slug) => {
+  KeduIje.createSong(data).then((slug) => {
     window.location = `/music/${slug}`;
   });
 }
@@ -16,7 +16,7 @@ ReactDOM.render(
   <SongInfoForm
     newSong
     onSubmit={submitSongInfo}
-    onCancel={() => { KeduIje.deleteSong(null); }}
+    onCancel={() => { KeduIje.deleteSong(null); }} // to do: go to home page on canceled
   />,
   document.getElementById('root')
 );

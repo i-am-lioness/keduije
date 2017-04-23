@@ -34,7 +34,7 @@ class Search extends React.Component {
   query(e) {
     const q = e.target.value;
 
-    if (q) { KeduIje.search(q, this.listResults); }
+    if (q) { KeduIje.search(q).then(this.listResults); }
   }
 
   listResults(songs) {

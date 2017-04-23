@@ -205,37 +205,44 @@ describe('<MediaPlayer />', () => {
       displaySongInfo.reset();
     });
 
-    it('can turn on edit mode', function () {
-      KeduIje.startEditSession.callsArgWith(1, true);
+    it('can turn on edit mode', function (done) {
+      KeduIje.startEditSession.resolves(true);
 
       expect(wrapper.instance().state.editMode).to.be.false;
       wrapper.instance().handleToggleEditMode();
       expect(KeduIje.startEditSession.called).to.be.true;
-      expect(KeduIje.startEditSession.lastCall.calledWith(true, setEditMode)).to.be.true;
-      expect(wrapper.instance().state.editMode).to.be.true;
-      expect(setEditMode.called).to.be.true;
+      expect(KeduIje.startEditSession.lastCall.calledWithExactly(true)).to.be.true;
+      setTimeout(() => {
+        expect(setEditMode.called).to.be.true;
+        expect(wrapper.instance().state.editMode).to.be.true;
+        done();
+      }, 5);
     });
 
-    it('can turn off edit mode', function () {
-      KeduIje.startEditSession.callsArgWith(1, false);
+    it('can turn off edit mode', function (done) {
+      KeduIje.startEditSession.resolves(false);
 
       expect(wrapper.instance().state.editMode).to.be.true;
       wrapper.instance().handleToggleEditMode();
-      expect(KeduIje.startEditSession.called).to.be.true;
-      expect(KeduIje.startEditSession.lastCall.calledWith(false, setEditMode)).to.be.true;
-      expect(wrapper.instance().state.editMode).to.be.false;
-      expect(setEditMode.called).to.be.true;
+
+      setTimeout(() => {
+        expect(KeduIje.startEditSession.called).to.be.true;
+        expect(KeduIje.startEditSession.lastCall.calledWith(false)).to.be.true;
+        expect(setEditMode.called).to.be.true;
+        expect(wrapper.instance().state.editMode).to.be.false;
+        done();
+      }, 5);
     });
 
     it('can handle edit mode cancelation', function (done) {
-      KeduIje.startEditSession.callsArgWith(1, false);
+      KeduIje.startEditSession.resolves(false);
 
       expect(wrapper.instance().state.editMode).to.be.false;
       wrapper.instance().handleToggleEditMode();
-      expect(KeduIje.startEditSession.called).to.be.true;
-      expect(KeduIje.startEditSession.lastCall.calledWith(true, setEditMode)).to.be.true;
-      expect(setEditMode.called).to.be.true;
+
       setTimeout(function () {
+        expect(KeduIje.startEditSession.called).to.be.true;
+        expect(KeduIje.startEditSession.lastCall.calledWith(true)).to.be.true;
         expect(wrapper.instance().state.editMode).to.be.false;
         done();
       }, 10);
@@ -243,7 +250,7 @@ describe('<MediaPlayer />', () => {
 
     it('should probably not allow edits if not in edit mode');
 
-    it('allows user to add lyrics', function () {
+    it('allows user to add lyrics', function (done) {
       const lineData = {
         text: 'my my my. my cherie koko',
         startTime: 68,
@@ -265,11 +272,13 @@ describe('<MediaPlayer />', () => {
       expect(prompt.calledOnce).to.be.false;
       wrapper.instance().saveLyric();
 
-      expect(KeduIje.updateLyric.calledOnce).to.be.false;
-      expect(KeduIje.addLyric.calledOnce).to.be.true;
-
-      expect(KeduIje.addLyric.lastCall.calledWith(lineData, loadLyrics)).to.be.true;
-      expect(loadLyrics.called).to.be.true;
+      setTimeout(() => {
+        expect(KeduIje.updateLyric.calledOnce).to.be.false;
+        expect(KeduIje.addLyric.calledOnce).to.be.true;
+        expect(KeduIje.addLyric.lastCall.calledWith(lineData)).to.be.true;
+        expect(loadLyrics.called).to.be.true;
+        done();
+      }, 5);
     });
 
     it('allows user to cancel lyric creation', function () {
@@ -298,7 +307,7 @@ describe('<MediaPlayer />', () => {
       expect(wrapper.instance().state).to.eql(originalState);
     });
 
-    it('allows user to edit time marks in a line', function () {
+    it('allows user to edit time marks in a line', function (done) {
       const lineData = {
         text: 'hey pretty lady',
         startTime: 5,
@@ -316,9 +325,13 @@ describe('<MediaPlayer />', () => {
       expect(prompt.calledOnce).to.be.false;
       wrapper.instance().saveLyric();
 
-      expect(KeduIje.updateLyric.calledOnce).to.be.true;
-      expect(KeduIje.updateLyric.lastCall.calledWith(lineData, lineChanges, loadLyrics)).to.be.true;
-      expect(loadLyrics.called).to.be.true;
+      setTimeout(() => {
+        expect(KeduIje.updateLyric.calledOnce).to.be.true;
+        expect(KeduIje.updateLyric.lastCall.calledWith(lineData, lineChanges)).to.be.true;
+        expect(loadLyrics.called).to.be.true;
+        done();
+      }, 5);
+
     });
 
     it('allows user to cancel modifying a line', function () {
@@ -365,7 +378,7 @@ describe('<MediaPlayer />', () => {
       expect(prompt.calledOnce).to.be.true;
       expect(prompt.lastCall.calledWith('Please enter heading', '[]')).to.be.true;
       expect(KeduIje.updateLyric.calledOnce).to.be.true;
-      expect(KeduIje.updateLyric.lastCall.calledWith(lineData, lineChanges, loadLyrics)).to.be.true;
+      expect(KeduIje.updateLyric.lastCall.calledWith(lineData, lineChanges)).to.be.true;
     });
 
     it('can allow user to modify header', function () {
@@ -386,7 +399,7 @@ describe('<MediaPlayer />', () => {
       expect(prompt.calledOnce).to.be.true;
       expect(prompt.lastCall.calledWith('Update Heading', originalHeader)).to.be.true;
       expect(KeduIje.updateLyric.calledOnce).to.be.true;
-      expect(KeduIje.updateLyric.lastCall.calledWith(lineData, lineChanges, loadLyrics)).to.be.true;
+      expect(KeduIje.updateLyric.lastCall.calledWith(lineData, lineChanges)).to.be.true;
     });
 
     it('can cancel header edit', function () {
@@ -406,7 +419,8 @@ describe('<MediaPlayer />', () => {
       expect(wrapper.instance().state).to.equal(originalState);
     });
 
-    it('can delete a line', function () {
+    it('can delete a line', function (done) {
+      confirm.returns(true);
       const lineData = {
         text: 'time will be on our side.',
         startTime: 101,
@@ -416,8 +430,13 @@ describe('<MediaPlayer />', () => {
       wrapper.instance().showEditDialog(lineData);
 
       wrapper.instance().handleDelete();
-      expect(KeduIje.deleteLyric.calledOnce).to.be.true;
-      expect(KeduIje.deleteLyric.lastCall.calledWith(lineData, loadLyrics)).to.be.true;
+
+      setTimeout(() => {
+        expect(KeduIje.deleteLyric.calledOnce).to.be.true;
+        expect(KeduIje.deleteLyric.lastCall.calledWith(lineData)).to.be.true;
+        expect(loadLyrics.called).to.be.true;
+        done();
+      }, 10);
     });
 
     it('can cancel deleting a line', function () {
@@ -438,7 +457,7 @@ describe('<MediaPlayer />', () => {
       confirm.returns(true); // restoring behavior
     });
 
-    it('can allow user to modify songInfo', function () {
+    it('can allow user to modify songInfo', function (done) {
       expect(wrapper.instance().state.editDialogIsOpen).to.be.false;
 
       expect(wrapper.find('#edit-song-info-btn')).to.have.lengthOf(1);
@@ -449,15 +468,19 @@ describe('<MediaPlayer />', () => {
         artist: 'Brandy',
       };
       const newSongInfo = Object.assign(songInfo, songInfoChanges);
-      KeduIje.saveSongInfo.callsArgWith(2, newSongInfo);
+      KeduIje.saveSongInfo.resolves(newSongInfo);
 
       wrapper.instance().saveSongInfo(songInfoChanges);
-      expect(KeduIje.saveSongInfo.calledOnce).to.be.true;
-      expect(KeduIje.saveSongInfo.lastCall.calledWith(songInfo, songInfoChanges, displaySongInfo))
-        .to.be.true;
-      expect(displaySongInfo.calledOnce).to.be.true;
-      expect(displaySongInfo.lastCall.calledWith(newSongInfo)).to.be.true;
-      expect(wrapper.instance().state.editDialogIsOpen).to.be.false;
+
+      setTimeout(() => {
+        expect(KeduIje.saveSongInfo.calledOnce).to.be.true;
+        expect(KeduIje.saveSongInfo.lastCall.calledWith(songInfo, songInfoChanges))
+          .to.be.true;
+        expect(displaySongInfo.calledOnce).to.be.true;
+        expect(displaySongInfo.lastCall.calledWith(newSongInfo)).to.be.true;
+        expect(wrapper.instance().state.editDialogIsOpen).to.be.false;
+        done();
+      }, 5);
     });
 
     it('can cancel editing song info', function () {
@@ -490,7 +513,7 @@ describe('<MediaPlayer />', () => {
     let editSwitch;
 
     before(function () {
-      KeduIje.loadSongInfo.callsArgWith(0, {}); // to do: finish testing handling empty fields
+      KeduIje.loadSongInfo.resolves({}); // to do: finish testing handling empty fields
 
       wrapper = mount(<MediaPlayer
         canEdit
