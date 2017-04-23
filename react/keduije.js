@@ -16,9 +16,7 @@ function onError(errorMsg, url, lineNumber, column, errorObj) {
   $.post('/api/logError', { width: screen.width, height: screen.height, msg: msg });
 }
 
-if (typeof window !== 'undefined') {
-  window.onerror = onError;
-}
+window.onerror = onError;
 
 function getRevisions(cs) {
   return $.get('/api/revisions', { changesetID: cs });
@@ -29,7 +27,7 @@ function search(q) {
 }
 
 function loadLyrics() {
-  return $.get('/api/lines/' + songID);
+  return $.get(`/api/lines/${songID}`);
 }
 
 function myLines(cs) {
@@ -43,11 +41,11 @@ function getChangesets(query) {
 function startEditSession(isStart) {
   if (isStart) {
     return $.post(`/api/start_edit/${songID}`)
-      .done((resp) => {
+      .then((resp) => {
         changesetID = resp;
         return true;
       })
-      .fail((err) => {
+      .catch((err) => {
         console.error(err);
         alert('You cannot edit at this time.');
       });
@@ -107,7 +105,7 @@ function createSong(songInfo) {
 
 function deleteSong(original) {
   return saveSongInfo(original, { status: 'deleted' })
-    .done(() => { window.location = '/'; });
+    .then(() => { window.location = '/'; });
   // todo: catch error
 }
 

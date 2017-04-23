@@ -3,7 +3,6 @@ import { expect, assert } from 'chai';
 import sinon from 'sinon';
 import KeduijeUtil from '../react/keduije-util';
 
-global.$ = require('jquery');
 
 KeduijeUtil.__Rewire__('API_KEY', 'AIzaSyAZoi72Rr-ft3ffrgJ9gDZ-O5_fyVNDe_k');
 

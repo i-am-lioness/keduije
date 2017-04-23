@@ -233,7 +233,7 @@ class Edits extends React.Component {
     if (el.type === 'new') {
       KeduIje.getMediaByChangeset(changesetID).then(this.setListing.bind(this, changesetID));
     } else {
-      const mediaID = el.mediaID;
+      const mediaID = el.media;
 
       if (!this.state.mediaById[mediaID]) {
         KeduIje.getMediaInfo(mediaID).then(this.saveSongInfo);
