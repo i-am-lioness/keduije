@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import KeduIje from '../keduije';
+import { convertToTime } from '../keduije-util';
 
 class TimeSpinner extends React.Component {
   constructor(props) {
@@ -20,7 +20,7 @@ class TimeSpinner extends React.Component {
   }
 
   render() {
-    const displayedTimeMark = KeduIje.convertToTime(this.props.seconds);
+    const displayedTimeMark = convertToTime(this.props.seconds);
     return (<div className="spinner-container">
       <div className="label">{this.props.label}</div>
       <div className="inner-spinner">

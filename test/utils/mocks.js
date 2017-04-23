@@ -14,8 +14,6 @@ const KeduIje = {
   addLyric: sinon.stub(),
   saveSongInfo: sinon.stub(),
   deleteSong: sinon.spy(),
-  scrollIfOutOfView: sinon.stub(),
-  convertToTime: sinon.stub(), // todo: move to util
 };
 
 KeduIje.loadLyrics.callsArgWith(0, lyrics);
@@ -24,7 +22,12 @@ KeduIje.updateLyric.callsArgWith(2, lyrics);
 KeduIje.addLyric.callsArgWith(1, lyrics);
 KeduIje.deleteLyric.callsArgWith(1, lyrics);
 KeduIje.saveSongInfo.callsArgWith(2, songInfo);
-KeduIje.convertToTime.returns('0:00');
+
+/* KeduijeUtil */
+const convertToTime = sinon.stub();
+const scrollIfOutOfView = sinon.stub();
+
+convertToTime.returns('0:00');
 
 const mockVideo = function (iframe, onPlayerReady, handlePaused, handleResume) {
   const mediaPlay = sinon.stub();
@@ -92,4 +95,4 @@ confirm = sinon.stub();
 alert = sinon.stub();
 confirm.returns(true);
 
-export { KeduIje, Video, Audio, videoDuration, audioDuration };
+export { KeduIje, Video, Audio, videoDuration, audioDuration, scrollIfOutOfView, convertToTime };

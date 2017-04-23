@@ -4,7 +4,7 @@ import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import PropTypes from 'prop-types';
 import PencilIcon from './pencil-icon';
-import KeduIje from '../keduije';
+import { scrollIfOutOfView } from '../keduije-util';
 
 class LyricDisplay extends React.Component {
   constructor(props) {
@@ -27,7 +27,7 @@ class LyricDisplay extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.currentTime === this.props.currentTime) return;
     if (this.currentLine) {
-      KeduIje.scrollIfOutOfView(this.currentLine);
+      scrollIfOutOfView(this.currentLine);
     }
   }
 

@@ -11,7 +11,7 @@ import SongInfoForm from '../react/components/song-info-form';
 import ProgressBar from '../react/components/progress-bar';
 import { mediaTypes } from '../react/keduije-media';
 import { lyrics, songInfo } from './utils/data';
-import { KeduIje, Video, Audio, videoDuration, audioDuration } from './utils/mocks';
+import { KeduIje, Video, Audio, videoDuration, audioDuration, scrollIfOutOfView, convertToTime } from './utils/mocks';
 
 const loadYoutubeIFrameAPI = sinon.stub();
 
@@ -19,8 +19,8 @@ MediaPlayer.__Rewire__('loadYoutubeIFrameAPI', loadYoutubeIFrameAPI);
 MediaPlayer.__Rewire__('Video', Video);
 MediaPlayer.__Rewire__('Audio', Audio);
 MediaPlayer.__Rewire__('KeduIje', KeduIje);
-TimeSpinner.__Rewire__('KeduIje', KeduIje);
-LyricDisplay.__Rewire__('KeduIje', KeduIje);
+TimeSpinner.__Rewire__('convertToTime', convertToTime);
+LyricDisplay.__Rewire__('scrollIfOutOfView', scrollIfOutOfView);
 
 describe('<MediaPlayer />', () => {
   describe('rendering: ', function () {

@@ -1,6 +1,6 @@
-/* eslint-env mocha */
+/* eslint-env mocha, browser */
 import { expect, assert } from 'chai';
-// import sinon from 'sinon';
+import sinon from 'sinon';
 import KeduijeUtil from '../react/keduije-util';
 
 global.$ = require('jquery');
@@ -57,7 +57,33 @@ describe('keduije-util.js', function () {
     KeduijeUtil.loadYoutubeIFrameAPI(cb);
   });
 
-  it('sends discriptive error for 403 from server');
+  it('converts 0 seconds to "0:00"', function () {
+    const time = KeduijeUtil.convertToTime(0);
+    expect(time).to.equal('0:00');
+  });
 
-  // describe('url parsing');
+  it('converts time to double digit minutes', function () {
+    const time = KeduijeUtil.convertToTime(700);
+    expect(time).to.equal('11:40');
+  });
+
+  // to do: make browser test. also IMPROVE
+  it('does not scroll when element in view', function () {
+    const div = document.createElement('DIV');
+    KeduijeUtil.scrollIfOutOfView(div);
+  });
+
+  // to do: make browser test, IMPROVE
+  it('scrolls when element is out of view', function () {
+    global.$.prototype.offset = sinon.stub();
+    global.$.prototype.offset.returns({ top: 50 });
+    sinon.spy(global.$.prototype, 'animate');
+    const div = document.createElement('DIV');
+    KeduijeUtil.scrollIfOutOfView(div);
+    expect(global.$.prototype.animate.called).to.be.true;
+  });
+
+  it('can handle invalid number for conversion');
+
+  it('sends discriptive error for 403 from server');
 });

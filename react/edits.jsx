@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 import update from 'react-addons-update'; // todo: replace with https://github.com/kolodny/immutability-helper
 import PropTypes from 'prop-types';
 import KeduIje from './keduije';
+import { convertToTime } from './keduije-util';
 
 const JsDiff = require('diff');
 
@@ -52,8 +53,8 @@ function changedInfo(name, edit) {
 
 function changedTimeMark(label, edit, field, timeUrl) {
   if (edit.newValues[field]) {
-    const formatedTimeOld = KeduIje.convertToTime(edit.original[field]);
-    const formatedTimeNew = KeduIje.convertToTime(edit.newValues[field]);
+    const formatedTimeOld = convertToTime(edit.original[field]);
+    const formatedTimeNew = convertToTime(edit.newValues[field]);
     return (<p>
       {label}
       <a href={timeUrl}>({formatedTimeOld})</a>
@@ -66,7 +67,7 @@ function changedTimeMark(label, edit, field, timeUrl) {
 
 function eachEdit(songUrl, edit, idx) {
   let output = null;
-  const startTime = KeduIje.convertToTime(edit.time);
+  const startTime = convertToTime(edit.time);
 
   if (edit.type === 'edit') {
     let textChange = null;

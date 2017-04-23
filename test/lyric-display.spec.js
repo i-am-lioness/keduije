@@ -1,7 +1,7 @@
 /* eslint-env mocha, browser */
 import React from 'react';
-import { expect, assert } from 'chai';
-import { mount, shallow, render } from 'enzyme';
+import { expect } from 'chai';
+import { mount, shallow } from 'enzyme';
 import sinon from 'sinon';
 import LyricDisplay from '../react/components/lyric-display';
 import PencilIcon from '../react/components/pencil-icon';

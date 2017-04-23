@@ -1,158 +1,134 @@
 /* eslint-env browser */
 /* global $ */
 
-const KeduIje = ((ki) => {
-  let songID = null;
-  let changesetID = null;
+let songID = null;
+let changesetID = null;
 
-  function onError(errorMsg, url, lineNumber, column, errorObj) {
-    if (window.location.hostname === 'localhost') return;
+function onError(errorMsg, url, lineNumber, column, errorObj) {
+  if (window.location.hostname === 'localhost') return;
 
-    const msg = 'Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber
-      + ' Column: ' + column + ' StackTrace: ' + errorObj;
+  const msg = 'Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber
+    + ' Column: ' + column + ' StackTrace: ' + errorObj;
 
-    $.post('/api/logError', { width: screen.width, height: screen.height, msg: msg });
+  $.post('/api/logError', { width: screen.width, height: screen.height, msg: msg });
+}
+
+if (typeof window !== 'undefined') {
+  window.onerror = onError;
+}
+
+function getRevisions(cs, cb) {
+  $.get('/api/revisions', { changesetID: cs }, cb);
+}
+
+function search(q, cb) {
+  $.get('/api/search', { query: q }, cb);
+}
+
+function loadLyrics(cb) {
+  $.get('/api/lines/' + songID, cb);
+}
+
+function myLines(cs, cb) {
+  $.get('/api/myLines/', { changesetID: cs }, cb);
+}
+
+function getChangesets(cb, query) {
+  $.get('/api/changesets/list', query, cb);
+}
+
+function startEditSession(isStart, cb) {
+  if (isStart) {
+    $.post('/api/start_edit/' + songID, (resp) => { changesetID = resp; cb(true); })
+    .fail((err) => {
+      console.log(err);
+      alert('you cannot edit at this time');
+    });
+  } else {
+    changesetID = null;
+    cb(false);
   }
+}
 
-  if (typeof window !== 'undefined') {
-    window.onerror = onError;
-  }
+function getMediaInfo(mediaID, cb) {
+  $.get('/api/media/' + mediaID, cb);
+}
 
-  function getRevisions(cs, cb) {
-    $.get('/api/revisions', { changesetID: cs }, cb);
-  }
+function loadSongInfo(cb) {
+  getMediaInfo(songID, cb);
+}
 
-  function search(q, cb) {
-    $.get('/api/search', { query: q }, cb);
-  }
+function getMediaByChangeset(cs, cb) {
+  $.get('/api/media', { changesetID: cs }, cb);
+}
 
-  function loadLyrics(cb) {
-    $.get('/api/lines/' + songID, cb);
-  }
+function addLyric(newLyric, cb) {
+  newLyric.changesetID = changesetID;
+  $.post(`/api/media/${songID}/addline`, newLyric, cb);
+}
 
-  function myLines(cs, cb) {
-    $.get('/api/myLines/', { changesetID: cs }, cb);
-  }
-
-  function getChangesets(cb, query) {
-    $.get('/api/changesets/list', query, cb);
-  }
-
-  function startEditSession(isStart, cb) {
-    if (isStart) {
-      $.post('/api/start_edit/' + songID, (resp) => { changesetID = resp; cb(true); })
-      .fail((err) => {
-        console.log(err);
-        alert('you cannot edit at this time');
-      });
-    } else {
-      changesetID = null;
-      cb(false);
-    }
-  }
-
-  function getMediaInfo(mediaID, cb) {
-    $.get('/api/media/' + mediaID, cb);
-  }
-
-  function loadSongInfo(cb) {
-    getMediaInfo(songID, cb);
-  }
-
-  function getMediaByChangeset(cs, cb) {
-    $.get('/api/media', { changesetID: cs }, cb);
-  }
-
-  function addLyric(newLyric, cb) {
-    newLyric.changesetID = changesetID;
-    $.post(`/api/media/${songID}/addline`, newLyric, cb);
-  }
-
-  function updateLyric(oldLyricObj, newLyricObj, cb) {
-    // todo: postdata should be validated
-    const postData = {
-      original: oldLyricObj,
-      changes: newLyricObj,
-      mediaID: songID,
-      changesetID,
-    };
-
-    $.post('/api/lines/edit/' + oldLyricObj._id, postData, cb);
-  }
-
-  function deleteLyric(oldLyricObj, cb) {
-    updateLyric(oldLyricObj, { deleted: true }, cb);
-  }
-
-  function saveSongInfo(original, changes, cb) {
-    // todo: postdata should be validated
-    const postData = {
-      original: original,
-      changes,
-      changesetID,
-      mediaID: songID, // for easy querying
-    };
-
-    $.post('/api/media/edit/' + songID, postData, cb);
-  }
-
-  function createSong(songInfo, cb) {
-    $.post('/api/media/new', songInfo, cb);
-  }
-
-  function deleteSong(original) {
-    saveSongInfo(original, { status: 'deleted' }, () => { window.location = '/'; });
-    // todo: catch error
-  }
-
-  // responsively adjusts scroll position of lyrics during playback
-  function scrollIfOutOfView(element) {
-    const position = $(element).offset().top;
-    const windowTop = $(window).scrollTop();
-    const height = $(window).height();
-    const windowBottom = windowTop + (height * 0.7);
-
-    if ((position < windowTop) || (position > windowBottom)) {
-      $('html,body').animate({ scrollTop: position - (height * 0.2) }, 800);
-    }
-  }
-
-  function convertToTime(sec) {
-    let seconds = parseInt(sec, 10);
-    const minutes = seconds / 60;
-    seconds %= 60;
-    if (seconds < 10) seconds = '0' + seconds;
-    return Math.floor(minutes) + ':' + seconds;
-  }
-
-  ki.init = (_songID) => {
-    songID = _songID;
+function updateLyric(oldLyricObj, newLyricObj, cb) {
+  // todo: postdata should be validated
+  const postData = {
+    original: oldLyricObj,
+    changes: newLyricObj,
+    mediaID: songID,
+    changesetID,
   };
 
-  ki.loadLyrics = loadLyrics;
-  ki.loadSongInfo = loadSongInfo;
-  ki.updateLyric = updateLyric;
-  ki.addLyric = addLyric;
-  ki.saveSongInfo = saveSongInfo;
-  ki.scrollIfOutOfView = scrollIfOutOfView;
-  ki.search = search;
-  ki.getRevisions = getRevisions;
-  ki.myLines = myLines;
-  ki.getMediaInfo = getMediaInfo;
-  ki.convertToTime = convertToTime;
-  ki.startEditSession = startEditSession;
-  ki.getChangesets = getChangesets;
-  ki.deleteLyric = deleteLyric;
-  ki.deleteSong = deleteSong;
-  ki.createSong = createSong;
-  ki.getMediaByChangeset = getMediaByChangeset;
+  $.post('/api/lines/edit/' + oldLyricObj._id, postData, cb);
+}
 
-  return ki;
-})({});
+function deleteLyric(oldLyricObj, cb) {
+  updateLyric(oldLyricObj, { deleted: true }, cb);
+}
+
+function saveSongInfo(original, changes, cb) {
+  // todo: postdata should be validated
+  const postData = {
+    original: original,
+    changes,
+    changesetID,
+    mediaID: songID, // for easy querying
+  };
+
+  $.post('/api/media/edit/' + songID, postData, cb);
+}
+
+function createSong(songInfo, cb) {
+  $.post('/api/media/new', songInfo, cb);
+}
+
+function deleteSong(original) {
+  saveSongInfo(original, { status: 'deleted' }, () => { window.location = '/'; });
+  // todo: catch error
+}
+
+const ki = {};
+
+ki.init = (_songID) => {
+  songID = _songID;
+};
+
+ki.loadLyrics = loadLyrics;
+ki.loadSongInfo = loadSongInfo;
+ki.updateLyric = updateLyric;
+ki.addLyric = addLyric;
+ki.saveSongInfo = saveSongInfo;
+ki.search = search;
+ki.getRevisions = getRevisions;
+ki.myLines = myLines;
+ki.getMediaInfo = getMediaInfo;
+ki.startEditSession = startEditSession;
+ki.getChangesets = getChangesets;
+ki.deleteLyric = deleteLyric;
+ki.deleteSong = deleteSong;
+ki.createSong = createSong;
+ki.getMediaByChangeset = getMediaByChangeset;
 
 const editModes = {
   ADD: 'add',
   UPDATE: 'save',
 };
 
-export { KeduIje as default, editModes };
+export { ki as default, editModes };
