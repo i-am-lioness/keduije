@@ -142,10 +142,17 @@ describe('app.js', () => {
         .expect(200);
     });
 
-    it('can handle db connection failure', function () {
-      //  will throw EADDRINUSE error
+    it('can handle app start failure', function () {
       return APP().catch((err) => {
-        expect(err.message).to.equal('listen EADDRINUSE :::3000');
+        expect(err.code).to.equal('EADDRINUSE');
+      });
+    });
+
+    it('can handle db connection failure', function () {
+      APP.__Rewire__('DB_URL', '');
+      return APP().catch((err) => {
+        APP.__Rewire__('DB_URL', process.env.TEST_DB_URL);
+        expect(err.message).to.equal('invalid schema, expected mongodb');
       });
     });
   });
