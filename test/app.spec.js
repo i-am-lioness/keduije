@@ -4,6 +4,7 @@ import request from 'supertest';
 import cheerio from 'cheerio';
 import sinon from 'sinon';
 import APP from '../lib/app';
+import TestDB from './utils/db';
 
 const ObjectId = require('mongodb').ObjectId;
 
@@ -74,18 +75,24 @@ function Revision(db) {
 
 require('dotenv').config();
 
-APP.__Rewire__('ensureLoggedIn', () => ensureLoggedIn);
-APP.__Rewire__('users', users);
-APP.__Rewire__('mail', mail);
-APP.__Rewire__('Revision', Revision);
-APP.__Rewire__('DB_URL', process.env.TEST_DB_URL);
 
 describe('app.js', () => {
   let server;
   let env;
   let db;
 
+  let revertEnsureLoggedIn;
+  let revertUsers;
+  let revertMail;
+  let revertRevision;
+  let revertDB;
+
   before(function () {
+    revertEnsureLoggedIn = APP.__Rewire__('ensureLoggedIn', () => ensureLoggedIn);
+    revertUsers = APP.__Rewire__('users', users);
+    revertMail = APP.__Rewire__('mail', mail);
+    revertRevision = APP.__Rewire__('Revision', Revision);
+    revertDB = APP.__Rewire__('DB_URL', process.env.TEST_DB_URL);
     return APP().then((result) => {
       server = result.server;
       env = result.env;
@@ -98,25 +105,13 @@ describe('app.js', () => {
     }.bind(this));
   });
 
-  after(function (done) {
-    // this.timeout(1000);
-    const time = process.hrtime();
-    console.log(time);
-    db.collections().then(function (collections) {
-      const deletions = [];
-      collections.forEach((c) => {
-        if (!c.collectionName.startsWith('system.')) {
-          console.log(`deleting ${c.collectionName}`);
-          deletions.push(db.dropCollection(c.collectionName));
-        }
-      });
-
-      Promise.all(deletions).then(() => db.close).then(() => {
-        const diff = process.hrtime(time);
-        console.log(`Deleting all took ${(diff[0] * 1e3) + (diff[1] / 1e6)} miliseconds`);
-        server.close(done);
-      }).catch(done);
-    });
+  after(function () {
+    revertEnsureLoggedIn();
+    revertUsers();
+    revertMail();
+    revertRevision();
+    revertDB();
+    return TestDB.close(db).then(() => server.close());
   });
 
   describe('server initialization', function () {
@@ -395,27 +390,40 @@ describe('app.js', () => {
 
     it('/api/changesets/list', function () {
       return request(server)
-        .get('/api/changesets/list?user')
+        .get('/api/changesets/list?userID')
         .expect(200)
         .then(function (res) {
+          // TO DO: test actual content
           expect(res.body).to.be.an('array');
         });
     });
 
     it('/api/changesets/list', function () {
       return request(server)
-        .get('/api/changesets/list?media=58e638a2d300e060f9cdd6ca')
+        .get('/api/changesets/list?userID=58e451206b5df803808e5912')
         .expect(200)
         .then(function (res) {
+          // TO DO: test actual content
           expect(res.body).to.be.an('array');
         });
     });
 
     it('/api/changesets/list', function () {
       return request(server)
-        .get('/api/changesets/list?media=58e638a2d300e060f9cdd6ca&from=58eb3cceb1dd4ced9f759083')
+        .get('/api/changesets/list?mediaID=58e638a2d300e060f9cdd6ca')
         .expect(200)
         .then(function (res) {
+          // TO DO: test actual content
+          expect(res.body).to.be.an('array');
+        });
+    });
+
+    it('/api/changesets/list', function () {
+      return request(server)
+        .get('/api/changesets/list?mediaID=58e638a2d300e060f9cdd6ca&from=58eb3cceb1dd4ced9f759083')
+        .expect(200)
+        .then(function (res) {
+          // TO DO: test actual content
           expect(res.body).to.be.an('array');
         });
     });

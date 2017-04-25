@@ -1,11 +1,7 @@
 /* eslint-env mocha */
 import { expect } from 'chai';
 import Revision, { states } from '../lib/revision';
-
-const MongoClient = require('mongodb').MongoClient;
-require('dotenv').config();
-
-const DB_URL = process.env.TEST_DB_URL;
+import TestDB from './utils/db';
 
 const testUser = {
   username: 'test',
@@ -37,23 +33,13 @@ let db;
 
 describe('revision.js', () => {
   before(function () {
-    return MongoClient.connect(DB_URL).then(function (database) {
+    return TestDB.open().then(function (database) {
       db = database;
     }).then(() => db.collection('users').insertOne(testUser));
   });
 
-  after(function (done) {
-    db.collections().then(function (collections) {
-      const deletions = [];
-      collections.forEach((c) => {
-        if (!c.collectionName.startsWith('system.')) {
-          console.log(`deleting ${c.collectionName}`);
-          deletions.push(db.dropCollection(c.collectionName));
-        }
-      });
-
-      Promise.all(deletions).then(() => db.close).then(() => { done(); }).catch(done);
-    });
+  after(function () {
+    return TestDB.close();
   });
 
   it('throws error, if trying to edit a line that doesnt exist', function () {
