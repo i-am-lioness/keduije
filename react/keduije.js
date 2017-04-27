@@ -18,20 +18,12 @@ function onError(errorMsg, url, lineNumber, column, errorObj) {
 
 window.onerror = onError;
 
-function getRevisions(cs) {
-  return $.get('/api/revisions', { changesetID: cs });
-}
-
 function search(q) {
   return $.get('/api/search', { query: q });
 }
 
 function loadLyrics() {
   return $.get(`/api/lines/${songID}`);
-}
-
-function myLines(cs) {
-  return $.get('/api/myLines/', { changesetID: cs });
 }
 
 function getChangesets(query) {
@@ -54,16 +46,8 @@ function startEditSession(isStart) {
   return Promise.resolve(false);
 }
 
-function getMediaInfo(mediaID) {
-  return $.get(`/api/media/${mediaID}`);
-}
-
 function loadSongInfo() {
-  return getMediaInfo(songID);
-}
-
-function getMediaByChangeset(cs) {
-  return $.get('/api/media', { changesetID: cs });
+  return $.get(`/api/media/${songID}`);
 }
 
 function addLyric(newLyric) {
@@ -126,15 +110,11 @@ ki.updateLyric = updateLyric;
 ki.addLyric = addLyric;
 ki.saveSongInfo = saveSongInfo;
 ki.search = search;
-ki.getRevisions = getRevisions;
-ki.myLines = myLines;
-ki.getMediaInfo = getMediaInfo;
 ki.startEditSession = startEditSession;
 ki.getChangesets = getChangesets;
 ki.deleteLyric = deleteLyric;
 ki.deleteSong = deleteSong;
 ki.createSong = createSong;
-ki.getMediaByChangeset = getMediaByChangeset;
 
 const editModes = {
   ADD: 'add',

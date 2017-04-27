@@ -648,6 +648,7 @@ describe('<MediaPlayer />', () => {
     });
 
     it('forbids timemark from going below zero', function () {
+      this.timeout(3000); // to do: figure out why occasionally times out
       const startTime = wrapper.instance().state.segmentStart;
       for (let i = 0; i < (startTime + 5); i += 1) {
         wrapper.instance().decrementTime('segmentStart');

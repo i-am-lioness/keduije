@@ -1,11 +1,9 @@
 /* eslint-env browser */
-/* global props */
 import React from 'react';
-import ReactDOM from 'react-dom';
 import update from 'react-addons-update'; // todo: replace with https://github.com/kolodny/immutability-helper
 import PropTypes from 'prop-types';
-import KeduIje from './keduije';
-import { convertToTime } from './keduije-util';
+import KeduIje from '../keduije';
+import { convertToTime } from '../keduije-util';
 
 const JsDiff = require('diff');
 
@@ -231,20 +229,23 @@ class Edits extends React.Component {
     this.lastChangesetID = changesetID;
 
     if (el.type === 'new') {
-      KeduIje.getMediaByChangeset(changesetID).then(this.setListing.bind(this, changesetID));
+      const onMedia = el.media[0]; // to do: ensure that it exists
+      this.setListing(changesetID, onMedia);
     } else {
-      const mediaID = el.media;
+      // const mediaID = el.media;
+      const forMedia = el.for_media[0]; // to do: ensure that it exists
 
-      if (!this.state.mediaById[mediaID]) {
-        KeduIje.getMediaInfo(mediaID).then(this.saveSongInfo);
+      if (!this.state.mediaById[forMedia._id]) {
+        this.saveSongInfo(forMedia);
       }
 
-      KeduIje.getRevisions(changesetID).then(this.setEdits.bind(this, changesetID));
-      KeduIje.myLines(changesetID).then(this.setAdds.bind(this, changesetID));
+      this.setEdits(changesetID, el.revisions);
+      this.setAdds(changesetID, el.lines);
     }
   }
 
   listEdits(changesetID, songUrl) {
+    // to do: filter out by status 'done';
     const edits = (this.state.adds[changesetID] || [])
       .concat((this.state.edits[changesetID] || []));
     edits.sort((a, b) => (a.time - b.time));
@@ -327,10 +328,4 @@ Edits.propTypes = {
   userID: PropTypes.string,
 };
 
-ReactDOM.render(
-  <Edits
-    userID={props.userID}
-    mediaID={props.mediaID}
-  />,
-  document.getElementById('root')
-);
+export default Edits;

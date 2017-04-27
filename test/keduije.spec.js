@@ -71,28 +71,10 @@ describe('keduije.js', function () {
     });
   });
 
-  it('get revisions', function () {
-    return Keduije.getRevisions('58f1419a763731c03353a1f5').then((res) => {
-      expect(res).to.be.an('array');
-    });
-  });
-
-  it('get lines added in a changeset', function () {
-    return Keduije.myLines('58e7e82a08091bfe6d06a496').then((res) => {
-      expect(res).to.be.an('array');
-    });
-  });
-
   it('get changesets', function () {
     const q = { mediaID: '58e745d22f1435db632f81fa' };
     return Keduije.getChangesets(q).then((res) => {
       expect(res).to.be.an('array');
-    });
-  });
-
-  it('gets media info for a changeset', function () {
-    return Keduije.getMediaByChangeset('58fa130609ef9a7c03067d7a').then((res) => {
-      expect(res).to.be.an('object');
     });
   });
 

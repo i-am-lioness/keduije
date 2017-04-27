@@ -6,7 +6,7 @@ import SongInfoForm from './components/song-info-form';
 import KeduIje from './keduije';
 
 function submitSongInfo(data) {
-  data.changeset = changesetID;
+  data.changesetID = changesetID;
   KeduIje.createSong(data).then((slug) => {
     window.location = `/music/${slug}`;
   });

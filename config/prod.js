@@ -8,7 +8,7 @@ module.exports = (env) => {
   return {
     context: DEV,
     entry: {
-      history: './edits.jsx',
+      history: './history.jsx',
       search: './search.jsx',
       player: './player.jsx',
       new_music: './new-music.jsx',

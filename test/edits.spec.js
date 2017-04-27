@@ -1,16 +1,76 @@
 /* eslint-env mocha, browser */
 import React from 'react';
-import { expect, assert } from 'chai';
-import { mount, shallow } from 'enzyme';
-import sinon from 'sinon';
-// import Search from '../react/search';
+import { expect } from 'chai';
+import { shallow } from 'enzyme';
+import Edits from '../react/components/edits';
+import { KeduIje } from './utils/mocks';
 
-describe('<Edits />', () => {
+
+describe.skip('<Edits />', () => {
+  let revertKeduIje;
+  let wrapper;
+  const component = (<Edits mediaID={'58e46ebdf3a3f330ed306e75'} />);
+
+  before(function () {
+    revertKeduIje = Edits.__Rewire__('KeduIje', KeduIje);
+  });
+
+  beforeEach(function () {
+    wrapper = shallow(component);
+  });
+
+  after(function () {
+    revertKeduIje();
+  });
+
+  it('shows all edits for media', function () {
+    expect(wrapper.find('.panel')).to.have.lengthOf();
+  });
+
   it('shows diff for changed text', function () {
-
+    wrapper.find('strong');
   });
 
   it('hides "show more button" when there are no more revisions', function () {
+    const showMoreBtn = wrapper.find('button').at(0);
+    showMoreBtn.simulate('click');
+    showMoreBtn.simulate('click');
+    expect(wrapper.find('button')).to.have.lengthOf();
+  });
+
+  it('creates valid link to song page', function () {
+    wrapper.find('.song-title').forEach(a => {
+      expect(a.props().href).to.match();
+    });
+  });
+
+  it('does not display empty changesets', function () {
+    wrapper.find('.panel').forEach((cs) => {
+      expect(cs.find('.list-group')).not.to.have.lengthOf(0);
+    });
+  });
+
+  it('sorts edits within a changeset by time', function () {
+    wrapper.find('.panel').forEach((cs) => {
+      cs.find('a').forEach(edit => {
+        edit.props().href;
+      });
+    });
+  });
+
+  it('only displays revisions that are "done"');
+
+  it('only shows time changes, when time changed');
+
+  it('includes song creations');
+
+  it('shows page title');
+
+  it('shows song edit');
+
+  it('should hide "show more" button by default');
+
+  it('shows all edits for user', function () {
 
   });
 
@@ -39,26 +99,6 @@ describe('<Edits />', () => {
   });
 
   it('[integration] shows "changesets"- aggregate edits within edit session', function () {
-
-  });
-
-  it('creates valid link to song page', function () {
-
-  });
-
-  it('does not display empty changesets', function () {
-
-  });
-
-  it('sorts edits within a changeset by time', function () {
-
-  });
-
-  it('shows all edits for media', function () {
-
-  });
-
-  it('shows all edits for user', function () {
 
   });
 });

@@ -53,9 +53,6 @@ const mail = {
   send: sinon.stub(),
 };
 
-let newMedia = null;
-let newLine = null;
-
 function Revision(db) {
   function onUpdateRequest(collectionName, req) {
     const queryObj = { _id: ObjectId(req.params.forID) };
@@ -75,6 +72,33 @@ function Revision(db) {
 
 require('dotenv').config();
 
+const newMedia = [
+  {
+    title: 'Thriller',
+    artist: 'Michael Jackson',
+    type: 1,
+  },
+  {
+    title: 'Lucky',
+    artist: 'Brittney Spears',
+    type: 0,
+  },
+  {
+    title: 'Mmege',
+    artist: 'Flavour',
+    type: 0,
+  },
+];
+
+const slugs = ['Thriller', 'Lucky', 'Mmege'];
+
+const newLines = [
+  {
+    startTime: 5,
+    endTime: 6,
+    text: 'whoever you are. girl, bye',
+  },
+];
 
 describe('app.js', () => {
   let server;
@@ -98,7 +122,6 @@ describe('app.js', () => {
       env = result.env;
       db = result.db;
     }).catch(function (error) {
-      debugger;
       this.skip();
       console.error(error);
       throw error;
@@ -152,51 +175,71 @@ describe('app.js', () => {
     });
   });
 
-  describe('post requests- ', function () {
-    let changesetID;
-    let newMedia2;
+  it('POST /api/media/new should fail for unauthorized user', function () {
+    return request(server)
+      .post('/api/media/new')
+      .send(newMedia[0])
+      .expect(403);
+  });
 
-    it('POST /api/media/new should fail for unauthorized user', function () {
-      newMedia = {
-        title: 'Thriller',
-        artist: 'Michael Jackson',
-        type: 1,
-      };
+  it('POST /api/media/new should add new song', function () {
+    testUser.role = 'admin';
 
-      return request(server)
-        .post('/api/media/new')
-        .send(newMedia)
-        .expect(403);
-    });
+    return request(server)
+      .post('/api/media/new')
+      .send(newMedia[0])
+      .expect(200)
+      .then((res) => {
+        expect(res.text).to.equal('Thriller');
+        const insertedId = res.header['inserted-id'];
+        return db.collection('media').find({ _id: ObjectId(insertedId) }).limit(1).next();
+      })
+      .then((media) => {
+        expect(media.changeset).to.be.an.instanceof(ObjectId);
+        expect(media.creator).to.be.an.instanceof(ObjectId);
+        expect(media.version).to.equal(1);
+        expect(media.status).to.equal('published');
+        // to do: check other properties
+      });
+  });
 
-    it('POST /api/media/new should add new song', function () {
+  it('redirects /history when not logged in ', function () {
+    const temp = testUser;
+    testUser = null;
+    return request(server)
+      .get('/history')
+      .expect(302)
+      .then(() => {
+        testUser = temp; // TO DO: better restore
+      });
+  });
+
+  it('serves /history for authenticated user ', function () {
+    return request(server)
+      .get('/history')
+      .expect(200);
+  });
+
+  describe('adding media listings', function () {
+    let current = 0;
+    let mediaObj;
+    let slug;
+    beforeEach(function () {
       testUser.role = 'admin';
-
+      testUser.isAdmin = true;
+      mediaObj = newMedia[current];
+      slug = slugs[current];
+      current += 1;
+      current %= newMedia.length;
       return request(server)
         .post('/api/media/new')
-        .send(newMedia)
-        .expect(200)
-        .then((res) => {
-          expect(res.text).to.equal('Thriller');
-        });
-    });
-
-    it('POST /api/media/new should add another song', function () {
-      newMedia2 = {
-        title: 'Lucky',
-        artist: 'Brittney Spears',
-        type: 0,
-      };
-
-      return request(server)
-        .post('/api/media/new')
-        .send(newMedia2)
+        .send(mediaObj)
         .expect(200);
     });
 
     it('responds to /music/:slug (for video)', function () {
       return request(server)
-        .get('/music/Thriller')
+        .get(`/music/${slug}`)
         .expect(200)
         .then(function (res) {
           $ = cheerio.load(res.text);
@@ -211,9 +254,9 @@ describe('app.js', () => {
           }
 
           const props = JSON.parse(matches[1]);
-          expect(props.title).to.equal(newMedia.title);
+          expect(props.title).to.equal(mediaObj.title);
           expect(props.canEdit).to.be.false;
-          newMedia.mediaID = props.mediaID;
+          mediaObj.mediaID = props.mediaID;
         });
     });
 
@@ -223,7 +266,7 @@ describe('app.js', () => {
       };
 
       return request(server)
-        .get('/music/Lucky')
+        .get(`/music/${slug}`)
         .expect(200)
         .then(function (res) {
           loggedInUser = null;
@@ -235,114 +278,12 @@ describe('app.js', () => {
           }
 
           const props = JSON.parse(matches[1]);
-          expect(props.title).to.not.equal(newMedia.title);
-          expect(props.title).to.equal(newMedia2.title);
+          expect(props.title).to.equal(mediaObj.title);
           expect(props.canEdit).to.be.true;
-          newMedia2.mediaID = props.mediaID;
+          mediaObj.mediaID = props.mediaID;
         });
     });
 
-    it('should start edit session', function () {
-      return request(server)
-        .post(`/api/start_edit/${newMedia.mediaID}`)
-        .expect(200)
-        .then(function (res) {
-          expect(res.text).to.be.a('string');
-          expect(res.text).not.to.be.empty;
-          debugger;
-          changesetID = res.text;
-        });
-    });
-
-    it('POST /api/media/edit/:forID to edit lyric', function () {
-      const mediaChange = {
-        startTime: 0,
-      };
-
-      return request(server)
-        .post(`/api/media/edit/${newMedia.mediaID}`)
-        .send({
-          changes: mediaChange,
-          changesetID,
-          mediaID: newMedia.mediaID,
-        })
-        .expect(200)
-        .then((res) => {
-          expect(res.body.startTime).to.equal(mediaChange.startTime);
-          expect(res.body.startTime).not.to.equal(newMedia.startTime);
-          newMedia.startTime = mediaChange.startTime;
-        });
-    });
-
-    it('POST /api/media/edit/:forID. should update slug', function () {
-      const mediaChange = {
-        title: 'Bad',
-      };
-
-      return request(server)
-        .post(`/api/media/edit/${newMedia.mediaID}`)
-        .send({
-          changes: mediaChange,
-          changesetID,
-          mediaID: newMedia.mediaID,
-        })
-        .expect(200)
-        .then((res) => {
-          expect(res.body.title).to.equal(mediaChange.title);
-          expect(res.body.title).not.to.equal(newMedia.title);
-          expect(res.body.slug).to.equal('Bad');
-          newMedia.title = mediaChange.title;
-        });
-    });
-
-    it('POST /api/media/:mediaID/addline', function () {
-      newLine = {
-        startTime: 5,
-        endTime: 6,
-        text: 'whoever you are. girl, bye',
-        changesetID,
-      };
-
-      return request(server)
-        .post(`/api/media/${newMedia.mediaID}/addline`)
-        .send(newLine)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).to.be.an('array');
-          debugger;
-          const thisLine = res.body[0];
-          expect(thisLine.text).to.equal(newLine.text);
-          newLine.lineID = thisLine._id;
-        });
-    });
-
-    it('POST /api/lines/edit/:forID', function () {
-      const lineChange = {
-        text: 'bye bye, bye',
-      };
-
-      return request(server)
-        .post(`/api/lines/edit/${newLine.lineID}`)
-        .send({
-          changes: lineChange,
-          changesetID,
-          mediaID: newMedia.mediaID,
-        })
-        .expect(200)
-        .then((res) => {
-          expect(res.body).to.be.an('array');
-          const thisLine = res.body[0];
-          debugger;
-          expect(thisLine.text).to.equal(lineChange.text);
-          expect(thisLine.text).not.to.equal(newLine.text);
-          newLine.text = lineChange.text;
-        });
-    });
-
-    it('should return two lines, after adding a second');
-  });
-
-  describe('get requests- ', function () {
     it('responds to /music/:slug when not found', function () {
       return request(server)
         .get('/music/Adamsfs')
@@ -354,7 +295,7 @@ describe('app.js', () => {
 
     it('responds to /music/:slug/history', function () {
       return request(server)
-        .get('/music/Bad/history')
+        .get(`/music/${slug}/history`)
         .expect(200);
     });
 
@@ -363,22 +304,150 @@ describe('app.js', () => {
         .get('/music/Adamsfs/history')
         .expect(404);
     });
+  });
 
-    it('redirects /history when not logged in ', function () {
-      const temp = testUser;
-      testUser = null;
+  describe('edit session', function () {
+    let changesetID;
+    let mediaObj;
+    let mediaID;
+
+    before(function () {
+      mediaObj = newMedia[2];
       return request(server)
-        .get('/history')
-        .expect(302)
-        .then(() => {
-          testUser = temp;
+        .post('/api/media/new')
+        .send(mediaObj)
+        .then((res) => {
+          mediaID = res.header['inserted-id'];
+          return request(server)
+            .post(`/api/start_edit/${mediaID}`)
+            .expect(200)
+            .then(function (res2) {
+              changesetID = res2.text;
+            });
         });
     });
 
-    it('serves /history for authenticated user ', function () {
+    it('should have a valid changest', function () {
+      expect(changesetID).to.be.a('string');
+      expect(changesetID).not.to.be.empty;
+      expect(ObjectId.bind(null, changesetID)).not.to.Throw;
+    });
+
+    it('POST /api/media/edit/:forID to media info', function () {
+      const mediaChange = {
+        artist: 0,
+      };
+
       return request(server)
-        .get('/history')
-        .expect(200);
+        .post(`/api/media/edit/${mediaID}`)
+        .send({
+          changes: mediaChange,
+          changesetID,
+          mediaID,
+        })
+        .expect(200)
+        .then((res) => {
+          expect(res.body.artist).to.equal(mediaChange.artist);
+          expect(res.body.artist).not.to.equal(mediaObj.artist);
+          mediaObj.artist = mediaChange.artist;
+        });
+    });
+
+    it('POST /api/media/edit/:forID. should update slug', function () {
+      const mediaChange = {
+        title: 'Bad',
+      };
+
+      return request(server)
+        .post(`/api/media/edit/${mediaID}`)
+        .send({
+          changes: mediaChange,
+          changesetID,
+          mediaID,
+        })
+        .expect(200)
+        .then((res) => {
+          expect(res.body.title).to.equal(mediaChange.title);
+          expect(res.body.title).not.to.equal(mediaObj.title);
+          expect(res.body.slug).to.equal('Bad');
+          mediaObj.title = mediaChange.title;
+        });
+    });
+
+    describe('lyrics', function () {
+      let newLine;
+      let lineID;
+      before('POST /api/media/:mediaID/addline', function () {
+        newLine = newLines[0];
+        newLine.changesetID = changesetID;
+
+        return request(server)
+          .post(`/api/media/${mediaID}/addline`)
+          .send(newLine)
+          .expect(200)
+          .then((res) => {
+            expect(res.body).to.be.an('array');
+            lineID = res.header['inserted-id'];
+          });
+      });
+
+      it('should correctly store new line in db', function () {
+        newLine.changesetID = changesetID;
+
+        return db.collection('lines')
+          .find({ _id: ObjectId(lineID) })
+          .limit(1)
+          .next()
+          .then((line) => {
+            expect(line.changeset).to.be.an.instanceof(ObjectId);
+            expect(line.changeset.toString()).to.equal(changesetID);
+            expect(line.media).to.be.an.instanceof(ObjectId);
+            expect(line.media.toString()).to.equal(mediaID);
+            expect(line.creator).to.be.an.instanceof(ObjectId);
+            expect(line.version).to.equal(1);
+            expect(line.deleted).to.equal(false);
+            expect(line.heading).to.equal(null);
+            expect(line.startTime).to.equal(newLine.startTime);
+            expect(line.endTime).to.equal(newLine.endTime);
+            expect(line.text).to.equal(newLine.text);
+          });
+      });
+
+      it('POST /api/lines/edit/:forID', function () {
+        const lineChange = {
+          text: 'bye bye, bye',
+        };
+
+        return request(server)
+          .post(`/api/lines/edit/${lineID}`)
+          .send({
+            changes: lineChange,
+            changesetID,
+            mediaID,
+          })
+          .expect(200)
+          .then((res) => {
+            expect(res.body).to.be.an('array');
+            return db.collection('lines').find({ _id: ObjectId(lineID) }).limit(1).next();
+          })
+          .then((line) => {
+            expect(line.text).to.equal(lineChange.text);
+            expect(line.text).not.to.equal(newLine.text);
+            expect(line.version).to.equal(2);
+
+            expect(line.changeset).to.be.an.instanceof(ObjectId);
+            expect(line.changeset.toString()).to.equal(changesetID);
+            expect(line.media).to.be.an.instanceof(ObjectId);
+            expect(line.media.toString()).to.equal(mediaID);
+            expect(line.creator).to.be.an.instanceof(ObjectId);
+            expect(line.deleted).to.equal(false);
+            expect(line.heading).to.equal(null);
+            expect(line.startTime).to.equal(newLine.startTime);
+            expect(line.endTime).to.equal(newLine.endTime);
+          });
+      });
+
+      it('should return two lines, after adding a second');
     });
   });
 
@@ -443,33 +512,6 @@ describe('app.js', () => {
         .expect(200)
         .then(function (res) {
           expect(res.body).to.be.an('object');
-        });
-    });
-
-    it('/api/media', function () {
-      return request(server)
-        .get('/api/media?changesetID=58e745c92f1435db632f81f9')
-        .expect(200)
-        .then(function (res) {
-          expect(res.body).to.be.an('object');
-        });
-    });
-
-    it('/api/revisions', function () {
-      return request(server)
-        .get('/api/revisions?changesetID=58e745c92f1435db632f81f9')
-        .expect(200)
-        .then(function (res) {
-          expect(res.body).to.be.an('array');
-        });
-    });
-
-    it('/api/myLines renders for logged in user', function () {
-      return request(server)
-        .get('/api/myLines?changesetID=58e745c92f1435db632f81f9')
-        .expect(200)
-        .then(function (res) {
-          expect(res.body).to.be.an('array');
         });
     });
 
