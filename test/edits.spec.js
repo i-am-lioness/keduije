@@ -1,104 +1,144 @@
 /* eslint-env mocha, browser */
 import React from 'react';
 import { expect } from 'chai';
-import { shallow } from 'enzyme';
+import { mount } from 'enzyme';
 import Edits from '../react/components/edits';
 import { KeduIje } from './utils/mocks';
+import { changesets } from './utils/data';
 
+/* 
+-changeset if(song)
 
-describe.skip('<Edits />', () => {
+generate more data
+-change song title
+-change song image
+-delete a song
+
+-test queries
+-do song history instead of personal history
+
+-"eachEdit" else
+-restore a line?
+
+*/
+
+let start = 0;
+KeduIje.getChangesets.callsFake(() => {
+  const end = start + 10;
+  const page = changesets.slice(start, end);
+  start = end;
+  return Promise.resolve(page);
+});
+
+describe('<Edits />', function () {
   let revertKeduIje;
-  let wrapper;
-  const component = (<Edits mediaID={'58e46ebdf3a3f330ed306e75'} />);
 
   before(function () {
     revertKeduIje = Edits.__Rewire__('KeduIje', KeduIje);
-  });
-
-  beforeEach(function () {
-    wrapper = shallow(component);
   });
 
   after(function () {
     revertKeduIje();
   });
 
-  it('shows all edits for media', function () {
-    expect(wrapper.find('.panel')).to.have.lengthOf();
-  });
-
-  it('shows diff for changed text', function () {
-    wrapper.find('strong');
-  });
-
-  it('hides "show more button" when there are no more revisions', function () {
-    const showMoreBtn = wrapper.find('button').at(0);
-    showMoreBtn.simulate('click');
-    showMoreBtn.simulate('click');
-    expect(wrapper.find('button')).to.have.lengthOf();
-  });
-
-  it('creates valid link to song page', function () {
-    wrapper.find('.song-title').forEach(a => {
-      expect(a.props().href).to.match();
+  describe('User history', function () {
+    let wrapper;
+    before(function (done) {
+      setTimeout(done, 10);
+      wrapper = mount(<Edits />);
     });
-  });
 
-  it('does not display empty changesets', function () {
-    wrapper.find('.panel').forEach((cs) => {
-      expect(cs.find('.list-group')).not.to.have.lengthOf(0);
+    it('should make no difference whether user prop is defined or not');
+
+    it('shows all edits for user', function () {
+      expect(wrapper.find('.panel')).to.have.lengthOf(8);
     });
-  });
 
-  it('sorts edits within a changeset by time', function () {
-    wrapper.find('.panel').forEach((cs) => {
-      cs.find('a').forEach(edit => {
-        edit.props().href;
+    it('shows debug statemes', function () {
+      const revertDebug = Edits.__Rewire__('DEBUG', true);
+      wrapper.update();
+      revertDebug();
+    });
+
+    xit('shows diff for changed text', function () {
+      wrapper.find('strong');
+    });
+
+    it('hides "show more button" when there are no more revisions', function (done) {
+      const showMoreBtn = wrapper.find('button').at(0);
+      showMoreBtn.simulate('click');
+      setTimeout(() => {
+        expect(wrapper.find('button')).to.have.lengthOf(0);
+        done();
+      }, 10);
+    });
+
+    it('only shows time changes, when time changed', function () {
+      wrapper.find('.changed-time').forEach((t) => {
+        const origTime = t.find('a').at(0).text();
+        const newTime = t.find('a').at(1).text();
+        console.log(`${origTime} --> ${newTime}`);
+        expect(origTime).not.to.equal(newTime);
+      });
+    });
+
+    it('creates valid links to song page', function () {
+      wrapper.find('.song-title').forEach((a) => {
+        expect(a.props().href).to.match(/^\/music\/[a-zA-Z-]+$/);
+        expect(a.props().href).not.to.match(/null/);
+        expect(a.text()).to.have.length.greaterThan(0);
+      });
+    });
+
+    it('does not display empty changesets', function () {
+      wrapper.find('.panel').forEach((cs) => {
+        const activityCnt = cs.find('.list-group').length;
+        const heading = cs.find('.panel-heading').text();
+        const media = cs.find('.media').length;
+        console.log(`${heading} has ${activityCnt} activities and ${media} media`);
+        expect(media + activityCnt).to.be.above(0);
+      });
+    });
+
+    it('sorts edits within a changeset by time', function () {
+      wrapper.find('.panel').forEach((cs) => {
+        cs.find('a').forEach(edit => {
+          edit.props().href;
+        });
       });
     });
   });
 
-  it('only displays revisions that are "done"');
+  describe('history by media', function () {
+    let wrapper;
+    before(function (done) {
+      setTimeout(done, 10);
+      wrapper = mount(<Edits mediaID="5900a5987dccb248571bcaf8" />);
+    });
+    it('shows all edits for media');
+  });
 
-  it('only shows time changes, when time changed');
+  it('only displays revisions that are "done"');
 
   it('includes song creations');
 
   it('shows page title');
 
-  it('shows song edit');
+  it('shows song edit'); // to do: to test, change el.collectionName back to el.type
 
   it('should hide "show more" button by default');
 
-  it('shows all edits for user', function () {
+  it('[integration] show line adds');
 
-  });
+  it('[integration] show line edits');
 
-  it('[integration] show line adds', function () {
+  it('[integration] show song adds');
 
-  });
+  it('[integration] shows line deletions');
 
-  it('[integration] show line edits', function () {
+  it('[integration] shows song removals');
 
-  });
+  it('[integration] shows time changes');
 
-  it('[integration] show song adds', function () {
-
-  });
-
-  it('[integration] shows line deletions', function () {
-
-  });
-
-  it('[integration] shows song removals', function () {
-
-  });
-
-  it('[integration] shows time changes', function () {
-
-  });
-
-  it('[integration] shows "changesets"- aggregate edits within edit session', function () {
-
-  });
+  it('[integration] shows "changesets"- aggregate edits within edit session');
 });

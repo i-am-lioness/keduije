@@ -4,29 +4,47 @@ import update from 'react-addons-update'; // todo: replace with https://github.c
 import PropTypes from 'prop-types';
 import KeduIje from '../keduije';
 import { convertToTime } from '../keduije-util';
+// import { states } from '../../lib/revision';
 
 const JsDiff = require('diff');
 
-function processEdit(type, el) {
-  el.type = type;
+const DEBUG = false;
 
-  if (type === 'edit') {
-    if ('deleted' in el.newValues) {
-      if ((el.newValues.deleted === true) || (el.newValues.deleted === 'true')) {
-        el.type = 'deletion';
-      } else { // todo: for now treat lyric recoveries like brand new adds
-        el.type = 'add';
-        el.text = el.newValues.text; // todo: should Object.assign()
-      }
-    } else if (el.target === 'media') { // todo: reorganize
-      el.type = 'info';
-      if (el.newValues.status === 'deleted') {
-        el.type = 'removal'; // song deletion, todo: organize semantics
-      }
-    }
-  }
+const activityTypes = {
+  UPDATE: 'update',
+  LYRIC_DELETION: 'deletion',
+  LYRIC_INSERT: 'add',
+  MEDIA_REMOVAL: 'removal', // for media
+  META: 'info',
+};
 
+function getDate(doc) {
+  const timestamp = doc._id.toString().substring(0, 8);
+  const date = new Date(parseInt(timestamp, 16) * 1000);
+  return date;
+}
+
+function processActivity(el) {
   el.time = parseInt(el.original ? (el.original.startTime || -1) : el.startTime, 10);
+}
+
+function processRevision(el) {
+  if (el.collectionName === 'media') {
+    if (el.newValues.status === 'deleted') {
+      el.type = activityTypes.MEDIA_REMOVAL;
+    } else {
+      el.type = activityTypes.META;
+    }
+  } else if (('deleted' in el.newValues) && JSON.parse(el.newValues.deleted)) {
+    el.type = activityTypes.LYRIC_DELETION;
+  } else {
+    el.type = activityTypes.UDPATE;
+  }
+  // todo: for now treat lyric recoveries like brand new adds
+}
+
+function processAdd(el) {
+  el.type = activityTypes.LYRIC_INSERT;
 }
 
 function eachDiff(diff, i) {
@@ -53,7 +71,7 @@ function changedTimeMark(label, edit, field, timeUrl) {
   if (edit.newValues[field]) {
     const formatedTimeOld = convertToTime(edit.original[field]);
     const formatedTimeNew = convertToTime(edit.newValues[field]);
-    return (<p>
+    return (<p className="changed-time">
       {label}
       <a href={timeUrl}>({formatedTimeOld})</a>
       <span className="glyphicon glyphicon-arrow-right" aria-hidden="true" />
@@ -63,11 +81,11 @@ function changedTimeMark(label, edit, field, timeUrl) {
   return null;
 }
 
-function eachEdit(songUrl, edit, idx) {
+function renderActivity(songUrl, edit) {
   let output = null;
   const startTime = convertToTime(edit.time);
 
-  if (edit.type === 'edit') {
+  if (edit.type === activityTypes.UDPATE) {
     let textChange = null;
     let startTimeChange = null;
     let endTimeChange = null;
@@ -81,26 +99,25 @@ function eachEdit(songUrl, edit, idx) {
       </p>);
     }
 
-    if (edit.newValues.startTime) {
-      startTimeChange = (<p>
-        start time moved to <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
-      </p>);
+    if ((edit.newValues.startTime) && (edit.newValues.startTime !== edit.original.startTime)) { // to do: render this unnecessary
+      startTimeChange = changedTimeMark('Start :', edit, 'startTime', `${songUrl}#${edit.time}`);
     }
-    startTimeChange = changedTimeMark('Start :', edit, 'startTime', `${songUrl}#${edit.time}`);
-    endTimeChange = changedTimeMark('End :', edit, 'endTime', `${songUrl}#${edit.time}`);
+    if ((edit.newValues.endTime) && (edit.newValues.endTime !== edit.original.endTime)) {
+      endTimeChange = changedTimeMark('End :', edit, 'endTime', `${songUrl}#${edit.time}`);
+    }
 
     output = (<span data-id={edit._id}>
       {textChange}
       {startTimeChange}
       {endTimeChange}
     </span>);
-  } else if (edit.type === 'deletion') { // if a deletion
+  } else if (edit.type === activityTypes.LYRIC_DELETION) { // if a deletion
     output = (<p className="deleted-line">
       <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
       <span className="glyphicon glyphicon-trash" aria-hidden="true" />
       <strong >{edit.original.text}</strong>
     </p>);
-  } else if (edit.type === 'info') { // if an info edit
+  } else if (edit.type === activityTypes.META) { // if an info edit
     let textOutput = null;
     let artistOutput = null;
     let imgOutput = null;
@@ -117,22 +134,22 @@ function eachEdit(songUrl, edit, idx) {
     }
 
     output = <span>{textOutput} {artistOutput} {imgOutput}</span>;
-  } else if (edit.type === 'add') {
+  } else if (edit.type === activityTypes.LYRIC_INSERT) {
     output = (<p>
       <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
       <span className="glyphicon glyphicon-plus" aria-hidden="true" />
       <strong>{edit.text}</strong>
     </p>);
-  } else if (edit.type === 'removal') { // todo: should have own panel
+  } else { // if (edit.type === activityTypes.MEDIA_REMOVAL) {
+    // todo: should have own panel
     output = (<p>
       Removed this song
     </p>);
   }
 
-  const debug = false;
   return (<li className="list-group-item" key={edit._id}>
     {output}
-    {debug && <pre>{JSON.stringify(edit)}</pre>}
+    {DEBUG && <pre>{JSON.stringify(edit)}</pre>}
   </li>);
 }
 
@@ -143,20 +160,13 @@ class Edits extends React.Component {
 
     this.state = {
       changesets: [],
-      mediaByChangeset: {},
-      mediaById: {},
-      edits: {},
-      adds: {},
       showMoreBtn: true,
     };
 
-    this.setEdits = this.setEdits.bind(this);
-    this.setAdds = this.setAdds.bind(this);
-    this.saveSongInfo = this.saveSongInfo.bind(this);
     this.setChangesets = this.setChangesets.bind(this);
-    this.eachChangeset = this.eachChangeset.bind(this);
-    this.processSession = this.processSession.bind(this);
-    this.listEdits = this.listEdits.bind(this);
+    this.renderChangeset = this.renderChangeset.bind(this);
+    this.processChangeset = this.processChangeset.bind(this);
+    this.renderChanges = this.renderChanges.bind(this);
     this.loadMoreChangesets = this.loadMoreChangesets.bind(this);
 
     this.lastChangesetID = null;
@@ -179,121 +189,75 @@ class Edits extends React.Component {
     KeduIje.getChangesets(this.query).then(this.setChangesets);
   }
 
-  setChangesets(changesets) {
-    changesets.forEach(this.processSession);
-    changesets.sort((a, b) => (b.date - a.date));
-
-    if (changesets.length < 10) {
+  setChangesets(sessions) {
+    if (sessions.length < 10) {
       this.setState({ showMoreBtn: false });
     }
+
+    let changesets = sessions;
+    changesets.forEach(this.processChangeset);
+    changesets = sessions.filter(el => !el.empty);
+    changesets.sort((a, b) => (b.date - a.date));
 
     this.setState({ changesets: update(this.state.changesets, { $push: changesets }) });
   }
 
-  setEdits(changesetID, edits) {
-    edits.forEach(processEdit.bind(this, 'edit'));
-    edits.sort((a, b) => (b.date - a.date));
-
-    const updateObj = {};
-    updateObj[changesetID] = { $set: edits };
-    this.setState({ edits: update(this.state.edits, updateObj) });
-  }
-
-  saveSongInfo(songInfo) {
-    const updateObj = {};
-    updateObj[songInfo._id] = { $set: songInfo };
-    this.setState({ mediaById: update(this.state.mediaById, updateObj) });
-  }
-
-  setAdds(changesetID, adds) {
-    adds.forEach(processEdit.bind(this, 'add'));
-    adds.sort((a, b) => (b.date - a.date));
-
-    const updateObj = {};
-    updateObj[changesetID] = { $set: adds };
-    this.setState({ adds: update(this.state.adds, updateObj) });
-  }
-
-  setListing(changesetID, media) { // todo, make more efficient
-    const updateObj = {};
-    updateObj[changesetID] = { $set: media };
-    this.setState({ mediaByChangeset: update(this.state.mediaByChangeset, updateObj) });
-  }
-
-  processSession(el) {
-    const timestamp = el._id.toString().substring(0, 8);
-    const date = new Date(parseInt(timestamp, 16) * 1000);
-    el.date = date;
+  processChangeset(el) {
+    el.date = getDate(el);
+    el.empty = true;
 
     const changesetID = el._id;
     this.lastChangesetID = changesetID;
 
     if (el.type === 'new') {
-      const onMedia = el.media[0]; // to do: ensure that it exists
-      this.setListing(changesetID, onMedia);
-    } else {
-      // const mediaID = el.media;
-      const forMedia = el.for_media[0]; // to do: ensure that it exists
-
-      if (!this.state.mediaById[forMedia._id]) {
-        this.saveSongInfo(forMedia);
+      if (el.media.length > 0) {
+        el.media = el.media[0];
+        el.empty = false;
       }
+    } else {
+      el.media = el.for_media[0]; // to do: ensure that it exists
+      const revisions = el.revisions.filter(r => (r.state === 'done'));
+      revisions.forEach(processRevision);
+      el.lines.forEach(processAdd);
 
-      this.setEdits(changesetID, el.revisions);
-      this.setAdds(changesetID, el.lines);
+      el.changes = revisions.concat(el.lines);
+      el.empty = (el.changes.length === 0);
+      el.changes.forEach(processActivity);
+      el.changes.sort((a, b) => (a.time - b.time));
     }
   }
 
-  listEdits(changesetID, songUrl) {
-    // to do: filter out by status 'done';
-    const edits = (this.state.adds[changesetID] || [])
-      .concat((this.state.edits[changesetID] || []));
-    edits.sort((a, b) => (a.time - b.time));
+  renderChanges(changeset) {
+    const editsHTML = changeset.changes.map(renderActivity.bind(this, changeset.songUrl));
 
-    const editsHTML = edits.map(eachEdit.bind(this, songUrl));
-
-    return editsHTML.length ? <ul className="list-group">{editsHTML}</ul> : null;
+    return <ul className="list-group">{editsHTML}</ul>;
   }
 
-  eachChangeset(changeset, idx) {
-    let song = null;
-    let songUrl = null;
-    let songTitle = null;
-    let songImg = null;
+  renderChangeset(changeset) {
+    const song = changeset.media; // to do: check that it exists
+    changeset.songUrl = `/music/${song.slug}`;
+    const songTitle = <a className="song-title" href={changeset.songUrl}>{song.title}</a>;
+    const songImg = song.img;
     let output = null;
 
     if (changeset.type === 'new') {
-      song = this.state.mediaByChangeset[changeset._id];
-
-      if (song) {
-        songUrl = `/music/${song.slug}`;
-        songTitle = <a className="song-title" href={songUrl}>{song.title}</a>;
-        songImg = song.img;
-
-
-        output = (<div className="media">
-          <div className="media-left">
-            <a href={songUrl}>
-              <img className="media-object" src={songImg} alt={songTitle} style={{ width: '200px' }} />
-            </a>
-          </div>
-          <div className="media-body">
-            <h4 className="media-heading">Added</h4>
-            {true || <pre>{JSON.stringify(changeset)}</pre>}
-          </div>
-        </div>);
-      }
+      output = (<div className="media">
+        <div className="media-left">
+          <a href={changeset.songUrl}>
+            <img className="media-object" src={songImg} alt={songTitle} style={{ width: '200px' }} />
+          </a>
+        </div>
+        <div className="media-body">
+          <h4 className="media-heading">Added</h4>
+          {DEBUG && <pre>{JSON.stringify(changeset)}</pre>}
+        </div>
+      </div>);
     } else {
-      song = this.state.mediaById[changeset.mediaID];
-      if (song) {
-        songUrl = `/music/${song.slug}`;
-        songTitle = <a className="song-title" href={songUrl}>{song.title}</a>;
-      }
-      output = this.listEdits(changeset._id, songUrl);
+      output = this.renderChanges(changeset);
     }
 
 
-    return output ? <div
+    return (<div
       className="panel panel-default"
       key={changeset._id}
     >
@@ -304,12 +268,11 @@ class Edits extends React.Component {
       <div className="panel-body">
         {output}
       </div>
-    </div> : null;
+    </div>);
   }
 
   render() {
-    const history = this.state.changesets.sort((a, b) => (b.date - a.date));
-    const activityDisplay = history.map(this.eachChangeset);
+    const activityDisplay = this.state.changesets.map(this.renderChangeset);
 
     return (<div className="">
       {activityDisplay}

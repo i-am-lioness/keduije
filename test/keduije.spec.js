@@ -109,6 +109,8 @@ describe('keduije.js', function () {
       global.$.post.resetHistory();
     });
 
+    it('does not send newValues for times that did not change');
+
     it('add a lyric (should add changeset info before submitting)', function () {
       const newLyric = {
         text: 'never forget where i come from na from ghetto',

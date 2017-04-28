@@ -489,13 +489,15 @@ describe('app.js', () => {
 
     it('/api/changesets/list', function () {
       return request(server)
-        .get('/api/changesets/list?mediaID=58e638a2d300e060f9cdd6ca&from=58eb3cceb1dd4ced9f759083')
+        .get('/api/changesets/list?mediaID=58e638a2d300e060f9cdd6ca&fromID=58eb3cceb1dd4ced9f759083')
         .expect(200)
         .then(function (res) {
           // TO DO: test actual content
           expect(res.body).to.be.an('array');
         });
     });
+
+    it('/api/changesets/list should support paging');
 
     it('/api/search', function () {
       return request(server)
