@@ -1,8 +1,5 @@
-/* eslint-env browser */
-
 import React from 'react';
-import ReactDOM from 'react-dom';
-import KeduIje from './keduije';
+import KeduIje from '../keduije';
 
 class Search extends React.Component {
   constructor(props) {
@@ -33,8 +30,13 @@ class Search extends React.Component {
 
   query(e) {
     const q = e.target.value;
-
-    if (q) { KeduIje.search(q).then(this.listResults); }
+    if (q) {
+      KeduIje.search(q).then(this.listResults);
+    } else {
+      this.setState({
+        results: [],
+      });
+    }
   }
 
   listResults(songs) {
@@ -106,7 +108,4 @@ class Search extends React.Component {
   }
 }
 
-ReactDOM.render(
-  <Search />,
-  document.getElementById('search-root')
-);
+export default Search;

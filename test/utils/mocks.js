@@ -1,6 +1,6 @@
 /* eslint-env browser */
 import sinon from 'sinon';
-import { lyrics, songInfo } from './data';
+import { lyrics, songInfo, searchResults } from './data';
 
 const videoDuration = 300;
 
@@ -15,6 +15,7 @@ const KeduIje = {
   saveSongInfo: sinon.stub(),
   deleteSong: sinon.spy(),
   getChangesets: sinon.stub(),
+  search: sinon.stub(),
 };
 
 KeduIje.loadLyrics.resolves(lyrics);
@@ -24,6 +25,7 @@ KeduIje.updateLyric.resolves(lyrics);
 KeduIje.addLyric.resolves(lyrics);
 KeduIje.deleteLyric.resolves(lyrics);
 KeduIje.saveSongInfo.resolves(songInfo);
+KeduIje.search.resolves(searchResults);
 
 
 /* KeduijeUtil */

@@ -9,10 +9,10 @@ module.exports = (env) => {
     context: DEV,
     entry: {
       history: './history.jsx',
-      search: './search.jsx',
+      // search: './search.jsx',
       player: './player.jsx',
       new_music: './new-music.jsx',
-      global: './global.js',
+      global: './global.jsx',
       home: './home.js',
     },
     resolve: {
