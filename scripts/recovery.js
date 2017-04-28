@@ -9,74 +9,156 @@ dateThreshold.setMinutes(dateThreshold.getMinutes() - 30);
 
 function deleteChangeset(c) {
   console.log('to delete changeset #', c._id);
-  db.collection('changesets').deleteOne({ _id: c._id }).then(() => {
+  return db.collection('changesets').deleteOne({ _id: c._id }).then(() => {
     console.log('successfuly deleted changeset #', c._id);
   }).catch((err) => {
     console.log(`Failed to delete changeset #${c._id} (${err})`);
   });
 }
 
+function forPending() {
+  console.log('Scanning for pending revisions.');
+  return new Promise((resolve, reject) => {
+    const pending = [];
+
+    db.collection('revisions')
+    .find({ state: 'pending', lastModified: { $lt: dateThreshold } })
+    .forEach((r) => {
+      console.log('recovering pending revision:', r._id);
+      const p = revision(db).processRevision(r).then(() => {
+        console.log(`revision #${r._id} successfully processed`);
+      }).catch((err) => {
+        console.log(`revision #${r._id} failed to processed (${err})`);
+      });
+      pending.push(p);
+    }, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        Promise.all(pending).then(resolve);
+      }
+    });
+  });
+}
+
+function forApplied() {
+  console.log('Scanning for applied revisions.');
+  return new Promise((resolve, reject) => {
+    const applied = [];
+
+    db.collection('revisions')
+    .find({ state: 'applied', lastModified: { $lt: dateThreshold } })
+    .forEach((r) => {
+      console.log('finishing applied revision:', r);
+      const a = revision(db).finishRevision(r);
+      applied.push(a);
+    }, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        Promise.all(applied).then(resolve);
+      }
+    });
+  });
+}
+// todo: also remove revisions withe empty "newValues"
+function forCanceled() {
+  console.log('Scanning for canceled revisions.');
+  return new Promise((resolve, reject) => {
+    const canceled = [];
+
+    db.collection('revisions')
+    .find({ state: 'canceled' })
+    .forEach((r) => {
+      console.log('deleting canceled revision:', r._id);
+      const c = db.collection('revisions')
+        .deleteOne({ _id: r._id })
+        .then(() => {
+          console.log(`revision #${r._id} successfully deleted`);
+        })
+        .catch((err) => {
+          console.log(`revision #${r._id} failed to delete (${err})`);
+        });
+      canceled.push(c);
+    }, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        Promise.all(canceled).then(resolve);
+      }
+    });
+  });
+}
+
+function forEmptyChangesets() {
+  console.log('Scanning for empty changesets.');
+  return new Promise((resolve, reject) => {
+    const empties = [];
+    let e;
+    db.collection('changesets').aggregate([
+      { $project: { _id: true } },
+      { $lookup: {
+        from: 'media',
+        localField: '_id',
+        foreignField: 'changeset',
+        as: 'media',
+      } },
+      { $lookup: {
+        from: 'revisions',
+        localField: '_id',
+        foreignField: 'changeset',
+        as: 'revisions',
+      } },
+      { $lookup: {
+        from: 'lines',
+        localField: '_id',
+        foreignField: 'changeset',
+        as: 'lines',
+      } },
+      { $project: {
+        updates: { $size: '$revisions' },
+        adds: { $size: '$lines' },
+        listings: { $size: '$media' },
+      } },
+      { $project: {
+        children: { $add: ['$updates', '$adds', '$listings'] },
+      } },
+      { $match: {
+        children: 0,
+      } }
+    ]).each((err, cs) => {
+      if (err) console.error(err);
+      if (cs) {
+        // console.log(cs);
+        e = deleteChangeset(cs);
+        empties.push(e);
+      } else {
+        Promise.all(empties).then(resolve);
+      }
+    });
+  });
+}
+
+function logError(err) {
+  console.error(err);
+}
+
 MongoClient.connect(process.env.DB_URL, (err, _db) => {
   console.log('Connected successfully to db');
-
   db = _db;
 
-  db.collection('revisions')
-  .find({ state: 'pending', lastModified: { $lt: dateThreshold } })
-  .forEach((r) => {
-    console.log('recovering pending revision:', r._id);
-    revision(db).processRevision(r).then(() => {
-      console.log(`revision #${r._id} successfully processed`);
-    }).catch((err) => {
-      console.log(`revision #${r._id} failed to processed (${err})`);
+  forPending()
+    .catch(logError)
+    .then(forApplied)
+    .catch(logError)
+    .then(forCanceled)
+    .catch(logError)
+    .then(forEmptyChangesets)
+    .catch(logError)
+    .then(() => {
+      console.log('Done with recovery. Closing.');
+      db.close();
+      process.exit();
     });
-  });
-
-  db.collection('revisions')
-  .find({ state: 'applied', lastModified: { $lt: dateThreshold } })
-  .forEach((r) => {
-    console.log('finishing applied revision:', r);
-    revision(db).finishRevision(r);
-  });
-
-  // todo: also remove revisions withe empty "newValues"
-  db.collection('revisions')
-  .find({ state: 'canceled' })
-  .forEach((r) => {
-    console.log('deleting canceled revision:', r._id);
-    db.collection('revisions').deleteOne({ _id: r._id }).then(() => {
-      console.log(`revision #${r._id} successfully deleted`);
-    }).catch((err) => {
-      console.log(`revision #${r._id} failed to delete (${err})`);
-    });
-  });
-
-  /*
-  todo: consider aggregation function. would need to save changest ids in revision as ObjectID
-  db.changesets.aggregate([{$lookup: {from: "revisions", localField: "_id", foreignField:"changeset", as: "revs"}}])
-   */
-  db.collection('changesets')
-  .find({})
-  .forEach((c) => {
-    const changesetID = c._id.toString();
-    if (c.type && (c.type === 'new')) {
-      db.collection('media').find({ changeset: changesetID }).count().then((cnt) => {
-        console.log(`changeset (${changesetID}) has ${cnt} media listings.`);
-        if (cnt == 0) {
-          deleteChangeset(c);
-        }
-      });
-    } else {
-      db.collection('revisions').find({ changeset: changesetID }).count().then((cnt) => {
-        if (cnt === 0) {
-          db.collection('lines').find({ changeset: changesetID }).count().then((cnt2) => {
-            console.log(`changeset (${changesetID}) has ${cnt} revisions and ${cnt2} lines.`);
-            if (cnt2 === 0) {
-              deleteChangeset(c);
-            }
-          });
-        }
-      });
-    }
-  });
 });
+
