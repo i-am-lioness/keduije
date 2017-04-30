@@ -59,18 +59,6 @@ describe('keduije.js', function () {
     });
   });
 
-  it('get lyrics', function () {
-    return Keduije.loadLyrics().then((res) => {
-      expect(res).to.be.an('array');
-    });
-  });
-
-  it('get song info', function () {
-    return Keduije.loadSongInfo().then((res) => {
-      expect(res).to.be.an('object');
-    });
-  });
-
   it('get changesets', function () {
     const q = { mediaID: '58e745d22f1435db632f81fa' };
     return Keduije.getChangesets(q).then((res) => {
@@ -195,7 +183,7 @@ describe('keduije.js', function () {
     });
 
     it('binds error handler', function () {
-      window.onerror();
+      global.onerror();
       expect(global.$.post.called).to.be.true;
       const path = global.$.post.lastCall.args[0];
       expect(path).to.equal('/api/logError');
@@ -206,7 +194,7 @@ describe('keduije.js', function () {
         writable: true,
         value: 'localhost',
       });
-      window.onerror();
+      global.onerror();
       expect(global.$.post.called).to.be.false;
     });
 

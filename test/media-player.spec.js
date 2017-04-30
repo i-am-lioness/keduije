@@ -331,7 +331,6 @@ describe('<MediaPlayer />', () => {
         expect(loadLyrics.called).to.be.true;
         done();
       }, 5);
-
     });
 
     it('allows user to cancel modifying a line', function () {
@@ -513,8 +512,6 @@ describe('<MediaPlayer />', () => {
     let editSwitch;
 
     before(function () {
-      KeduIje.loadSongInfo.resolves({}); // to do: finish testing handling empty fields
-
       wrapper = mount(<MediaPlayer
         canEdit
         src={'www.tayotv.net/wp-content/uploads/2017/03/Slowdog-ft.-Phyno-TJ-Testimony-Remix.mp3'}

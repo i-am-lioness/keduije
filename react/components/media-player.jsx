@@ -24,7 +24,7 @@ class MediaPlayer extends React.Component {
       text: '',
       editMode: false,
       editType: null,
-      lyrics: [],
+      lyrics: this.props.lyrics,
       showEditDialog: false,
       editDialogIsOpen: false,
       isPlaying: false,
@@ -37,14 +37,6 @@ class MediaPlayer extends React.Component {
       slug: this.props.slug,
     };
 
-    /* this.originalSongInfo = { // todo: may need to have whole copy of media Object as in db
-      img: this.props.img,
-      title: this.props.title,
-      artist: this.props.artist,
-    };
-
-    this.historyLink = `/music/${this.props.slug}/history`; // consider making state
-*/
     this.maxTime = null;
     this.media = null;
     this.saveStartTime = false; // accounts for "jumping" around, rename to "holdStartTime"
@@ -227,8 +219,6 @@ class MediaPlayer extends React.Component {
 
   componentDidMount() {
     KeduIje.init(this.state.mediaID);
-    KeduIje.loadLyrics().then(this.loadLyrics);
-    KeduIje.loadSongInfo().then(this.displaySongInfo);
 
     this.affixPoint = this.artwork.offsetTop + this.artwork.offsetHeight;
 
@@ -463,6 +453,7 @@ class MediaPlayer extends React.Component {
 
 MediaPlayer.defaultProps = {
   artist: '',
+  lyrics: [],
 };
 
 MediaPlayer.propTypes = {
@@ -475,6 +466,7 @@ MediaPlayer.propTypes = {
   artist: PropTypes.string,
   title: PropTypes.string.isRequired,
   slug: PropTypes.string.isRequired,
+  lyrics: PropTypes.arrayOf(Object),
 };
 
 export default MediaPlayer;

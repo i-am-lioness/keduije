@@ -88,9 +88,14 @@ const newMedia = [
     artist: 'Flavour',
     type: 0,
   },
+  {
+    title: 'Soldier',
+    artist: 'Destinys Child',
+    type: 0,
+  },
 ];
 
-const slugs = ['Thriller', 'Lucky', 'Mmege'];
+const slugs = ['Thriller', 'Lucky', 'Mmege', 'Soldier'];
 
 const newLines = [
   {
@@ -247,7 +252,7 @@ describe('app.js', () => {
           expect($('#root').length).to.equal(1);
 
           // to do: not necessary. can use api request to get _id
-          const re = /JSON.parse\('({.*?})'.+\)/;
+          const re = /var props=({.*})\|\|\s{};/;
           const matches = res.text.match(re);
           if (!matches) {
             throw new Error('could not find props data sent from server');
@@ -256,8 +261,32 @@ describe('app.js', () => {
           const props = JSON.parse(matches[1]);
           expect(props.title).to.equal(mediaObj.title);
           expect(props.canEdit).to.be.false;
-          mediaObj.mediaID = props.mediaID;
+          return db.collection('media').findOne({ slug }).then((media) => {
+            expect(media.stats.views).to.equal(1);
+          });
         });
+    });
+
+    it('counts number of times media has been accessed', function () {
+      this.timeout(4000);
+
+      const views = 7;
+      function req(i) {
+        return request(server)
+          .get(`/music/${slug}`)
+          .expect(200)
+          .then(() => {
+            if (i > 0) {
+              return req(i - 1);
+            }
+            return null;
+          });
+      }
+
+      return req(views).then(() => db.collection('media').findOne({ slug }))
+      .then((media) => {
+        expect(media.stats.views).to.equal(views + 1);
+      });
     });
 
     it('responds to /music/:slug with edit priveledges (and for audio)', function () {
@@ -271,7 +300,7 @@ describe('app.js', () => {
         .then(function (res) {
           loggedInUser = null;
 
-          const re = /JSON.parse\('({.*?})'.+\)/;
+          const re = /var props=({.*})\|\|\s{};/;
           const matches = res.text.match(re);
           if (!matches) {
             throw new Error('could not find props data sent from server');
@@ -517,30 +546,12 @@ describe('app.js', () => {
         });
     });
 
-    it('/api/lines', function () {
-      return request(server)
-        .get('/api/lines/58e638a2d300e060f9cdd6ca')
-        .expect(200)
-        .then(function (res) {
-          expect(res.body).to.be.an('array');
-        });
-    });
-
     it('/api/media/list shows list for logged in user', function () {
       return request(server)
         .get('/api/media/list')
         .expect(200)
         .then(function (res) {
           expect(res.body).to.be.an('array');
-        });
-    });
-
-    it('/api/media/:mediaID', function () {
-      return request(server)
-        .get('/api/media/58e638a2d300e060f9cdd6ca')
-        .expect(200)
-        .then(function (res) {
-          expect(res.body).to.be.an('object');
         });
     });
 
@@ -571,7 +582,7 @@ describe('app.js', () => {
 
     it('can handle a server error', function () {
       return request(server)
-        .get('/api/media/----')
+        .get('/api/changesets/list?mediaID=phyno')
         .expect(500);
     });
   });

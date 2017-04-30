@@ -8,12 +8,13 @@ ReactDOM.render(
   <MediaPlayer
     canEdit={props.canEdit}
     src={props.src}
-    mediaType={props.mediaType}
-    mediaID={props.mediaID}
+    mediaType={parseInt(props.type, 10)}
+    mediaID={props._id}
     img={props.img}
     artist={props.artist}
     title={props.title}
     slug={props.slug}
+    lyrics={props.lines}
   />,
   document.getElementById('root')
 );

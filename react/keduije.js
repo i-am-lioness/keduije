@@ -16,14 +16,11 @@ function onError(errorMsg, url, lineNumber, column, errorObj) {
   $.post('/api/logError', { width: screen.width, height: screen.height, msg: msg });
 }
 
-window.onerror = onError;
+// to do: test
+global.onerror = onError;
 
 function search(q) {
   return $.get('/api/search', { query: q });
-}
-
-function loadLyrics() {
-  return $.get(`/api/lines/${songID}`);
 }
 
 function getChangesets(query) {
@@ -44,10 +41,6 @@ function startEditSession(isStart) {
   }
   changesetID = null;
   return Promise.resolve(false);
-}
-
-function loadSongInfo() {
-  return $.get(`/api/media/${songID}`);
 }
 
 function addLyric(newLyric) {
@@ -104,8 +97,6 @@ ki.init = (_songID) => {
   return wrap.catch((err) => { console.log(err); });
 } */
 
-ki.loadLyrics = loadLyrics;
-ki.loadSongInfo = loadSongInfo;
 ki.updateLyric = updateLyric;
 ki.addLyric = addLyric;
 ki.saveSongInfo = saveSongInfo;
