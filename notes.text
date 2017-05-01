@@ -71,7 +71,7 @@ media: {
 		views: {Integer++}
 		history: [],
 		weeklyTotal: (sum(history)),
-		allTime: {Integer},
+		allTime: {Integer++},
 	}
 }
 

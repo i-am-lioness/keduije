@@ -5,15 +5,24 @@ import cheerio from 'cheerio';
 import sinon from 'sinon';
 import APP from '../lib/app';
 import TestDB from './utils/db';
+import { newMedia, slugs, newLines } from './utils/client-data';
 
 const ObjectId = require('mongodb').ObjectId;
 
 let $;
 
-let testUser = {
+const admin = {
+  _id: ObjectId('58e451206b5df803808e5912'),
+  role: 'admin',
+  isAdmin: true,
+};
+
+const member = {
   _id: ObjectId('58e451206b5df803808e5912'),
   role: 'member',
 };
+
+let testUser = member;
 
 let loggedInUser = null;
 
@@ -71,39 +80,6 @@ function Revision(db) {
 }
 
 require('dotenv').config();
-
-const newMedia = [
-  {
-    title: 'Thriller',
-    artist: 'Michael Jackson',
-    type: 1,
-  },
-  {
-    title: 'Lucky',
-    artist: 'Brittney Spears',
-    type: 0,
-  },
-  {
-    title: 'Mmege',
-    artist: 'Flavour',
-    type: 0,
-  },
-  {
-    title: 'Soldier',
-    artist: 'Destinys Child',
-    type: 0,
-  },
-];
-
-const slugs = ['Thriller', 'Lucky', 'Mmege', 'Soldier'];
-
-const newLines = [
-  {
-    startTime: 5,
-    endTime: 6,
-    text: 'whoever you are. girl, bye',
-  },
-];
 
 describe('app.js', () => {
   let server;
@@ -188,7 +164,7 @@ describe('app.js', () => {
   });
 
   it('POST /api/media/new should add new song', function () {
-    testUser.role = 'admin';
+    testUser = admin;
 
     return request(server)
       .post('/api/media/new')
@@ -209,13 +185,12 @@ describe('app.js', () => {
   });
 
   it('redirects /history when not logged in ', function () {
-    const temp = testUser;
     testUser = null;
     return request(server)
       .get('/history')
       .expect(302)
       .then(() => {
-        testUser = temp; // TO DO: better restore
+        testUser = member; // TO DO: better restore
       });
   });
 
@@ -230,8 +205,7 @@ describe('app.js', () => {
     let mediaObj;
     let slug;
     beforeEach(function () {
-      testUser.role = 'admin';
-      testUser.isAdmin = true;
+      testUser = admin;
       mediaObj = newMedia[current];
       slug = slugs[current];
       current += 1;
@@ -251,7 +225,7 @@ describe('app.js', () => {
           expect($('nav').length).to.equal(1);
           expect($('#root').length).to.equal(1);
 
-          // to do: not necessary. can use api request to get _id
+          // to do: consider getting id through header
           const re = /var props=({.*})\|\|\s{};/;
           const matches = res.text.match(re);
           if (!matches) {
@@ -341,10 +315,12 @@ describe('app.js', () => {
     let mediaID;
 
     before(function () {
+      testUser = admin;
       mediaObj = newMedia[2];
       return request(server)
         .post('/api/media/new')
         .send(mediaObj)
+        .expect(200)
         .then((res) => {
           mediaID = res.header['inserted-id'];
           return request(server)
@@ -476,7 +452,34 @@ describe('app.js', () => {
           });
       });
 
-      it('should return two lines, after adding a second');
+      it('should add multiple lines to db', function () {
+        this.timeout(4000);
+
+        const count = 11;
+        function req(i) {
+          const nthLine = {
+            text: `line ${i}`,
+            startTime: i * 6,
+            endTime: i * 7,
+          };
+          return request(server)
+            .post(`/api/media/${mediaID}/addline`)
+            .send(nthLine)
+            .expect(200)
+            .then(() => {
+              if (i > 0) {
+                return req(i - 1);
+              }
+              return null;
+            });
+        }
+
+        const media = ObjectId(mediaID);
+        return req(count).then(() => db.collection('lines').find({ media }).count())
+        .then((cnt) => {
+          expect(cnt).to.be.at.least(count);
+        });
+      });
     });
   });
 
@@ -589,14 +592,14 @@ describe('app.js', () => {
 
   describe('authorization routing', function () {
     it('should redirect anonymous user to login for restricted page', function () {
-      testUser.role = 'member';
+      testUser = member;
       return request(server)
         .get('/new_music')
         .expect(403);
     });
 
     it('should permit admin user to add new music', function () {
-      testUser.role = 'admin'; // to do: restore
+      testUser = admin; // to do: restore
       return request(server)
         .get('/new_music')
         .expect(200);
@@ -643,8 +646,6 @@ describe('app.js', () => {
 
   it('never loads deleted songs');
 
-  it('does not allow editing of stale line');
-
   it('redirects to original page after sign in');
 
   it('stores all numbers as numbers instead of strings');
@@ -653,13 +654,7 @@ describe('app.js', () => {
 
   it('does not allow title/slug changes after a certain number of views');
 
-  it('maintais daily count of views');
-
-  it('cleans up sessions');
-
   it('clears failed revisions');
 
   it('youtube source url always has matching protocol');
-
-  it('manages sessions');
 });
