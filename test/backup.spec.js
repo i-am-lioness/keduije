@@ -58,26 +58,4 @@ describe('backup.js', () => {
       expect(media.archive).not.to.have.length.above(5);
     });
   });
-
-  it('should total last 5 daily view counts', function () {
-    this.timeout(5000);
-
-    function incrementViewsAndBackUp(views) {
-      return db.collection('media')
-        .updateOne({ _id }, { $set: { 'stats.views': views } })
-        .then(() => backup(db));
-    }
-    function repeat(cnt) {
-      return incrementViewsAndBackUp(50).then(() => {
-        if (cnt > 0) {
-          return repeat(cnt - 1);
-        }
-        return null;
-      });
-    }
-
-    return repeat(9).then(() => getMedia(_id)).then((media) => {
-      expect(media.stats.weeklyTotal).to.equal(350);
-    });
-  });
 });
