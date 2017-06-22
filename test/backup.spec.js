@@ -1,61 +1,58 @@
 /* eslint-env mocha */
 import { expect } from 'chai';
-import backup from '../lib/backup';
+import backupMedia from '../lib/backup';
 import TestDB from './utils/db';
 import populate from './utils/populate-db';
 
 let db;
 let populator;
+let lineCnt = 0;
+let mediaCnt = 0;
 
-function getMedia(_id) {
-  return db.collection('media').findOne({ _id });
-}
-
-describe('backup.js', () => {
-  let _id;
-  const lineCount = 11;
+describe('backup.js', function () {
   before(function () {
     return TestDB.open().then(function (database) {
       db = database;
       populator = populate(db);
-      return populator.addMedia()
-        .then((id) => {
-          _id = id;
-          return populator.addLines(lineCount);
-        });
+      return populator.loadLines()
+        .then((cnt) => { lineCnt = cnt; })
+        .then(populator.loadMedia)
+        .then((cnt) => { mediaCnt = cnt; });
     });
   });
 
   after(function () {
+    debugger;
     return TestDB.close();
   });
 
-  it('should add an "archive" field to the media object', function () {
-    return backup(db).then(() => getMedia(_id)).then((media) => {
-      expect(media).to.haveOwnProperty('archive');
-      expect(media.archive).to.be.an('array');
-      expect(media.archive).to.have.lengthOf(1);
-      expect(media.archive[0]).to.haveOwnProperty('date');
-      expect(media.archive[0]).to.haveOwnProperty('info');
-      expect(media.archive[0]).to.haveOwnProperty('lines');
-      expect(media.archive[0].lines).to.be.an('array');
-      expect(media.archive[0].lines).to.have.lengthOf(lineCount);
+  describe('backupMedia', function () {
+    let actualLineAddCnt = 0;
+    before(function () {
+      debugger;
+      return backupMedia(db);
     });
-  });
 
-  it('should not have store more than 5 snapshots', function () {
-    this.timeout(5000);
-    function repeat(cnt) {
-      return backup(db).then(() => {
-        if (cnt > 0) {
-          return repeat(cnt - 1);
-        }
-        return null;
+    it('backs up all media', function () {
+      return db.collection('snapshots').count().then((cnt) => {
+        expect(cnt).to.equal(mediaCnt);
       });
-    }
+    });
 
-    return repeat(9).then(() => getMedia(_id)).then((media) => {
-      expect(media.archive).not.to.have.length.above(5);
+    it('backsup all lines', function (done) {
+      db.collection('snapshots').find().forEach((ss) => {
+        expect(ss).to.haveOwnProperty('info');
+        expect(ss).to.haveOwnProperty('lines');
+        expect(ss.lines).to.be.an('Array');
+        actualLineAddCnt += ss.lines.length;
+      }, (err) => {
+        expect(actualLineAddCnt).to.equal(lineCnt);
+        done(err);
+      });
     });
   });
+
+  it('only backs up media that has changed since last backup');
+
+  it('it stores no more than 5 backups for a given media');
 });

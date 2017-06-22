@@ -32,7 +32,7 @@ describe('compile-changesets.js', function () {
     return TestDB.close();
   });
 
-  describe.only('aggregateActvity', function () {
+  describe('aggregateActvity', function () {
     let actualRevisionCnt = 0;
     let actualLineAddCnt = 0;
     before(function () {
