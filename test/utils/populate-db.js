@@ -1,4 +1,5 @@
 import { newMedia } from './client-data';
+import { changesets, lines, revisions, media } from './data';
 
 const ObjectId = require('mongodb').ObjectId;
 
@@ -42,12 +43,32 @@ function addMedia() {
   });
 }
 
+function loadLines() {
+  return db.collection('lines').insertMany(lines).then(() => lines.length);
+}
+
+function loadChangesets() {
+  return db.collection('changesets').insertMany(changesets).then(() => changesets.length);
+}
+
+function loadRevisions() {
+  return db.collection('revisions').insertMany(revisions).then(() => revisions.length);
+}
+
+function loadMedia() {
+  return db.collection('media').insertMany(media).then(() => media.length);
+}
+
 function populate(_db) {
   db = _db;
 
   return {
     addLines,
     addMedia,
+    loadLines,
+    loadChangesets,
+    loadRevisions,
+    loadMedia,
   };
 }
 
