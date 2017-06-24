@@ -6,6 +6,7 @@ import sinon from 'sinon';
 import APP from '../lib/app';
 import TestDB from './utils/db';
 import { newMedia, slugs, newLines } from './utils/client-data';
+import { revisionTypes } from '../lib/revision'
 
 const ObjectId = require('mongodb').ObjectId;
 
@@ -63,7 +64,7 @@ const mail = {
 };
 
 function Revision(db) {
-  function onUpdateRequest(collectionName, req) {
+  function onUpdateRequest(type, req) {
     const queryObj = { _id: ObjectId(req.params.forID) };
     const updateObj = {
       $currentDate: { lastModified: true },
@@ -71,6 +72,22 @@ function Revision(db) {
       $inc: { version: 1 },
     };
 
+    if (type === revisionTypes.LINE_ADD) {
+      const line = req.body;
+      const newLine = {};
+      newLine.startTime = parseInt(line.startTime, 10);
+      newLine.endTime = parseInt(line.endTime, 10);
+      newLine.text = line.text;
+      newLine.creator = req.user._id;
+      newLine.media = ObjectId(req.params.mediaID);
+      newLine.changeset = ObjectId(req.body.changesetID);
+      newLine.version = 1;
+      newLine.deleted = false;
+      newLine.heading = null;
+      return db.collection('lines').insertOne(newLine);
+    }
+    // else
+    const collectionName = (type === revisionTypes.LINE_EDIT) ? 'lines' : 'media';
     return db.collection(collectionName)
       .findOneAndUpdate(queryObj, updateObj, { returnOriginal: false })
       .then(result => result.value);

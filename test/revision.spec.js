@@ -1,16 +1,26 @@
 /* eslint-env mocha */
 import { expect } from 'chai';
-import Revision, { states } from '../lib/revision';
+import Revision, { states, revisionTypes } from '../lib/revision';
 import TestDB from './utils/db';
 
+const ObjectId = require('mongodb').ObjectId;
+
+const changesetID = '58fa130609ef9a7c03067d7a';
+const mediaID = '58e745d22f1435db632f81fa';
+const userID = '5900a0ff6b5df803808e7be9';
+
 const testUser = {
+  _id: ObjectId(userID),
   username: 'test',
   displayName: 'Test',
   photo: 'https://cdn3.iconfinder.com/data/icons/pretty-office-part-10-shadow-style/128/Test-paper.png',
 };
 
-const changesetID = '58fa130609ef9a7c03067d7a';
-const mediaID = '58e745d22f1435db632f81fa';
+const changesetA = {
+  _id: ObjectId(changesetID),
+  user: ObjectId(userID),
+  media: ObjectId(mediaID),
+};
 
 function updateLyric(original, changes) {
   const postData = {
@@ -29,153 +39,242 @@ function updateLyric(original, changes) {
   return request;
 }
 
+function addLyric(newLyric) {
+  newLyric.mediaID = mediaID;
+  newLyric.changesetID = changesetID;
+  newLyric.version = 1;
+
+  const request = {
+    user: testUser,
+    params: { mediaID },
+    body: newLyric,
+  };
+
+  return request;
+}
+
 let db;
 
 describe('revision.js', () => {
   before(function () {
     return TestDB.open().then(function (database) {
       db = database;
-    }).then(() => db.collection('users').insertOne(testUser));
+    }).then(() => db.collection('users').insertOne(testUser))
+    .then(() => db.collection('changesets').insertOne(changesetA));
   });
 
   after(function () {
+    debugger;
     return TestDB.close();
   });
 
-  it('throws error, if trying to edit a line that doesnt exist', function () {
-    const oldLyric = {
-      _id: '58e7e85808091bfe6d06a498',
+  describe('basic funcitonality- ', function () {
+    const newLyric = {
       text: 'never forget where i come from na from ghetto',
       endTime: 37,
       startTime: 34,
     };
-
-    const lyricChanges = {
-      text: "you know it's true",
-    };
-
-    const req = updateLyric(oldLyric, lyricChanges);
-    const r = new Revision(db);
-    return r.execute('lines', req).then((line) => {
-      expect(line.text).to.equal(lyricChanges.text);
-    }).then(() => {
-      throw new Error('Should have thrown an ObjectNotFoundError');
-    })
-    .catch((err) => {
-      expect(err.name).to.equal('ObjectNotFoundError');
-    });
-  });
-
-  it('edits a line', function () {
-    const newLine = {
-      text: 'never forget where i come from na from ghetto',
-      endTime: 37,
-      startTime: 34,
-    };
-    newLine.creator = testUser._id;
-    newLine.media = mediaID;
-    newLine.changeset = changesetID;
-    newLine.version = 1;
-    newLine.deleted = false;
-    newLine.heading = null;
 
     const changes = { text: 'beautiful baby' };
 
-    return db.collection('lines').insertOne(newLine)
-      .then(() => {
-        const req = updateLyric(newLine, changes);
-        const r = new Revision(db);
-        return r.execute('lines', req).then(line => line);
-      }).then((line) => {
-        expect(line.text).to.equal(changes.text);
+    let addResult = null;
+    let lineAdd;
+    let revisionDoc;
+
+    before(function () {
+      const req = addLyric(newLyric);
+      lineAdd = new Revision(db);
+      return lineAdd.execute(revisionTypes.LINE_ADD, req).then((result) => {
+        addResult = result;
+        newLyric._id = result.insertedId;
+        return lineAdd.getDebugInfo();
+      }).then((r) => {
+        revisionDoc = r;
+      });
+    });
+
+    it('adds a line', function () {
+      expect(addResult.insertedCount).to.equal(1);
+      const doc = addResult.ops[0];
+      expect(doc.text).to.equal(newLyric.text);
+      expect(doc.endTime).to.equal(newLyric.endTime);
+      expect(doc.startTime).to.equal(newLyric.startTime);
+      expect(doc.version).to.equal(1);
+      expect(doc.deleted).to.be.false;
+      expect(doc.heading).to.be.null;
+      /*
+      expect(doc.changeset).to.equal(newLyric.creator);
+      expect(doc.creator).to.equal(newLyric.creator);
+      expect(doc.media).to.equal(newLyric.creator);
+      */
+    });
+
+    it('edits a line', function () {
+      const req = updateLyric(newLyric, changes);
+      const r = new Revision(db);
+      return r.execute(revisionTypes.LINE_EDIT, req)
+        .then((line) => {
+          expect(line.text).to.equal(changes.text);
+        });
+    });
+
+    it('self-adds to the changeset', function () {
+      return db.collection('changesets').findOne({ _id: changesetA._id })
+      .then((doc) => {
+        debugger;
+        expect(doc).to.haveOwnProperty('revisions');
+        expect(doc.revisions).to.be.an('array');
+        expect(doc.revisions).to.have.length.at.least(1);
+        expect(doc.revisions[0]._id.toString()).to.equal(revisionDoc._id.toString());
+      });
+    });
+
+    it('self deletes', function () {
+      return db.collection('revisions').count({ _id: revisionDoc._id })
+        .then((cnt) => {
+          expect(cnt).to.equal(0);
+        });
+    });
+  });
+
+  describe('error handling', function () {
+    it('throws error, if trying to edit a line that doesnt exist', function () {
+      const oldLyric = {
+        _id: '58e7e85808091bfe6d06a498',
+        text: 'never forget where i come from na from ghetto',
+        endTime: 37,
+        startTime: 34,
+      };
+
+      const lyricChanges = {
+        text: "you know it's true",
+      };
+
+      const req = updateLyric(oldLyric, lyricChanges);
+      const r = new Revision(db);
+      return r.execute(revisionTypes.LINE_EDIT, req).then((line) => {
+        expect(line.text).to.equal(lyricChanges.text);
+      }).then(() => {
+        throw new Error('Should have thrown an ObjectNotFoundError');
       })
       .catch((err) => {
-        throw err;
+        expect(err.name).to.equal('ObjectNotFoundError');
       });
+    });
+
+    it('fails when editing stale line', function () {
+      const newLine = {
+        text: 'you are everything. and everything is you',
+        endTime: 69,
+        startTime: 76,
+      };
+      newLine.creator = testUser._id;
+      newLine.media = mediaID;
+      newLine.changeset = changesetID;
+      newLine.version = 1;
+      newLine.deleted = false;
+      newLine.heading = null;
+
+      const changes = { text: 'i am never sad and blue' };
+      const changes2 = { text: 'i will never forget you' };
+
+      return db.collection('lines').insertOne(newLine)
+        .then(() => {
+          const req = updateLyric(newLine, changes);
+          const r = new Revision(db);
+          return r.execute(revisionTypes.LINE_EDIT, req).then(line => line);
+        }).then((line) => {
+          expect(line.text).to.equal(changes.text);
+        })
+        .then(() => {
+          const req = updateLyric(newLine, changes2);
+          const r = new Revision(db);
+          return r.execute(revisionTypes.LINE_EDIT, req)
+            .then(() => {
+              throw new Error('should have thrown error');
+            }).catch(err => err);
+        })
+        .then((err) => {
+          expect(err.name).to.equal('StaleVersionError');
+        });
+    });
   });
 
-  it('dones not save newValues for times that did not change');
-
-  it('fails when editing stale line', function () {
-    const newLine = {
-      text: 'you are everything. and everything is you',
-      endTime: 69,
-      startTime: 76,
-    };
-    newLine.creator = testUser._id;
-    newLine.media = mediaID;
-    newLine.changeset = changesetID;
-    newLine.version = 1;
-    newLine.deleted = false;
-    newLine.heading = null;
-
-    const changes = { text: 'i am never sad and blue' };
-    const changes2 = { text: 'i will never forget you' };
-
-    return db.collection('lines').insertOne(newLine)
-      .then(() => {
-        const req = updateLyric(newLine, changes);
-        const r = new Revision(db);
-        return r.execute('lines', req).then(line => line);
-      }).then((line) => {
-        expect(line.text).to.equal(changes.text);
-      })
-      .then(() => {
-        const req = updateLyric(newLine, changes2);
-        const r = new Revision(db);
-        return r.execute('lines', req)
-          .then(() => {
-            throw new Error('should have thrown error');
-          }).catch(err => err);
-      })
-      .then((err) => {
-        expect(err.name).to.equal('StaleVersionError');
-      });
-  });
-
-  it('can recover from failed revision', function () {
-    const newLine = {
+  describe('recovery - ', function () {
+    const newLyric = {
       text: 'you will always be by my side',
       endTime: 69,
       startTime: 76,
     };
-    newLine.creator = testUser._id;
-    newLine.media = mediaID;
-    newLine.changeset = changesetID;
-    newLine.version = 1;
-    newLine.deleted = false;
-    newLine.heading = null;
-
     const changes = { text: 'i used to be so happy but without you here i feel so low' };
     const changes2 = { text: 'cuz once upon a time you were my everything' };
-    let revisionData;
 
-    return db.collection('lines').insertOne(newLine)
-      .then(() => {
-        const req = updateLyric(newLine, changes);
+    let addResult = null;
+    let lineAdd;
+    let changeResult1;
+    let changeError;
+
+    before(function () {
+      let req = addLyric(newLyric);
+      lineAdd = new Revision(db);
+      return lineAdd.execute(revisionTypes.LINE_ADD, req).then((result) => {
+        addResult = result;
+        newLyric._id = result.insertedId;
+        newLyric.version = 1;
+        req = updateLyric(newLyric, changes);
         const r = new Revision(db);
-        return r.execute('lines', req).then(line => line);
+        return r.execute(revisionTypes.LINE_EDIT, req);
       }).then((line) => {
-        expect(line.text).to.equal(changes.text);
-      })
-      .then(() => {
-        const req = updateLyric(newLine, changes2);
+        changeResult1 = line;
+        req = updateLyric(newLyric, changes2);
         const r = new Revision(db);
-        return r.execute('lines', req)
-          .then(() => {
-            throw new Error('should have thrown error');
-          }).catch(err => err);
-      })
-      .then((err) => {
-        expect(err.name).to.equal('StaleVersionError');
-        revisionData = err.revision;
-        revisionData.original.version = 3;
-        revisionData.state = states.PENDING;
-        const r = new Revision(db);
-        return r.processRevision(revisionData);
-      })
-      .then(() => {
-        expect(revisionData.state).to.equal(states.DONE);
+        return r.execute(revisionTypes.LINE_EDIT, req)
+        .then(() => {
+          debugger;
+          throw new Error('should have thrown error');
+        }).catch((err) => {
+          debugger;
+          changeError = err;
+        });
       });
+    });
+
+    it('added a line', function () {
+      expect(addResult.insertedCount).to.equal(1);
+      const doc = addResult.ops[0];
+      expect(doc.text).to.equal(newLyric.text);
+      expect(doc.endTime).to.equal(newLyric.endTime);
+      expect(doc.startTime).to.equal(newLyric.startTime);
+      expect(doc.version).to.equal(1);
+      expect(doc.deleted).to.be.false;
+      expect(doc.heading).to.be.null;
+    });
+
+    it('successfully edits next version of line', function () {
+      expect(changeResult1.text).to.equal(changes.text);
+    });
+
+    it('should throw StaleVersionError', function () {
+      expect(changeError.name).to.equal('StaleVersionError');
+    });
+
+    it('can recover from failed revision', function () {
+      const revisionData = changeError.revision;
+      revisionData.original.version = 3;
+      revisionData.state = states.PENDING;
+      const r = new Revision(db);
+      return r.processRevision(revisionData)
+        .then(() => {
+          expect(revisionData.state).not.to.equal(states.PENDING);
+        });
+    });
   });
+
+  it('can edit media info');
+
+  it('does not change state to logged if not logged');
+  it('does not save http request in changeset');
+  it('should be cleared from pendingRevisions');
+
+  it('dones not save newValues for times that did not change');
 });
