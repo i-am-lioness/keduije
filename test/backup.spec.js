@@ -8,7 +8,7 @@ import populate from './utils/populate-db';
 let db;
 let populator;
 
-describe.only('backup.js', function () {
+describe('backup.js', function () {
   before(function () {
     return TestDB.open().then(function (database) {
       db = database;

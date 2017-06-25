@@ -7,23 +7,15 @@ import populate from './utils/populate-db';
 let db;
 let populator;
 let changesetCnt = 0;
-let revisionCnt = 0;
-let lineCnt = 0;
-let mediaCnt = 0;
 
 describe('compile-changesets.js', function () {
   before(function () {
     return TestDB.open().then(function (database) {
       db = database;
       populator = populate(db);
-      return populator.loadLines()
-        .then((cnt) => { lineCnt = cnt; })
-        .then(populator.loadChangesets)
+      return populator.loadChangesets()
         .then((cnt) => { changesetCnt = cnt; })
-        .then(populator.loadMedia)
-        .then((cnt) => { mediaCnt = cnt; })
-        .then(populator.loadRevisions)
-        .then((cnt) => { revisionCnt = cnt; });
+        .then(populator.loadMedia);
     });
   });
 
@@ -33,47 +25,60 @@ describe('compile-changesets.js', function () {
   });
 
   describe('aggregateActvity', function () {
-    let actualRevisionCnt = 0;
-    let actualLineAddCnt = 0;
+    let processedCnt;
+    let toBackupCnt;
     before(function () {
-      debugger;
-      return aggregateActvity(db);
+      return db.collection('changesets').count({ processed: true })
+        .then((cnt) => {
+          processedCnt = cnt;
+          return db.collection('media').count({ toBackup: true });
+        })
+        .then((cnt) => {
+          toBackupCnt = cnt;
+          return aggregateActvity(db);
+        });
     });
 
-    it('has no changesets without updates or creates', function (done) {
+    it('has no changesets without revisions or media', function (done) {
       db.collection('changesets').find().forEach((cs) => {
         expect(cs).to.haveOwnProperty('media');
+        expect(cs).not.to.haveOwnProperty('lines');
         if (cs.type === 'new') {
-          expect(cs).not.to.haveOwnProperty('lines');
           expect(cs).not.to.haveOwnProperty('revisions');
         } else {
-          expect(cs).to.haveOwnProperty('lines');
           expect(cs).to.haveOwnProperty('revisions');
-          actualRevisionCnt += cs.revisions.length;
-          actualLineAddCnt += cs.lines.length;
-
-          const totalModifications = cs.lines.length + cs.revisions.length;
-          expect(totalModifications).to.be.greaterThan(0);
+          expect(cs.revisions).to.have.length.greaterThan(0);
         }
       }, (err) => {
-        expect(actualRevisionCnt).to.equal(revisionCnt);
-        expect(actualLineAddCnt).to.equal(lineCnt);
         done(err);
+      });
+    });
+
+    it('flags changesets as processed', function () {
+      return db.collection('changesets').count({ processed: true }).then((cnt) => {
+        expect(cnt).to.be.greaterThan(processedCnt);
+      });
+    });
+
+    it('deletes extraneous changesets', function () {
+      return db.collection('changesets').count().then((cnt) => {
+        expect(cnt).to.be.lessThan(changesetCnt);
+      });
+    });
+
+    it('turns on backup flag for updated media', function () {
+      expect(toBackupCnt).to.equal(0);
+      return db.collection('media').count({ toBackup: true }).then((cnt) => {
+        expect(cnt).to.be.greaterThan(0);
       });
     });
   });
 
-  it('has all original revisions within changets');
-
-  it('incluces lyric adds in changeset');
-
-  it('deletes extraneous changesets');
+  it('can handle multiple rounds');
 
   it('includes media creations');
 
-  it('clears compiled revisions', function () {
+  it('can handle error');
 
-  });
-
-  it('does not include incomplete revisions');
+  it('can handle empty revisions');
 });
