@@ -40,15 +40,23 @@ revision: {
   changeset: {ObjectID}
 }
 
-changeset {
-	type: "new" || "edit" || "rollback",
+changeset/activity {
+	type: "new"/create || "edit"/update || "rollback",
 	(media: {ObjectID},)
 	user: {ObjectID},
-	state: "undone"|| "undoing" || "active" || null
+	/*for rollbacks */
+	state: {"pending" || "applied" || "done"},
+	snapshotID : {},
 }
 
+snapshot {
+	media: {ObjectID},
+	info: {},
+	lines: [],
+}
 
-media: {
+media/piece: {
+	pendingRollbacks: [],
 	pendingRevisions: [],
 	status: "draft"||"published"||"deleted",
   creator: {ObjectID},
@@ -60,19 +68,13 @@ media: {
 	type: 0 || 1, /* audio= 0, video=1 */
 	/*for audio type */
 	src: "string",
-	archive: [
-		{
-			date: 
-			info: {}
-			lines: []
-		},
-	]
 	stats: {
 		views: {Integer++}
 		history: [],
 		weeklyTotal: (sum(history)),
 		allTime: {Integer++},
 	}
+	lines: []
 }
 
 
@@ -188,26 +190,11 @@ Editing Control
 to avoid clashes, in the future, the more popular a song is,
  the fewer people will have the privilege of editing it
 
+All revisions are added to changeset autmotaically
+-line adds are considered revisions
 
- Rollback a changeset c0 of m0
- -insert new changeset c1 = { type: "rollback", of: c0 }
- -update changeset c0 { state: "undoing" }
- -update media m0 { locked: true }
- -for each revision,r0 or listing, l0 with changeset c0:
- --make new revision r1 with old values
- 	{
-		 newValues: r0.original || { delete: true },
-		 state: "pending",
-		 rollBackFor: {ObjectID(r0)},
-		 forID: r0.forID,
-		 ...
-	 }
-	-- apply revision to object and r0
-		r0.state= "canceled";
-	 {}
--------
-- or snap shots?
---create new snap shot with each changeset, or daily]
+SNAPSHOTS
+--created periodically
 
 then what was the point of all those changesets/and revisions?
 --for neat editing histories
@@ -215,3 +202,38 @@ then what was the point of all those changesets/and revisions?
 -- consider: compiling changeset stories? and deleting revisions?
 
 ...wait, what's the true point of changesets???
+
+
+NEW DATA ARCHITECHTURE (6/6/17)
+----------------
+Media Lyrics "committed" in media Document
+Changes to Lyrics, and Lyric adds, are stored as revisions and adds
+-until next "commit", which is basically a snapshot
+snapshot compiles all lyric changes into media document,
+
+-all revisions and adds (and changesets?) are cleared/reset
+
+during rollback, a changeset rollback is created,
+an older snapshot in the archive is promoted
+and all revisiibs/adds are cleared
+
+
+-----
+BACKUP MECHANISM
+
+turn on backup flag when clearing out changesets (review updates/ compile changesets)
+(this avoids duplicate snapshots arising from empty changesets)
+it should not allow edit for media in the middle of a rollback
+turns off backup flag, once backed up
+
+----
+scripting
+-recover failed revisions
+-clear empty changesets
+-backup 
+
+
+Line children
+-(annotation) votes, comments/notes and suggestions
+-after a certain number of votes/responses, no longer can be edited. 
+suggestions can be added, and then later approved by owner or moderator

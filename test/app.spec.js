@@ -659,6 +659,33 @@ describe('app.js', () => {
     });
   });
 
+  describe('halt updates during rollback- ', function () {
+    let mediaObj;
+    let mediaID;
+    before(function () {
+      testUser = admin;
+      mediaObj = newMedia[2];
+      return request(server)
+        .post('/api/media/new')
+        .send(mediaObj)
+        .expect(200)
+        .then((res) => {
+          mediaID = res.header['inserted-id'];
+          return db.collection('media')
+            .updateOne({ _id: ObjectId(mediaID) }, { $set: { pendingRollbacks: [1] } });
+        });
+    });
+
+    it('should not allow edit for media in the middle of a rollback', function () {
+      return request(server)
+        .post(`/api/start_edit/${mediaID}`)
+        .expect(403)
+        .then(function (res2) {
+          expect(res2.text).to.equal('ROLLBACK_IN_PROGRESS');
+        });
+    });
+  });
+
   it('distinguisehs between two media with the same title/slug');
 
   it('never loads deleted songs');
