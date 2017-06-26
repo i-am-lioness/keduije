@@ -6,7 +6,7 @@ import TestDB from './utils/db';
 
 let db;
 
-describe.only('rollback.js', function () {
+describe('rollback.js', function () {
   before(function () {
     return TestDB.open().then(function (database) {
       db = database;

@@ -263,9 +263,69 @@ describe('revision.js', () => {
       revisionData.original.version = 3;
       revisionData.state = states.PENDING;
       const r = new Revision(db);
-      return r.processRevision(revisionData)
+      return r.recover(revisionData)
         .then(() => {
           expect(revisionData.state).not.to.equal(states.PENDING);
+        });
+    });
+  });
+
+  describe('recovery', function () {
+    const revision = {
+      type: revisionTypes.LINE_ADD,
+      lastModified: new Date(),
+      changeset: ObjectId(changesetID),
+      collectionName: 'lines', //to do: force fail by leaving this property out
+    };
+
+    let loggedRevisionCnt;
+
+    beforeEach(function () {
+      const q = { _id: ObjectId(changesetID) };
+      return db.collection('changesets').findOne(q).then((doc) => {
+        loggedRevisionCnt = doc.revisions ? doc.revisions.length : 0;
+        console.log(`loggedRevisionCnt: ${loggedRevisionCnt}`);
+      });
+    });
+
+    it('can recover applied revision', function () {
+      const r = new Revision(db);
+      const appliedRevision = Object.assign({ state: states.APPLIED }, revision);
+      return r.recover(appliedRevision)
+        .then((revData) => {
+          expect(revData.state).to.equal(states.LOGGED);
+          const q = { _id: ObjectId(changesetID), 'revisions._id': revData._id };
+          return db.collection('changesets').findOne(q);
+        }).then((doc) => {
+          expect(doc.revisions.length).to.equal(loggedRevisionCnt + 1);
+        });
+    });
+
+    it('can recover done revision', function () {
+      const doneRevision = Object.assign({ state: states.DONE }, revision);
+      const r = new Revision(db);
+      return r.recover(doneRevision)
+        .then((revData) => {
+          expect(revData.state).to.equal(states.LOGGED);
+          const q = { _id: ObjectId(changesetID) };
+          return db.collection('changesets').findOne(q);
+        }).then((doc) => {
+          expect(doc.revisions.length).to.equal(loggedRevisionCnt + 1);
+        });
+    });
+
+    it('can recover logged revision', function () {
+      const loggedRevision = Object.assign({ state: states.LOGGED }, revision);
+      return db.collection('revisions').insertOne(loggedRevision)
+        .then(() => db.collection('revisions').count({ _id: loggedRevision._id }))
+        .then((cnt) => {
+          expect(cnt).to.equal(1);
+          const r = new Revision(db);
+          return r.recover(loggedRevision);
+        })
+        .then(() => db.collection('revisions').count({ _id: loggedRevision._id }))
+        .then((cnt) => {
+          expect(cnt).to.equal(0);
         });
     });
   });
