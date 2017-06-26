@@ -337,4 +337,6 @@ describe('revision.js', () => {
   it('should be cleared from pendingRevisions');
 
   it('dones not save newValues for times that did not change');
+
+  it('keeps lastModified up to date');
 });
