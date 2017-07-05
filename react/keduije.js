@@ -27,6 +27,15 @@ function getChangesets(query) {
   return $.get('/api/changesets/list', query);
 }
 
+function getMediaInfo(id) {
+  return $.get(`/api/media/${id}`);
+}
+
+function getSpotifyToken() {
+  return $.get('/api/spotify/token');
+}
+
+
 function startEditSession(isStart) {
   if (isStart) {
     return $.post(`/api/start_edit/${songID}`)
@@ -106,6 +115,8 @@ ki.getChangesets = getChangesets;
 ki.deleteLyric = deleteLyric;
 ki.deleteSong = deleteSong;
 ki.createSong = createSong;
+ki.getMediaInfo = getMediaInfo;
+ki.getSpotifyToken = getSpotifyToken;
 
 const editModes = {
   ADD: 'add',

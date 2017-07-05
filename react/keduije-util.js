@@ -3,9 +3,19 @@
 
 const API_KEY = 'AIzaSyBLYlu4hbmzhr1iOCiD_o2PTrjzvQBuQUA';
 
-function searchImages(q) {
+function searchImages(q, token) {
+  debugger;
   const query = { type: 'track', q: q };
-  return $.get('https://api.spotify.com/v1/search', query).then((data) => {
+  /* return $.get('https://api.spotify.com/v1/search', query).then((data) => {
+    const images = data.tracks.items.map(el => el.album.images[0].url);
+    return images;
+  });
+  */
+  const header = `${token.token_type} ${token.access_token}`;
+  return $.ajax('https://api.spotify.com/v1/search', {
+    data: query,
+    headers: { Authorization: header },
+  }).then((data) => {
     const images = data.tracks.items.map(el => el.album.images[0].url);
     return images;
   });

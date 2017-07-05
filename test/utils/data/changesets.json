@@ -1,204 +1,276 @@
 [
-  {
+{
     "_id": {
-      "$oid": "5900a5747dccb248571bcaf7"
+        "$oid": "58fa130609ef9a7c03067d7a"
     },
     "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "type": "new"
-  },
-  {
-    "_id": {
-      "$oid": "5900a5af7dccb248571bcaf9"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
+        "$oid": "5900a0ff6b5df803808e7be9"
     },
     "media": {
-      "$oid": "5900a5987dccb248571bcaf8"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5900a6ad7dccb248571bcb02"
+        "$oid": "58e745d22f1435db632f81fa"
     },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "5900a5987dccb248571bcaf8"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5900a70c7dccb248571bcb05"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "type": "new"
-  },
-  {
-    "_id": {
-      "$oid": "5900a72c7dccb248571bcb07"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "5900a71e7dccb248571bcb06"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5900a80d7dccb248571bcb11"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "5900a71e7dccb248571bcb06"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5900a86f7dccb248571bcb14"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "5900a71e7dccb248571bcb06"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "590183d9b556696c1f377893"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "type": "new"
-  },
-  {
-    "_id": {
-      "$oid": "590183efb556696c1f377895"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "590183ebb556696c1f377894"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5901842bb556696c1f377898"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "590183ebb556696c1f377894"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5901a19eee905d7df6164d64"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "590183ebb556696c1f377894"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5901a1c5ee905d7df6164d66"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "5900a5987dccb248571bcaf8"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5901e96c61b02a9ceb59c1d0"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "5900a5987dccb248571bcaf8"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5901e98861b02a9ceb59c1d4"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "5900a5987dccb248571bcaf8"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5901e9b361b02a9ceb59c1d6"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "type": "new"
-  },
-  {
-    "_id": {
-      "$oid": "5901e9c261b02a9ceb59c1d8"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "5901e9bf61b02a9ceb59c1d7"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "5905f4c2bb156d11a9b92198"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "5900a71e7dccb248571bcb06"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "59086a1f0c45240011113f63"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "type": "new"
-  },
-  {
-    "_id": {
-      "$oid": "59086a4d0c45240011113f65"
-    },
-    "user": {
-      "$oid": "5900a0ff6b5df803808e7be9"
-    },
-    "media": {
-      "$oid": "59086a480c45240011113f64"
-    },
+    "type": "edit",
     "revisions": [
-      "revision0\n"
+        {
+            "state": "done",
+            "type": "lineAdd",
+            "lastModified": {
+                "$date": "2017-07-05T00:11:26.907Z"
+            },
+            "changeset": {
+                "$oid": "58fa130609ef9a7c03067d7a"
+            },
+            "media": {
+                "$oid": "58e745d22f1435db632f81fa"
+            },
+            "user": {
+                "$oid": "5900a0ff6b5df803808e7be9"
+            },
+            "_id": {
+                "$oid": "595c2eae3d45336b37a7ada9"
+            },
+            "newLine": {
+                "startTime": 34,
+                "endTime": 37,
+                "text": "never forget where i come from na from ghetto",
+                "creator": {
+                    "$oid": "5900a0ff6b5df803808e7be9"
+                },
+                "media": {
+                    "$oid": "58e745d22f1435db632f81fa"
+                },
+                "changeset": {
+                    "$oid": "58fa130609ef9a7c03067d7a"
+                },
+                "version": 1,
+                "deleted": false,
+                "heading": null,
+                "_id": {
+                    "$oid": "595c2eae3d45336b37a7adaa"
+                }
+            }
+        },
+        {
+            "state": "done",
+            "type": "lineEdit",
+            "lastModified": {
+                "$date": "2017-07-05T00:11:34.438Z"
+            },
+            "changeset": {
+                "$oid": "58fa130609ef9a7c03067d7a"
+            },
+            "media": {
+                "$oid": "58e745d22f1435db632f81fa"
+            },
+            "user": {
+                "$oid": "5900a0ff6b5df803808e7be9"
+            },
+            "_id": {
+                "$oid": "595c2eb63d45336b37a7adab"
+            },
+            "for": {
+                "$oid": "595c2eae3d45336b37a7adaa"
+            },
+            "newValues": {
+                "text": "beautiful baby",
+                "version": 2
+            },
+            "original": {
+                "text": "never forget where i come from na from ghetto",
+                "endTime": 37,
+                "startTime": 34,
+                "mediaID": "58e745d22f1435db632f81fa",
+                "changesetID": "58fa130609ef9a7c03067d7a",
+                "version": 1,
+                "_id": {
+                    "$oid": "595c2eae3d45336b37a7adaa"
+                }
+            },
+            "collectionName": "lines"
+        },
+        {
+            "state": "done",
+            "type": "lineEdit",
+            "lastModified": {
+                "$date": "2017-07-05T00:11:54.998Z"
+            },
+            "changeset": {
+                "$oid": "58fa130609ef9a7c03067d7a"
+            },
+            "media": {
+                "$oid": "58e745d22f1435db632f81fa"
+            },
+            "user": {
+                "$oid": "5900a0ff6b5df803808e7be9"
+            },
+            "_id": {
+                "$oid": "595c2eca3d45336b37a7adae"
+            },
+            "for": {
+                "$oid": "595c2eca3d45336b37a7adad"
+            },
+            "newValues": {
+                "text": "i am never sad and blue",
+                "version": 2
+            },
+            "original": {
+                "text": "you are everything. and everything is you",
+                "endTime": 69,
+                "startTime": 76,
+                "creator": {
+                    "$oid": "5900a0ff6b5df803808e7be9"
+                },
+                "media": "58e745d22f1435db632f81fa",
+                "changeset": "58fa130609ef9a7c03067d7a",
+                "version": 1,
+                "deleted": false,
+                "heading": null,
+                "_id": {
+                    "$oid": "595c2eca3d45336b37a7adad"
+                }
+            },
+            "collectionName": "lines"
+        },
+        {
+            "state": "done",
+            "type": "lineAdd",
+            "lastModified": {
+                "$date": "2017-07-05T00:11:55.303Z"
+            },
+            "changeset": {
+                "$oid": "58fa130609ef9a7c03067d7a"
+            },
+            "media": {
+                "$oid": "58e745d22f1435db632f81fa"
+            },
+            "user": {
+                "$oid": "5900a0ff6b5df803808e7be9"
+            },
+            "_id": {
+                "$oid": "595c2ecb3d45336b37a7adb0"
+            },
+            "newLine": {
+                "startTime": 76,
+                "endTime": 69,
+                "text": "you will always be by my side",
+                "creator": {
+                    "$oid": "5900a0ff6b5df803808e7be9"
+                },
+                "media": {
+                    "$oid": "58e745d22f1435db632f81fa"
+                },
+                "changeset": {
+                    "$oid": "58fa130609ef9a7c03067d7a"
+                },
+                "version": 1,
+                "deleted": false,
+                "heading": null,
+                "_id": {
+                    "$oid": "595c2ecb3d45336b37a7adb1"
+                }
+            }
+        },
+        {
+            "state": "done",
+            "type": "lineEdit",
+            "lastModified": {
+                "$date": "2017-07-05T00:11:55.395Z"
+            },
+            "changeset": {
+                "$oid": "58fa130609ef9a7c03067d7a"
+            },
+            "media": {
+                "$oid": "58e745d22f1435db632f81fa"
+            },
+            "user": {
+                "$oid": "5900a0ff6b5df803808e7be9"
+            },
+            "_id": {
+                "$oid": "595c2ecb3d45336b37a7adb2"
+            },
+            "for": {
+                "$oid": "595c2ecb3d45336b37a7adb1"
+            },
+            "newValues": {
+                "text": "i used to be so happy but without you here i feel so low",
+                "version": 2
+            },
+            "original": {
+                "text": "you will always be by my side",
+                "endTime": 69,
+                "startTime": 76,
+                "mediaID": "58e745d22f1435db632f81fa",
+                "changesetID": "58fa130609ef9a7c03067d7a",
+                "version": 1,
+                "_id": {
+                    "$oid": "595c2ecb3d45336b37a7adb1"
+                }
+            },
+            "collectionName": "lines"
+        },
+        {
+            "state": "done",
+            "type": "lineEdit",
+            "lastModified": {
+                "$date": "2017-07-05T00:11:55.543Z"
+            },
+            "changeset": {
+                "$oid": "58fa130609ef9a7c03067d7a"
+            },
+            "media": {
+                "$oid": "58e745d22f1435db632f81fa"
+            },
+            "user": {
+                "$oid": "5900a0ff6b5df803808e7be9"
+            },
+            "_id": {
+                "$oid": "595c2ecb3d45336b37a7adb3"
+            },
+            "for": {
+                "$oid": "595c2ecb3d45336b37a7adb1"
+            },
+            "newValues": {
+                "text": "cuz once upon a time you were my everything",
+                "version": 4
+            },
+            "original": {
+                "text": "you will always be by my side",
+                "endTime": 69,
+                "startTime": 76,
+                "mediaID": "58e745d22f1435db632f81fa",
+                "changesetID": "58fa130609ef9a7c03067d7a",
+                "version": 3,
+                "_id": {
+                    "$oid": "595c2ecb3d45336b37a7adb1"
+                }
+            },
+            "collectionName": "lines"
+        },
+        {
+            "state": "done",
+            "type": "lineAdd",
+            "lastModified": {
+                "$date": "2017-07-05T00:11:25.837Z"
+            },
+            "changeset": {
+                "$oid": "58fa130609ef9a7c03067d7a"
+            },
+            "collectionName": "lines",
+            "_id": {
+                "$oid": "595c2ed13d45336b37a7adb4"
+            }
+        },
+        {
+            "state": "done",
+            "type": "lineAdd",
+            "lastModified": {
+                "$date": "2017-07-05T00:11:25.837Z"
+            },
+            "changeset": {
+                "$oid": "58fa130609ef9a7c03067d7a"
+            },
+            "collectionName": "lines"
+        }
     ]
-  }
+}
 ]

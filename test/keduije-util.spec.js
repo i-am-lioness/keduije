@@ -1,8 +1,9 @@
 /* eslint-env mocha, browser */
 import { expect, assert } from 'chai';
 import sinon from 'sinon';
-import KeduijeUtil from '../react/keduije-util';
 
+import KeduijeUtil from '../react/keduije-util';
+import getToken from '../lib/spotify';
 
 KeduijeUtil.__Rewire__('API_KEY', 'AIzaSyAZoi72Rr-ft3ffrgJ9gDZ-O5_fyVNDe_k');
 
@@ -42,11 +43,21 @@ describe('keduije-util.js', function () {
 
   it('will not look for video url for non youtube url');
 
-  it('finds artwork given a string', function () {
-    return KeduijeUtil.searchImages('Flavour')
-      .then(function (images) {
-        expect(images).to.be.ok;
+  describe('spotify api', function () {
+    let token;
+
+    before(function () {
+      return getToken().then((t) => {
+        token = t;
       });
+    });
+
+    it('finds artwork given a string', function () {
+      return KeduijeUtil.searchImages('Flavour', token)
+        .then(function (images) {
+          expect(images).to.be.ok;
+        });
+    });
   });
 
   it('loads youtube iframe api', function (done) {

@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import APP from '../lib/app';
 import TestDB from './utils/db';
 import { newMedia, slugs, newLines } from './utils/client-data';
-import { revisionTypes } from '../lib/revision'
+import { revisionTypes } from '../lib/revision';
 
 const ObjectId = require('mongodb').ObjectId;
 
@@ -511,8 +511,19 @@ describe('app.js', () => {
         .get('/api/changesets/list?userID')
         .expect(200)
         .then(function (res) {
-          // TO DO: test actual content
           expect(res.body).to.be.an('array');
+          debugger;
+          res.body.forEach((cs) => {
+            expect(cs).to.have.property('type');
+            expect(cs.type).to.be.oneOf(['new', 'edit', 'rollback']);
+            if (cs.type === 'edit') {
+              expect(cs).to.have.property('revisions');
+              expect(cs.revisions).to.be.an('array');
+            }
+            if (cs.type !== 'new') {
+              expect(cs).to.have.property('media');
+            }
+          });
         });
     });
 
@@ -687,6 +698,8 @@ describe('app.js', () => {
   });
 
   it('distinguisehs between two media with the same title/slug');
+
+  it('updates changset with media after media creation');
 
   it('never loads deleted songs');
 

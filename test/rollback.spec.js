@@ -91,6 +91,8 @@ describe('rollback.js', function () {
 
   it('can cancel');
 
+  it('marks rolledback changesets');
+
   describe('recovery', function () {
     it('can recover from pending');
     it('can recover from initial');

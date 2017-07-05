@@ -4,7 +4,7 @@ import update from 'react-addons-update'; // todo: replace with https://github.c
 import PropTypes from 'prop-types';
 import KeduIje from '../keduije';
 import { convertToTime } from '../keduije-util';
-// import { states } from '../../lib/revision';
+import { revisionTypes } from '../../lib/constants';
 
 const JsDiff = require('diff');
 
@@ -26,25 +26,27 @@ function getDate(doc) {
 
 function processActivity(el) {
   el.time = parseInt(el.original ? (el.original.startTime || -1) : el.startTime, 10);
-}
-
-function processRevision(el) {
-  if (el.collectionName === 'media') {
-    if (el.newValues.status === 'deleted') {
-      el.type = activityTypes.MEDIA_REMOVAL;
-    } else {
-      el.type = activityTypes.META;
-    }
-  } else if (('deleted' in el.newValues) && JSON.parse(el.newValues.deleted)) {
-    el.type = activityTypes.LYRIC_DELETION;
-  } else {
-    el.type = activityTypes.UDPATE;
+  switch (el.type) {
+    case revisionTypes.INFO_EDIT:
+      if (el.newValues.status === 'deleted') {
+        el.type = activityTypes.MEDIA_REMOVAL;
+      } else {
+        el.type = activityTypes.META;
+      }
+      break;
+    case revisionTypes.LINE_ADD:
+      el.type = activityTypes.LYRIC_INSERT;
+      break;
+    case revisionTypes.LINE_EDIT:
+      if (('deleted' in el.newValues) && JSON.parse(el.newValues.deleted)) {
+        el.type = activityTypes.LYRIC_DELETION;
+      } else {
+        el.type = activityTypes.UDPATE;
+      }
+      break;
+    default:
   }
   // todo: for now treat lyric recoveries like brand new adds
-}
-
-function processAdd(el) {
-  el.type = activityTypes.LYRIC_INSERT;
 }
 
 function eachDiff(diff, i) {
@@ -161,6 +163,7 @@ class Edits extends React.Component {
     this.state = {
       changesets: [],
       showMoreBtn: true,
+      media: {},
     };
 
     this.setChangesets = this.setChangesets.bind(this);
@@ -168,6 +171,7 @@ class Edits extends React.Component {
     this.processChangeset = this.processChangeset.bind(this);
     this.renderChanges = this.renderChanges.bind(this);
     this.loadMoreChangesets = this.loadMoreChangesets.bind(this);
+    this.storeMediaInfo = this.storeMediaInfo.bind(this);
 
     this.lastChangesetID = null;
 
@@ -202,6 +206,10 @@ class Edits extends React.Component {
     this.setState({ changesets: update(this.state.changesets, { $push: changesets }) });
   }
 
+  storeMediaInfo(media) {
+    this.setState({ media: update(this.state.media, { [media._id]: { $set: media } }) });
+  }
+
   processChangeset(el) {
     el.date = getDate(el);
     el.empty = true;
@@ -209,21 +217,20 @@ class Edits extends React.Component {
     const changesetID = el._id;
     this.lastChangesetID = changesetID;
 
+    if (!this.state.media.hasOwnProperty(el.media)) {
+      KeduIje.getMediaInfo(el.media).then(this.storeMediaInfo);
+    }
+
     if (el.type === 'new') {
-      if (el.media.length > 0) {
-        el.media = el.media[0];
+      if (el.media) {
         el.empty = false;
       }
     } else {
-      el.media = el.for_media[0]; // to do: ensure that it exists
-      const revisions = el.revisions.filter(r => (r.state === 'done'));
-      revisions.forEach(processRevision);
-      el.lines.forEach(processAdd);
-
-      el.changes = revisions.concat(el.lines);
-      el.empty = (el.changes.length === 0);
+      el.empty = (el.revisions.length === 0);
+      el.changes = el.revisions;
       el.changes.forEach(processActivity);
       el.changes.sort((a, b) => (a.time - b.time));
+      // TO DO: do not display rolledback changes
     }
   }
 
@@ -234,10 +241,14 @@ class Edits extends React.Component {
   }
 
   renderChangeset(changeset) {
-    const song = changeset.media; // to do: check that it exists
-    changeset.songUrl = `/music/${song.slug}`;
-    const songTitle = <a className="song-title" href={changeset.songUrl}>{song.title}</a>;
-    const songImg = song.img;
+    const song = this.state.media[changeset.media]; // to do: check that it exists
+    let songTitle = '';
+    let songImg = ''; // to do: default image
+    if (song) {
+      changeset.songUrl = `/music/${song.slug}`;
+      songTitle = <a className="song-title" href={changeset.songUrl}>{song.title}</a>;
+      songImg = song.img;
+    }
     let output = null;
 
     if (changeset.type === 'new') {

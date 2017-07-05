@@ -12,6 +12,7 @@ const KeduIje = {
   addLyric: sinon.stub(),
   saveSongInfo: sinon.stub(),
   deleteSong: sinon.spy(),
+  getMediaInfo: sinon.stub(),
   getChangesets: sinon.stub(),
   search: sinon.stub(),
 };
