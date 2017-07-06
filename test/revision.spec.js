@@ -2,6 +2,7 @@
 import { expect } from 'chai';
 import Revision, { states, revisionTypes } from '../lib/revision';
 import TestDB from './utils/db';
+import { tables } from '../lib/constants';
 
 const ObjectId = require('mongodb').ObjectId;
 
@@ -59,8 +60,8 @@ describe('revision.js', () => {
   before(function () {
     return TestDB.open().then(function (database) {
       db = database;
-    }).then(() => db.collection('users').insertOne(testUser))
-    .then(() => db.collection('changesets').insertOne(changesetA));
+    }).then(() => db(tables.USERS).insertOne(testUser))
+    .then(() => db(tables.CHANGESETS).insertOne(changesetA));
   });
 
   after(function () {
@@ -119,7 +120,7 @@ describe('revision.js', () => {
     });
 
     it('self-adds to the changeset', function () {
-      return db.collection('changesets').findOne({ _id: changesetA._id })
+      return db(tables.CHANGESETS).findOne({ _id: changesetA._id })
       .then((doc) => {
         debugger;
         expect(doc).to.haveOwnProperty('revisions');
@@ -130,7 +131,7 @@ describe('revision.js', () => {
     });
 
     it('self deletes', function () {
-      return db.collection('revisions').count({ _id: revisionDoc._id })
+      return db(tables.REVISIONS).count({ _id: revisionDoc._id })
         .then((cnt) => {
           expect(cnt).to.equal(0);
         });
@@ -178,7 +179,7 @@ describe('revision.js', () => {
       const changes = { text: 'i am never sad and blue' };
       const changes2 = { text: 'i will never forget you' };
 
-      return db.collection('lines').insertOne(newLine)
+      return db(tables.LINES).insertOne(newLine)
         .then(() => {
           const req = updateLyric(newLine, changes);
           const r = new Revision(db);
@@ -282,7 +283,7 @@ describe('revision.js', () => {
 
     beforeEach(function () {
       const q = { _id: ObjectId(changesetID) };
-      return db.collection('changesets').findOne(q).then((doc) => {
+      return db(tables.CHANGESETS).findOne(q).then((doc) => {
         loggedRevisionCnt = doc.revisions ? doc.revisions.length : 0;
         console.log(`loggedRevisionCnt: ${loggedRevisionCnt}`);
       });
@@ -295,7 +296,7 @@ describe('revision.js', () => {
         .then((revData) => {
           expect(revData.state).to.equal(states.LOGGED);
           const q = { _id: ObjectId(changesetID), 'revisions._id': revData._id };
-          return db.collection('changesets').findOne(q);
+          return db(tables.CHANGESETS).findOne(q);
         }).then((doc) => {
           expect(doc.revisions.length).to.equal(loggedRevisionCnt + 1);
         });
@@ -308,7 +309,7 @@ describe('revision.js', () => {
         .then((revData) => {
           expect(revData.state).to.equal(states.LOGGED);
           const q = { _id: ObjectId(changesetID) };
-          return db.collection('changesets').findOne(q);
+          return db(tables.CHANGESETS).findOne(q);
         }).then((doc) => {
           expect(doc.revisions.length).to.equal(loggedRevisionCnt + 1);
         });
@@ -316,14 +317,14 @@ describe('revision.js', () => {
 
     it('can recover logged revision', function () {
       const loggedRevision = Object.assign({ state: states.LOGGED }, revision);
-      return db.collection('revisions').insertOne(loggedRevision)
-        .then(() => db.collection('revisions').count({ _id: loggedRevision._id }))
+      return db(tables.REVISIONS).insertOne(loggedRevision)
+        .then(() => db(tables.REVISIONS).count({ _id: loggedRevision._id }))
         .then((cnt) => {
           expect(cnt).to.equal(1);
           const r = new Revision(db);
           return r.recover(loggedRevision);
         })
-        .then(() => db.collection('revisions').count({ _id: loggedRevision._id }))
+        .then(() => db(tables.REVISIONS).count({ _id: loggedRevision._id }))
         .then((cnt) => {
           expect(cnt).to.equal(0);
         });

@@ -3,10 +3,11 @@ import { expect } from 'chai';
 import TestDB from './utils/db';
 import recovery from '../lib/recovery';
 import { states } from '../lib/revision';
+import { tables } from '../lib/constants';
 
 function Revision(_db) {
   function execute(r) {
-    return _db.collection('revisions').deleteOne({ _id: r._id });
+    return _db(tables.REVISIONS).deleteOne({ _id: r._id });
   }
 
   this.recover = execute;
@@ -14,7 +15,7 @@ function Revision(_db) {
 
 function Rollback(_db) {
   function execute(r) {
-    return _db.collection('changesets').updateOne({ _id: r._id }, { state: 'done' });
+    return _db(tables.CHANGESETS).updateOne({ _id: r._id }, { state: 'done' });
   }
 
   this.recover = execute;
@@ -50,8 +51,8 @@ describe('recovery.js', function () {
     let revisionTableCnt;
     before(function () {
       this.timeout(5000);
-      return db.collection('revisions').insertMany(rArray)
-        .then(() => db.collection('revisions').count())
+      return db(tables.REVISIONS).insertMany(rArray)
+        .then(() => db(tables.REVISIONS).count())
         .then((cnt) => {
           debugger;
           revisionTableCnt = cnt;
@@ -61,7 +62,7 @@ describe('recovery.js', function () {
 
     it('clears revision table', function () {
       expect(revisionTableCnt).to.equal(30);
-      return db.collection('revisions').count()
+      return db(tables.REVISIONS).count()
         .then((cnt) => {
           expect(cnt).to.equal(0);
         });
@@ -81,8 +82,8 @@ describe('recovery.js', function () {
     let rollbackCnt;
     before(function () {
       this.timeout(5000);
-      return db.collection('changesets').insertMany(rArray)
-        .then(() => db.collection('changesets').count({ state: 'done' }))
+      return db(tables.CHANGESETS).insertMany(rArray)
+        .then(() => db(tables.CHANGESETS).count({ state: 'done' }))
         .then((cnt) => {
           debugger;
           rollbackCnt = cnt;
@@ -92,7 +93,7 @@ describe('recovery.js', function () {
 
     it('clears pending rollbacks', function () {
       expect(rollbackCnt).to.equal(0);
-      return db.collection('changesets').count({ state: 'done' })
+      return db(tables.CHANGESETS).count({ state: 'done' })
         .then((cnt) => {
           expect(cnt).to.equal(30);
         });

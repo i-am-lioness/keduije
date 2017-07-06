@@ -1,5 +1,6 @@
 import { newMedia } from './client-data';
 import { changesets, lines, revisions, media } from './data';
+import { tables } from '../../lib/constants';
 
 const ObjectId = require('mongodb').ObjectId;
 
@@ -21,7 +22,7 @@ function addLines(cnt) {
   newLine.deleted = false;
   newLine.heading = null;
 
-  return db.collection('lines').insertOne(newLine)
+  return db(tables.LINES).insertOne(newLine)
     .then(() => {
       if (i > 0) {
         return addLines(i);
@@ -37,26 +38,26 @@ function addMedia() {
     weeklyTotal: 0,
     allTime: 0,
   };
-  return db.collection('media').insertOne(newMedia[0]).then((res) => {
+  return db(tables.MEDIA).insertOne(newMedia[0]).then((res) => {
     mediaID = res.insertedId;
     return mediaID;
   });
 }
 
 function loadLines() {
-  return db.collection('lines').insertMany(lines).then(() => lines.length);
+  return db(tables.LINES).insertMany(lines).then(() => lines.length);
 }
 
 function loadChangesets() {
-  return db.collection('changesets').insertMany(changesets).then(() => changesets.length);
+  return db(tables.CHANGESETS).insertMany(changesets).then(() => changesets.length);
 }
 
 function loadRevisions() {
-  return db.collection('revisions').insertMany(revisions).then(() => revisions.length);
+  return db(tables.REVISIONS).insertMany(revisions).then(() => revisions.length);
 }
 
 function loadMedia() {
-  return db.collection('media').insertMany(media).then(() => media.length);
+  return db(tables.MEDIA).insertMany(media).then(() => media.length);
 }
 
 function populate(_db) {

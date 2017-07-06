@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { ObjectId } from 'mongodb';
 import Rollback from '../lib/rollback';
 import TestDB from './utils/db';
+import { tables } from '../lib/constants';
 
 let db;
 
@@ -39,11 +40,11 @@ describe('rollback.js', function () {
     let preRollbackLines;
 
     before(function () {
-      return db.collection('lines').insertMany(lines)
-        .then(() => db.collection('lines').insertOne(addedLine))
-        .then(() => db.collection('snapshots').insertOne(snapshot))
-        .then(() => db.collection('media').insert(mediaToRollback))
-        .then(() => db.collection('lines').count(lineQuery))
+      return db(tables.LINES).insertMany(lines)
+        .then(() => db(tables.LINES).insertOne(addedLine))
+        .then(() => db(tables.SNAPSHOTS).insertOne(snapshot))
+        .then(() => db(tables.MEDIA).insert(mediaToRollback))
+        .then(() => db(tables.LINES).count(lineQuery))
         .then((cnt) => {
           preRollbackLines = cnt;
           const r = new Rollback(db);
@@ -53,32 +54,32 @@ describe('rollback.js', function () {
 
     it('has number of lines match total number of lines in snapshot', function () {
       expect(preRollbackLines).to.not.equal(snapshot.lines.length);
-      return db.collection('lines').count(lineQuery)
+      return db(tables.LINES).count(lineQuery)
         .then((cnt) => {
           expect(cnt).to.equal(snapshot.lines.length);
         });
     });
 
     it('does not include lines that were added after the snapshot', function () {
-      return db.collection('lines').count({ text: 'd' }).then((cnt) => {
+      return db(tables.LINES).count({ text: 'd' }).then((cnt) => {
         expect(cnt).to.equal(0);
-        return db.collection('lines').count({ text: 'c' });
+        return db(tables.LINES).count({ text: 'c' });
       }).then((cnt) => {
         expect(cnt).to.equal(1);
       });
     });
 
     it('restores "deleted" lines', function () {
-      return db.collection('lines').updateOne({ text: 'a' }, { $set: { deleted: true } })
+      return db(tables.LINES).updateOne({ text: 'a' }, { $set: { deleted: true } })
         .then((result) => {
           expect(result.modifiedCount).to.equal(1);
-          return db.collection('lines').count({ deleted: true });
+          return db(tables.LINES).count({ deleted: true });
         }).then((cnt) => {
           expect(cnt).to.equal(1);
           const r = new Rollback(db);
           return r.execute(snapshot._id.toString());
         })
-        .then(() => db.collection('lines').count({ deleted: true }))
+        .then(() => db(tables.LINES).count({ deleted: true }))
         .then((cnt) => {
           expect(cnt).to.equal(0);
         });

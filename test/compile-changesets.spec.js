@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import aggregateActvity from '../lib/compile-changests';
 import TestDB from './utils/db';
 import populate from './utils/populate-db';
+import { tables } from '../lib/constants';
 
 let db;
 let populator;
@@ -28,10 +29,10 @@ describe('compile-changesets.js', function () {
     let processedCnt;
     let toBackupCnt;
     before(function () {
-      return db.collection('changesets').count({ processed: true })
+      return db(tables.CHANGESETS).count({ processed: true })
         .then((cnt) => {
           processedCnt = cnt;
-          return db.collection('media').count({ toBackup: true });
+          return db(tables.MEDIA).count({ toBackup: true });
         })
         .then((cnt) => {
           toBackupCnt = cnt;
@@ -40,7 +41,7 @@ describe('compile-changesets.js', function () {
     });
 
     it('has no changesets without revisions or media', function (done) {
-      db.collection('changesets').find().forEach((cs) => {
+      db(tables.CHANGESETS).find().forEach((cs) => {
         expect(cs).to.haveOwnProperty('media');
         expect(cs).not.to.haveOwnProperty('lines');
         if (cs.type === 'new') {
@@ -55,20 +56,20 @@ describe('compile-changesets.js', function () {
     });
 
     it('flags changesets as processed', function () {
-      return db.collection('changesets').count({ processed: true }).then((cnt) => {
+      return db(tables.CHANGESETS).count({ processed: true }).then((cnt) => {
         expect(cnt).to.be.greaterThan(processedCnt);
       });
     });
 
     xit('deletes extraneous changesets', function () {
-      return db.collection('changesets').count().then((cnt) => {
+      return db(tables.CHANGESETS).count().then((cnt) => {
         expect(cnt).to.be.lessThan(changesetCnt);
       });
     });
 
     it('turns on backup flag for updated media', function () {
       expect(toBackupCnt).to.equal(0);
-      return db.collection('media').count({ toBackup: true }).then((cnt) => {
+      return db(tables.MEDIA).count({ toBackup: true }).then((cnt) => {
         expect(cnt).to.be.greaterThan(0);
       });
     });

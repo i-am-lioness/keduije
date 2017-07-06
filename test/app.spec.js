@@ -4,6 +4,7 @@ import request from 'supertest';
 import cheerio from 'cheerio';
 import sinon from 'sinon';
 import APP from '../lib/app';
+import { tables } from '../lib/constants';
 import TestDB from './utils/db';
 import { newMedia, slugs, newLines } from './utils/client-data';
 import { revisionTypes } from '../lib/revision';
@@ -84,11 +85,11 @@ function Revision(db) {
       newLine.version = 1;
       newLine.deleted = false;
       newLine.heading = null;
-      return db.collection('lines').insertOne(newLine);
+      return db(tables.LINES).insertOne(newLine);
     }
     // else
-    const collectionName = (type === revisionTypes.LINE_EDIT) ? 'lines' : 'media';
-    return db.collection(collectionName)
+    const collectionName = (type === revisionTypes.LINE_EDIT) ? tables.LINES : tables.MEDIA;
+    return db(collectionName)
       .findOneAndUpdate(queryObj, updateObj, { returnOriginal: false })
       .then(result => result.value);
   }
@@ -190,7 +191,7 @@ describe('app.js', () => {
       .then((res) => {
         expect(res.text).to.equal('Thriller');
         const insertedId = res.header['inserted-id'];
-        return db.collection('media').find({ _id: ObjectId(insertedId) }).limit(1).next();
+        return db(tables.MEDIA).find({ _id: ObjectId(insertedId) }).limit(1).next();
       })
       .then((media) => {
         expect(media.changeset).to.be.an.instanceof(ObjectId);
@@ -252,7 +253,7 @@ describe('app.js', () => {
           const props = JSON.parse(matches[1]);
           expect(props.title).to.equal(mediaObj.title);
           expect(props.canEdit).to.be.false;
-          return db.collection('media').findOne({ slug }).then((media) => {
+          return db(tables.MEDIA).findOne({ slug }).then((media) => {
             expect(media.stats.views).to.equal(1);
           });
         });
@@ -274,7 +275,7 @@ describe('app.js', () => {
           });
       }
 
-      return req(views).then(() => db.collection('media').findOne({ slug }))
+      return req(views).then(() => db(tables.MEDIA).findOne({ slug }))
       .then((media) => {
         expect(media.stats.views).to.equal(views + 1);
       });
@@ -416,7 +417,7 @@ describe('app.js', () => {
       it('should correctly store new line in db', function () {
         newLine.changesetID = changesetID;
 
-        return db.collection('lines')
+        return db(tables.LINES)
           .find({ _id: ObjectId(lineID) })
           .limit(1)
           .next()
@@ -450,7 +451,7 @@ describe('app.js', () => {
           .expect(200)
           .then((res) => {
             expect(res.body).to.be.an('array');
-            return db.collection('lines').find({ _id: ObjectId(lineID) }).limit(1).next();
+            return db(tables.LINES).find({ _id: ObjectId(lineID) }).limit(1).next();
           })
           .then((line) => {
             expect(line.text).to.equal(lineChange.text);
@@ -492,7 +493,7 @@ describe('app.js', () => {
         }
 
         const media = ObjectId(mediaID);
-        return req(count).then(() => db.collection('lines').find({ media }).count())
+        return req(count).then(() => db(tables.LINES).find({ media }).count())
         .then((cnt) => {
           expect(cnt).to.be.at.least(count);
         });
@@ -682,7 +683,7 @@ describe('app.js', () => {
         .expect(200)
         .then((res) => {
           mediaID = res.header['inserted-id'];
-          return db.collection('media')
+          return db(tables.MEDIA)
             .updateOne({ _id: ObjectId(mediaID) }, { $set: { pendingRollbacks: [1] } });
         });
     });

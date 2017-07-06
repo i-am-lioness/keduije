@@ -2,6 +2,7 @@
 import { ObjectId } from 'mongodb';
 import { expect } from 'chai';
 import backupMedia from '../lib/backup';
+import { tables } from '../lib/constants';
 import TestDB from './utils/db';
 import populate from './utils/populate-db';
 
@@ -28,14 +29,14 @@ describe('backup.js', function () {
     let unsavedMediaArr;
     before(function () {
       debugger;
-      return db.collection('media')
+      return db(tables.MEDIA)
         .updateMany(
           { _id: { $lte: ObjectId('590183ebb556696c1f377894') } },
           { $set: { toBackup: true } })
         .then((result) => {
           backupReadyCnt = result.modifiedCount;
           console.log(`backupReadyCnt: ${backupReadyCnt} `);
-          return db.collection('media').find({ toBackup: true }).toArray();
+          return db(tables.MEDIA).find({ toBackup: true }).toArray();
         })
         .then((mediaArr) => {
           unsavedMediaArr = mediaArr;
@@ -44,7 +45,7 @@ describe('backup.js', function () {
     });
 
     it('backs up all media that are ready for backup', function () {
-      return db.collection('snapshots').count().then((cnt) => {
+      return db(tables.SNAPSHOTS).count().then((cnt) => {
         expect(cnt).to.equal(backupReadyCnt);
       });
     });
@@ -54,13 +55,13 @@ describe('backup.js', function () {
         expect(m.toBackup).to.be.true;
       });
 
-      return db.collection('media').count({ toBackup: true }).then((cnt) => {
+      return db(tables.MEDIA).count({ toBackup: true }).then((cnt) => {
         expect(cnt).to.equal(0);
       });
     });
 
     it('saves snapshot in expected format', function (done) {
-      db.collection('snapshots').find().forEach((ss) => {
+      db(tables.SNAPSHOTS).find().forEach((ss) => {
         expect(ss).to.haveOwnProperty('title');
         expect(ss).to.haveOwnProperty('artist');
         expect(ss).to.haveOwnProperty('media');
@@ -74,14 +75,14 @@ describe('backup.js', function () {
     describe('multiple rounds- ', function () {
       let backupReadyCnt2;
       before(function () {
-        return db.collection('media')
+        return db(tables.MEDIA)
           .updateMany(
             { _id: { $lt: ObjectId('590183ebb556696c1f377894') } },
             { $set: { toBackup: true } })
           .then((result) => {
             backupReadyCnt2 = result.modifiedCount;
             console.log(`backupReadyCnt2: ${backupReadyCnt2} `);
-            return db.collection('media').find({ toBackup: true }).toArray();
+            return db(tables.MEDIA).find({ toBackup: true }).toArray();
           })
           .then((mediaArr) => {
             unsavedMediaArr = mediaArr;
@@ -90,7 +91,7 @@ describe('backup.js', function () {
       });
 
       it('only backs up media that has changed since last backup', function () {
-        return db.collection('snapshots').count().then((cnt) => {
+        return db(tables.SNAPSHOTS).count().then((cnt) => {
           expect(cnt).to.equal(backupReadyCnt2 + backupReadyCnt);
         });
       });

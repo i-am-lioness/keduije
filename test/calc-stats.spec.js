@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 import { expect } from 'chai';
 import calcStats from '../lib/calc-stats';
+import { tables } from '../lib/constants';
 import TestDB from './utils/db';
 import populate from './utils/populate-db';
 
@@ -8,7 +9,7 @@ let db;
 let populator;
 
 function getMedia(_id) {
-  return db.collection('media').findOne({ _id });
+  return db(tables.MEDIA).findOne({ _id });
 }
 
 describe('calc-stats.js', () => {
@@ -32,7 +33,7 @@ describe('calc-stats.js', () => {
     this.timeout(5000);
 
     function incrementViewsAndBackUp(views) {
-      return db.collection('media')
+      return db(tables.MEDIA)
         .updateOne({ _id }, { $set: { 'stats.views': views } })
         .then(() => calcStats(db));
     }

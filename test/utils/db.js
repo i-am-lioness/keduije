@@ -1,4 +1,6 @@
-const MongoClient = require('mongodb').MongoClient;
+import connectDB from '../../lib/db';
+import { tables } from '../../lib/constants';
+
 require('dotenv').config();
 
 const DB_URL = process.env.TEST_DB_URL;
@@ -6,14 +8,14 @@ const DB_URL = process.env.TEST_DB_URL;
 module.exports = (() => {
   let db;
   function open() {
-    return MongoClient.connect(DB_URL).then((_db) => {
-      db = _db;
-      return db;
+    return connectDB(DB_URL).then((_db) => {
+      db = _db._DB;
+      return _db;
     });
   }
 
   function close(_db) {
-    db = db || _db;
+    db = db || _db._DB;
     return db.collections().then(function (collections) {
       const deletions = [];
       collections.forEach((c) => {
