@@ -1,19 +1,77 @@
 /* eslint-env mocha, browser */
 import React from 'react';
 import { expect } from 'chai';
-import { shallow } from 'enzyme';
+import { shallow, mount } from 'enzyme';
 import sinon from 'sinon';
 import SongInfoForm from '../react/components/song-info-form';
-import { processed as imageData } from './utils/data/spotifyData';
+import { processed as imageData, token as spotifyToken } from './utils/data/spotifyData';
 import { data as ytData } from './utils/data/youtube-data';
 import { mediaTypes } from '../react/keduije-media';
+import { KeduIje } from './utils/mocks';
 
 const searchImageFunc = sinon.stub();
 const getYTdata = sinon.stub();
-SongInfoForm.__Rewire__('searchImages', searchImageFunc);
-SongInfoForm.__Rewire__('getYTdata', getYTdata);
+
+let revertSearchImages;
+let revertGetYTdata;
+let revertKeduije;
 
 describe('<SongInfoForm />', function () {
+  before(() => {
+    revertSearchImages = SongInfoForm.__Rewire__('searchImages', searchImageFunc);
+    revertGetYTdata = SongInfoForm.__Rewire__('getYTdata', getYTdata);
+    revertKeduije = SongInfoForm.__Rewire__('KeduIje', KeduIje);
+  });
+
+  after(() => {
+    revertSearchImages();
+    revertGetYTdata();
+    revertKeduije();
+  });
+
+  describe('image search', function () {
+    let wrap;
+    const submitSongInfo = sinon.spy();
+    const deleteSong = sinon.spy();
+
+    const event = {
+      target: { name: 'artist', value: 'PSquare' },
+      preventDefault: () => undefined,
+    };
+
+    const editorClass = (<SongInfoForm
+      newSong
+      onSubmit={submitSongInfo}
+      onCancel={() => { deleteSong(null); }}
+    />);
+
+    before(function () {
+      wrap = mount(editorClass);
+    });
+
+    it('should fetch token on load', function () {
+      expect(KeduIje.getSpotifyToken.called).to.be.true;
+      expect(wrap.instance().spotifyToken).to.equal(spotifyToken);
+    });
+
+    it('generates image results from artist', function (done) {
+      searchImageFunc.resolves(imageData);
+      const processResultsFunc = sinon.spy(wrap.instance(), 'storeImageResults');
+
+      wrap.find('#artist-input').at(0).simulate('blur', event);
+
+      expect(searchImageFunc.calledOnce).to.be.true;
+      debugger;
+      expect(searchImageFunc.lastCall.calledWith(event.target.value, spotifyToken)).to.be.true;
+      setTimeout(() => {
+        expect(processResultsFunc.called).to.be.true;
+        expect(processResultsFunc.calledWith(imageData)).to.be.true;
+        expect(wrap.find('.thumbnail')).to.have.length.above(1);
+        done();
+      }, 50);
+    });
+  });
+
   describe('updating new media: ', function () {
     const saveSongInfo = sinon.spy();
     const toggleSongInfoDialog = sinon.spy();

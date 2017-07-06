@@ -1,6 +1,8 @@
 /* eslint-env browser */
 import sinon from 'sinon';
 import { lyrics, songInfo, searchResults } from './data';
+import { token as spotifyToken } from './data/spotifyData';
+
 
 const videoDuration = 300;
 
@@ -15,6 +17,7 @@ const KeduIje = {
   getMediaInfo: sinon.stub(),
   getChangesets: sinon.stub(),
   search: sinon.stub(),
+  getSpotifyToken: sinon.stub(),
 };
 
 KeduIje.startEditSession.resolves(true);
@@ -23,6 +26,7 @@ KeduIje.addLyric.resolves(lyrics);
 KeduIje.deleteLyric.resolves(lyrics);
 KeduIje.saveSongInfo.resolves(songInfo);
 KeduIje.search.resolves(searchResults);
+KeduIje.getSpotifyToken.resolves(spotifyToken);
 
 
 /* KeduijeUtil */

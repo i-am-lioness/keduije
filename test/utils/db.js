@@ -1,5 +1,4 @@
 import connectDB from '../../lib/db';
-import { tables } from '../../lib/constants';
 
 require('dotenv').config();
 

@@ -1,6 +1,7 @@
 /* eslint-env browser */
 import React from 'react';
 import PropTypes from 'prop-types';
+import KeduIje from '../keduije';
 import { mediaTypes } from '../keduije-media';
 import { searchImages, getYTdata } from '../keduije-util';
 
@@ -30,6 +31,14 @@ class SongInfoForm extends React.Component {
     this.addValue = this.addValue.bind(this);
     this.storeImageResults = this.storeImageResults.bind(this);
     this.convertFormToAudio = this.convertFormToAudio.bind(this);
+
+    this.spotifyToken = null;
+  }
+
+  componentDidMount() {
+    KeduIje.getSpotifyToken().then((token) => {
+      this.spotifyToken = token;
+    });
   }
 
   addValue(obj, name) {
@@ -84,7 +93,7 @@ class SongInfoForm extends React.Component {
   search(e) {
     const q = e.target.value;
     if (q) {
-      searchImages(q).then(this.storeImageResults);
+      searchImages(q, this.spotifyToken).then(this.storeImageResults);
     }
   }
 

@@ -1392,4 +1392,10 @@ const raw = {
 
 const processed = raw.tracks.items.map(el => el.album.images[0].url);
 
-export { raw, processed };
+const token = {
+  access_token: 'BQCD9BTqBOROSx8fF8d06uA484KrGza-6KW2SKT59xWb9tyann28cobZ-ongDSxqkEJh0vt5YwMaPxO3P-GUrg',
+  token_type: 'Bearer',
+  expires_in: 3600
+};
+
+export { raw, processed, token };
