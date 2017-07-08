@@ -65,30 +65,31 @@ const mail = {
 };
 
 function Revision(db) {
-  function onUpdateRequest(type, req) {
-    const queryObj = { _id: ObjectId(req.params.forID) };
-    const updateObj = {
-      $currentDate: { lastModified: true },
-      $set: req.body.changes,
-      $inc: { version: 1 },
-    };
-
+  function onUpdateRequest(changesetID, mediaID, type, data) {
     if (type === revisionTypes.LINE_ADD) {
-      const line = req.body;
-      const newLine = {};
-      newLine.startTime = parseInt(line.startTime, 10);
-      newLine.endTime = parseInt(line.endTime, 10);
-      newLine.text = line.text;
-      newLine.creator = req.user._id;
-      newLine.media = ObjectId(req.params.mediaID);
-      newLine.changeset = ObjectId(req.body.changesetID);
+      const newLine = data;
+      newLine.media = ObjectId(mediaID);
+      newLine.changeset = ObjectId(changesetID);
       newLine.version = 1;
       newLine.deleted = false;
       newLine.heading = null;
       return db(tables.LINES).insertOne(newLine);
     }
     // else
-    const collectionName = (type === revisionTypes.LINE_EDIT) ? tables.LINES : tables.MEDIA;
+    let collectionName = tables.MEDIA;
+    let forID = ObjectId(mediaID);
+    if (type === revisionTypes.LINE_EDIT) {
+      collectionName = tables.LINES;
+      forID = ObjectId(data.original._id);
+    }
+    const queryObj = { _id: ObjectId(forID) };
+    const updateObj = {
+      $currentDate: { lastModified: true },
+      $set: data.changes,
+      $inc: { version: 1 },
+    };
+
+
     return db(collectionName)
       .findOneAndUpdate(queryObj, updateObj, { returnOriginal: false })
       .then(result => result.value);
@@ -356,13 +357,13 @@ describe('app.js', () => {
       expect(ObjectId.bind(null, changesetID)).not.to.Throw;
     });
 
-    it('POST /api/media/edit/:forID to media info', function () {
+    it('POST /api/media/:mediaID/updateInfo to media info', function () {
       const mediaChange = {
         artist: 0,
       };
 
       return request(server)
-        .post(`/api/media/edit/${mediaID}`)
+        .post(`/api/media/${mediaID}/updateInfo`)
         .send({
           changes: mediaChange,
           changesetID,
@@ -376,13 +377,13 @@ describe('app.js', () => {
         });
     });
 
-    it('POST /api/media/edit/:forID. should update slug', function () {
+    it('POST /api/media/:mediaID/updateInfo. should update slug', function () {
       const mediaChange = {
         title: 'Bad',
       };
 
       return request(server)
-        .post(`/api/media/edit/${mediaID}`)
+        .post(`/api/media/${mediaID}/updateInfo`)
         .send({
           changes: mediaChange,
           changesetID,
@@ -411,6 +412,7 @@ describe('app.js', () => {
           .then((res) => {
             expect(res.body).to.be.an('array');
             lineID = res.header['inserted-id'];
+            newLine._id = lineID;
           });
       });
 
@@ -436,14 +438,15 @@ describe('app.js', () => {
           });
       });
 
-      it('POST /api/lines/edit/:forID', function () {
+      it('POST /api/media/:mediaID/updateLine', function () {
         const lineChange = {
           text: 'bye bye, bye',
         };
 
         return request(server)
-          .post(`/api/lines/edit/${lineID}`)
+          .post(`/api/media/${mediaID}/updateLine`)
           .send({
+            original: newLine,
             changes: lineChange,
             changesetID,
             mediaID,
@@ -616,6 +619,15 @@ describe('app.js', () => {
       return request(server)
         .get('/api/changesets/list?mediaID=phyno')
         .expect(500);
+    });
+
+    it('/api/spotify/token', function () {
+      return request(server)
+        .get('/api/spotify/token')
+        .expect(200)
+        .then((res) => {
+          expect(res.body).to.have.all.keys(['access_token', 'token_type', 'expires_in']);
+        });
     });
   });
 

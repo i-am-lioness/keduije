@@ -83,9 +83,9 @@ describe('revision.js', () => {
     let revisionDoc;
 
     before(function () {
-      const req = addLyric(newLyric);
+      // const req = addLyric(newLyric);
       lineAdd = new Revision(db);
-      return lineAdd.execute(revisionTypes.LINE_ADD, req).then((result) => {
+      return lineAdd.execute(changesetID, mediaID, revisionTypes.LINE_ADD, newLyric).then((result) => {
         addResult = result;
         newLyric._id = result.insertedId;
         return lineAdd.getDebugInfo();
@@ -113,7 +113,7 @@ describe('revision.js', () => {
     it('edits a line', function () {
       const req = updateLyric(newLyric, changes);
       const r = new Revision(db);
-      return r.execute(revisionTypes.LINE_EDIT, req)
+      return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body)
         .then((line) => {
           expect(line.text).to.equal(changes.text);
         });
@@ -153,7 +153,7 @@ describe('revision.js', () => {
 
       const req = updateLyric(oldLyric, lyricChanges);
       const r = new Revision(db);
-      return r.execute(revisionTypes.LINE_EDIT, req).then((line) => {
+      return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body).then((line) => {
         expect(line.text).to.equal(lyricChanges.text);
       }).then(() => {
         throw new Error('Should have thrown an ObjectNotFoundError');
@@ -183,14 +183,14 @@ describe('revision.js', () => {
         .then(() => {
           const req = updateLyric(newLine, changes);
           const r = new Revision(db);
-          return r.execute(revisionTypes.LINE_EDIT, req).then(line => line);
+          return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body).then(line => line);
         }).then((line) => {
           expect(line.text).to.equal(changes.text);
         })
         .then(() => {
           const req = updateLyric(newLine, changes2);
           const r = new Revision(db);
-          return r.execute(revisionTypes.LINE_EDIT, req)
+          return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body)
             .then(() => {
               throw new Error('should have thrown error');
             }).catch(err => err);
@@ -218,18 +218,18 @@ describe('revision.js', () => {
     before(function () {
       let req = addLyric(newLyric);
       lineAdd = new Revision(db);
-      return lineAdd.execute(revisionTypes.LINE_ADD, req).then((result) => {
+      return lineAdd.execute(changesetID, mediaID, revisionTypes.LINE_ADD, newLyric).then((result) => {
         addResult = result;
         newLyric._id = result.insertedId;
         newLyric.version = 1;
         req = updateLyric(newLyric, changes);
         const r = new Revision(db);
-        return r.execute(revisionTypes.LINE_EDIT, req);
+        return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body);
       }).then((line) => {
         changeResult1 = line;
         req = updateLyric(newLyric, changes2);
         const r = new Revision(db);
-        return r.execute(revisionTypes.LINE_EDIT, req)
+        return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body)
         .then(() => {
           debugger;
           throw new Error('should have thrown error');

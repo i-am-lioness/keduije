@@ -16,6 +16,7 @@
     "build-back": "babel lib -d dist",
     "build": "npm run build-front && npm run build-back",
     "heroku-postbuild": "npm run build",
+    "cron-dev": "node scripts/cron.js --exec babel-node ",
     "start-dev": "nodemon lib/main.js --exec babel-node ",
     "start": "node dist/main.js"
   },
