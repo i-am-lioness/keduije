@@ -2,12 +2,12 @@
 import { expect } from 'chai';
 import request from 'supertest';
 import cheerio from 'cheerio';
-import sinon from 'sinon';
 import APP from '../lib/app';
 import { tables } from '../lib/constants';
 import TestDB from './utils/db';
 import { newMedia, slugs, newLines } from './utils/client-data';
 import { revisionTypes } from '../lib/revision';
+import { users, mail, setLoggedInUser } from './utils/mocks';
 
 const ObjectId = require('mongodb').ObjectId;
 
@@ -26,7 +26,7 @@ const member = {
 
 let testUser = member;
 
-let loggedInUser = null;
+// let loggedInUser = null;
 
 const ensureLoggedIn = (req, res, next) => {
   req.user = testUser;
@@ -35,33 +35,6 @@ const ensureLoggedIn = (req, res, next) => {
   } else {
     res.redirect('/login');
   }
-};
-
-const passportInitialize = (req, res, next) => { next(); };
-const passportSession = (req, res, next) => {
-  req.user = loggedInUser;
-  next();
-};
-
-const login = (vendor, req, res, next) => {
-  if (req.query.code) {
-    next();
-  } else {
-    res.redirect(`/login/${vendor}/return?code=111`);
-  }
-};
-
-const users = {
-  log: sinon.stub(),
-  setDB: sinon.stub(),
-  initialize: () => passportInitialize,
-  session: () => passportSession,
-  authenticate: vendor => login.bind(null, vendor),
-};
-users.log.resolves();
-
-const mail = {
-  send: sinon.stub(),
 };
 
 function Revision(db) {
@@ -283,15 +256,18 @@ describe('app.js', () => {
     });
 
     it('responds to /music/:slug with edit priveledges (and for audio)', function () {
-      loggedInUser = {
+      const loggedInUser = {
         isAdmin: true,
       };
+
+      setLoggedInUser(loggedInUser);
 
       return request(server)
         .get(`/music/${slug}`)
         .expect(200)
         .then(function (res) {
-          loggedInUser = null;
+          // loggedInUser = null;
+          setLoggedInUser(null);
 
           const re = /var props=({.*})\|\|\s{};/;
           const matches = res.text.match(re);

@@ -8,6 +8,8 @@
   },
   "main": "index.js",
   "scripts": {
+    "gen": "NODE_ENV=test babel-node test/utils/generator.js",
+    "gen-debug": "DEBUG=express:* NODE_ENV=test babel-node --debug-brk --inspect test/utils/generator.js",
     "test": "cross-env NODE_ENV=test nyc mocha test/**/*.spec.js --compilers js:babel-register",
     "test-debug": "DEBUG=express:* NODE_ENV=test mocha --debug-brk --inspect test/**/*.spec.js --compilers js:babel-register",
     "test-browser": "webpack --env=test && npm run start-dev",
@@ -81,6 +83,7 @@
     "react-addons-test-utils": "^15.5.1",
     "react-test-renderer": "^15.5.4",
     "sinon": "^2.1.0",
+    "superagent": "^3.5.2",
     "supertest": "^3.0.0"
   },
   "nyc": {

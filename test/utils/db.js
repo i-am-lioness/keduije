@@ -13,7 +13,7 @@ module.exports = (() => {
     });
   }
 
-  function close(_db) {
+  function clear(_db) {
     db = db || _db._DB;
     return db.collections().then(function (collections) {
       const deletions = [];
@@ -24,9 +24,14 @@ module.exports = (() => {
         }
       });
 
-      return Promise.all(deletions).then(() => db.close);
+      return Promise.all(deletions);
     });
   }
-  return { open, close };
+
+  function close(_db) {
+    db = db || _db._DB;
+    return clear().then(() => db.close);
+  }
+  return { open, close, clear };
 })();
 

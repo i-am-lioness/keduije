@@ -96,10 +96,12 @@ const Video = sinon.stub().callsFake(mockVideo);
 const Audio = sinon.stub().callsFake(mockAudio);
 
 
-prompt = sinon.stub();
-confirm = sinon.stub();
-alert = sinon.stub();
-confirm.returns(true);
+if (typeof prompt !== 'undefined') prompt = sinon.stub();
+if (typeof confirm !== 'undefined') {
+  confirm = sinon.stub();
+  confirm.returns(true);
+}
+if (typeof alert !== 'undefined') alert = sinon.stub();
 
 /* ajax requests */
 const reqs = {};
@@ -115,6 +117,41 @@ reqs['/api/lines/edit/58e7e85808091bfe6d06a498'] = lyrics;
 reqs['/api/media/edit/58e745d22f1435db632f81fa'] = songInfo;
 reqs['/api/media/new'] = 'Ada';
 
+/* users */
+
+let loggedInUser;
+
+function setLoggedInUser(val) {
+  loggedInUser = val;
+}
+
+const passportInitialize = (req, res, next) => { next(); };
+const passportSession = (req, res, next) => {
+  req.user = loggedInUser;
+  next();
+};
+
+const login = (vendor, req, res, next) => {
+  if (req.query.code) {
+    next();
+  } else {
+    res.redirect(`/login/${vendor}/return?code=111`);
+  }
+};
+
+const users = {
+  log: sinon.stub(),
+  setDB: sinon.stub(),
+  initialize: () => passportInitialize,
+  session: () => passportSession,
+  authenticate: vendor => login.bind(null, vendor),
+};
+users.log.resolves();
+
+const mail = {
+  send: sinon.stub(),
+};
+
 export {
   KeduIje,
   Video,
@@ -124,4 +161,7 @@ export {
   scrollIfOutOfView,
   convertToTime,
   reqs,
+  users,
+  mail,
+  setLoggedInUser,
 };
