@@ -189,7 +189,19 @@ describe('app.js', () => {
   it('serves /history for authenticated user ', function () {
     return request(server)
       .get('/history')
-      .expect(200);
+      .expect(200)
+      .then((res) => {
+        const re = /var props=({.*})\|\|\s{};/;
+        const matches = res.text.match(re);
+        if (!matches) {
+          throw new Error('could not find props data sent from server');
+        }
+
+        const props = JSON.parse(matches[1]);
+        expect(props.userID).to.be.ok;
+        expect(() => ObjectId(props.userID)).not.to.throw();
+        expect(props.mediaID).to.be.undefined;
+      });
   });
 
   describe('adding media listings', function () {
@@ -500,19 +512,19 @@ describe('app.js', () => {
               expect(cs).to.have.property('revisions');
               expect(cs.revisions).to.be.an('array');
             }
-            if (cs.type !== 'new') {
-              expect(cs).to.have.property('media');
-            }
+            // should not send unprocessed data
+            expect(cs).to.have.property('media');
           });
         });
     });
 
     it('/api/changesets/list', function () {
       return request(server)
-        .get('/api/changesets/list?userID=58e451206b5df803808e5912')
+        .get('/api/changesets/list?userID=596c61f94a25ca3a77e25da9')
         .expect(200)
         .then(function (res) {
           // TO DO: test actual content
+          console.log('body', res.body);
           expect(res.body).to.be.an('array');
         });
     });

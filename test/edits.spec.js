@@ -60,7 +60,7 @@ describe('<Edits />', function () {
     it('should make no difference whether user prop is defined or not');
 
     it('shows all edits for user', function () {
-      expect(wrapper.find('.panel')).to.have.lengthOf(1);
+      expect(wrapper.find('.panel')).to.have.lengthOf(8);
     });
 
     it('shows debug statemes', function () {
@@ -97,6 +97,23 @@ describe('<Edits />', function () {
         expect(a.props().href).to.match(/^\/music\/[a-zA-Z-]+$/);
         expect(a.props().href).not.to.match(/null/);
         expect(a.text()).to.have.length.greaterThan(0);
+      });
+    });
+
+    it('displays it each edit', function () {
+      wrapper.find('.panel-body .list-group-item').forEach((edit) => {
+        const a = edit.find('a').at(0);
+        const text = edit.find('strong').at(0).text();
+        expect(a.props().href).to.match(/^\/music\/[a-zA-Z-]+#/);
+        const re = /#(.*)$/;
+        const matches = a.props().href.match(re);
+        if (!matches) {
+          throw new Error('could not find props data sent from server');
+        }
+        const time = parseInt(matches[1], 10);
+        expect(time).not.to.be.NaN;
+        expect(a.text()).to.have.length.greaterThan(0);
+        expect(text).to.have.length.greaterThan(0);
       });
     });
 

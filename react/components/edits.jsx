@@ -25,7 +25,8 @@ function getDate(doc) {
 }
 
 function processActivity(el) {
-  el.time = parseInt(el.original ? (el.original.startTime || -1) : el.startTime, 10);
+  el.time = parseInt(el.original ? (el.original.startTime || -1) : el.newLine.startTime, 10);
+  if (isNaN(el.time)) throw new Error('unable to parse time');
   switch (el.type) {
     case revisionTypes.INFO_EDIT:
       if (el.newValues.status === 'deleted') {
@@ -140,7 +141,7 @@ function renderActivity(songUrl, edit) {
     output = (<p>
       <a href={`${songUrl}#${edit.time}`}>({startTime})</a>
       <span className="glyphicon glyphicon-plus" aria-hidden="true" />
-      <strong>{edit.text}</strong>
+      <strong>{edit.newLine.text}</strong>
     </p>);
   } else { // if (edit.type === activityTypes.MEDIA_REMOVAL) {
     // todo: should have own panel
