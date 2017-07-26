@@ -47,7 +47,8 @@ describe('keduije-util.js', function () {
     let token;
 
     before(function () {
-      return getToken().then((t) => {
+      return getToken(process.env.SPOTIFY_CLIENT_ID, process.env.SPOTIFY_CLIENT_SECRET)
+      .then((t) => {
         token = t;
       });
     });

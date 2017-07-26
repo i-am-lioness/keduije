@@ -26,8 +26,6 @@ const member = {
 
 let testUser = member;
 
-// let loggedInUser = null;
-
 const ensureLoggedIn = (req, res, next) => {
   req.user = testUser;
   if (req.user) {
@@ -75,24 +73,23 @@ require('dotenv').config();
 
 describe('app.js', () => {
   let server;
-  let env;
   let db;
+  const env = process.env;
 
   let revertEnsureLoggedIn;
   let revertUsers;
   let revertMail;
   let revertRevision;
-  let revertDB;
 
   before(function () {
     revertEnsureLoggedIn = APP.__Rewire__('ensureLoggedIn', () => ensureLoggedIn);
     revertUsers = APP.__Rewire__('users', users);
     revertMail = APP.__Rewire__('mail', mail);
     revertRevision = APP.__Rewire__('Revision', Revision);
-    revertDB = APP.__Rewire__('DB_URL', process.env.TEST_DB_URL);
-    return APP().then((result) => {
+
+    env.DB_URL = process.env.TEST_DB_URL;
+    return APP(env).then((result) => {
       server = result.server;
-      env = result.env;
       db = result.db;
     }).catch(function (error) {
       this.skip();
@@ -106,23 +103,10 @@ describe('app.js', () => {
     revertUsers();
     revertMail();
     revertRevision();
-    revertDB();
     return TestDB.close(db).then(() => server.close());
   });
 
   describe('server initialization', function () {
-    it('loads environment variables', function () {
-      expect(env.HOST).to.not.be.empty;
-      expect(env.FB_CLIENT_ID).to.not.be.empty;
-      expect(env.FB_CLIENT_SECRET).to.not.be.empty;
-      expect(env.TWITTER_CONSUMER_KEY).to.not.be.empty;
-      expect(env.DB_URL).to.not.be.empty;
-      expect(env.TWITTER_CONSUMER_SECRET).to.not.be.empty;
-      expect(env.DEVELOPER_IP).to.not.be.empty;
-      expect(env.EMAIL_ADDRESS).to.not.be.empty;
-      expect(env.EMAIL_PASSWORD).to.not.be.empty;
-    });
-
     it('connects to server', function () {
       expect(server).to.exist;
     });
@@ -134,16 +118,25 @@ describe('app.js', () => {
     });
 
     it('can handle app start failure', function () {
-      return APP().catch((err) => {
+      return APP(env).catch((err) => {
         expect(err.code).to.equal('EADDRINUSE');
       });
     });
 
     it('can handle db connection failure', function () {
-      APP.__Rewire__('DB_URL', '');
-      return APP().catch((err) => {
-        APP.__Rewire__('DB_URL', process.env.TEST_DB_URL);
+      const dbFailEnv = Object.assign({}, env);
+      dbFailEnv.DB_URL = '-';
+      return APP(dbFailEnv).catch((err) => {
         expect(err.message).to.equal('invalid schema, expected mongodb');
+      });
+    });
+
+    it('throws error, if environment variables not loaded', function () {
+      const failEnv = Object.assign({}, env);
+      failEnv.TWITTER_CONSUMER_SECRET = '';
+      return APP(failEnv).catch((err) => {
+        debugger;
+        expect(err.message).to.equal('Missing environment variable "TWITTER_CONSUMER_SECRET"');
       });
     });
   });
