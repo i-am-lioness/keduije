@@ -2,7 +2,10 @@
 import sinon from 'sinon';
 import { lyrics, songInfo, searchResults } from './data';
 import { token as spotifyToken } from './data/spotifyData';
+import { revisionTypes } from '../../lib/revision';
+import { tables } from '../../lib/constants';
 
+const ObjectId = require('mongodb').ObjectId;
 
 const videoDuration = 300;
 
@@ -152,6 +155,50 @@ const mail = {
   send: sinon.stub(),
 };
 
+
+const ensureLoggedIn = (req, res, next) => {
+  if (req.user) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
+};
+
+function Revision(db) {
+  function onUpdateRequest(changesetID, mediaID, type, data) {
+    if (type === revisionTypes.LINE_ADD) {
+      const newLine = data;
+      newLine.media = ObjectId(mediaID);
+      newLine.changeset = ObjectId(changesetID);
+      newLine.version = 1;
+      newLine.deleted = false;
+      newLine.heading = null;
+      return db(tables.LINES).insertOne(newLine);
+    }
+    // else
+    let collectionName = tables.MEDIA;
+    let forID = ObjectId(mediaID);
+    if (type === revisionTypes.LINE_EDIT) {
+      collectionName = tables.LINES;
+      forID = ObjectId(data.original._id);
+    }
+    const queryObj = { _id: ObjectId(forID) };
+    const updateObj = {
+      $currentDate: { lastModified: true },
+      $set: data.changes,
+      $inc: { version: 1 },
+    };
+
+
+    return db(collectionName)
+      .findOneAndUpdate(queryObj, updateObj, { returnOriginal: false })
+      .then(result => result.value);
+  }
+
+  this.execute = onUpdateRequest;
+}
+
+
 export {
   KeduIje,
   Video,
@@ -164,4 +211,6 @@ export {
   users,
   mail,
   setLoggedInUser,
+  ensureLoggedIn,
+  Revision,
 };

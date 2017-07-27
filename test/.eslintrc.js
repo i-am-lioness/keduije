@@ -12,7 +12,7 @@ module.exports = {
         "no-unused-expressions": 0,
         "no-debugger": 1,
         "react/jsx-filename-extension": 0, // to do: revist
-        "no-underscore-dangle": [1, { "allow": ["__Rewire__", "_id"] }],
+        "no-underscore-dangle": [1, { "allow": ["__Rewire__", "_id", "__ResetDependency__"] }],
         "no-global-assign": 0,
     }
 };
