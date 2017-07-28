@@ -2,7 +2,8 @@ import connectDB from '../../lib/db';
 
 require('dotenv').config();
 
-const DB_URL = process.env.TEST_DB_URL;
+// const DB_URL = process.env.TEST_DB_URL;
+const DB_URL = process.env.LOCAL_DB ? process.env.LOCAL_DB_URL : process.env.TEST_DB_URL;
 
 module.exports = (() => {
   let db;

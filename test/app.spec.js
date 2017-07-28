@@ -34,7 +34,7 @@ function parseProps(res) {
   return JSON.parse(matches[1]);
 }
 
-describe.only('app.js |', () => {
+describe('app.js |', () => {
   let env;
 
   before(function () {
@@ -45,7 +45,7 @@ describe.only('app.js |', () => {
 
     require('dotenv').config();
     env = process.env;
-    env.DB_URL = process.env.TEST_DB_URL;
+    env.DB_URL = process.env.LOCAL_DB ? process.env.LOCAL_DB_URL : process.env.TEST_DB_URL;
   });
 
   after(function () {
@@ -167,7 +167,6 @@ describe.only('app.js |', () => {
     it('/api/logError', function () {
       const msg = 'test browser error';
       mail.send.resetHistory();
-      debugger;
       return request(server)
         .post('/api/logError')
         .send({ msg })
@@ -256,7 +255,6 @@ describe.only('app.js |', () => {
         return db(tables.MEDIA).insertMany(newMediaArr)
           .then(() => request(server).get('/api/media/list').expect(200))
           .then(function (res) {
-            debugger;
             expect(res.body).to.be.an('array');
             expect(res.body.length).to.equal(3);
           });
