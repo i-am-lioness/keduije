@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import APP from '../lib/app';
 import { tables } from '../lib/constants';
 import TestDB from './utils/db';
-import { newMedia, slugs, newLines } from './utils/client-data';
+import { newMedia, newLines, mediaArr } from './utils/client-data';
 import { users, mail, setLoggedInUser, ensureLoggedIn, Revision } from './utils/mocks';
 import { mediaTypes } from '../react/keduije-media';
 
@@ -21,7 +21,7 @@ const admin = {
 };
 
 const member = {
-  _id: ObjectId('58e451206b5df803808e5912'),
+  _id: ObjectId('596c61f94a25ca3a77e25da9'),
   role: 'member',
 };
 
@@ -110,18 +110,40 @@ describe.only('app.js |', () => {
       return TestDB.close(db).then(() => server.close());
     });
 
-    // GOOD
+    // ✓ GOOD
     it('is initialized', function () {
       expect(server).to.exist;
     });
 
-    // GOOD
+    // ✓ GOOD
     it('can serve generic request', function () {
       return request(server)
         .get('/')
         .expect(200);
     });
 
+    // ✓ GOOD
+    it('/api/rankings', function () {
+      return request(server)
+        .get('/api/rankings')
+        .expect(200);
+    });
+
+    // ✓ GOOD
+    it('/api/list/audio', function () {
+      return request(server)
+        .get('/api/list/audio')
+        .expect(200);
+    });
+
+    // ✓ GOOD
+    it('/api/carousel', function () {
+      return request(server)
+        .get('/api/carousel')
+        .expect(200);
+    });
+
+    // ✓ GOOD
     it('serves 404 for /music/:slug when not found', function () {
       return request(server)
         .get('/music/Adamsfs')
@@ -131,18 +153,55 @@ describe.only('app.js |', () => {
         });
     });
 
-    describe('with anonymous user', function () {
+    // ✓ GOOD
+    it('queries spotify for token', function () {
+      return request(server)
+        .get('/api/spotify/token')
+        .expect(200)
+        .then((res) => {
+          expect(res.body).to.have.all.keys(['access_token', 'token_type', 'expires_in']);
+        });
+    });
+
+    // ✓ GOOD
+    it('/api/logError', function () {
+      const msg = 'test browser error';
+      mail.send.resetHistory();
+      debugger;
+      return request(server)
+        .post('/api/logError')
+        .send({ msg })
+        .expect(200)
+        .then(() => {
+          expect(mail.send.callCount).to.equal(2);
+          /* console.log(mail.send.lastCall);
+          const content = JSON.parse(mail.send.lastCall.args[0]);
+          expect(content.msg).to.equal(msg);*/
+        });
+    });
+
+    describe('on error', function () {
+      class HTTP404Error extends Error {
+        constructor(message) {
+          super(message);
+          this.name = 'hey';
+        }
+      }
       before(function () {
-        setLoggedInUser(null);
+        APP.__Rewire__('HTTP404Error', HTTP404Error);
+      });
+
+      after(function () {
+        APP.__ResetDependency__('HTTP404Error');
       });
 
       // ✓ GOOD
-      it('redirects /history', function () {
+      it('returns 500 for end point with custom error handling', function () {
         return request(server)
-          .get('/history')
-          .expect(302);
+          .get('/music/test')
+          .expect(500);
       });
-    });
+    }); // describe('on error')
 
     describe('for authenticated member', function () {
       before(function () {
@@ -180,9 +239,37 @@ describe.only('app.js |', () => {
           .get('/music/Adamsfs/history')
           .expect(404);
       });
-    });
 
-    describe('adding new media (video)', function () {
+      // ✓ GOOD
+      it('serves array media belonging to logged in user', function () {
+        const newMediaArr = mediaArr.map((el, idx) => {
+          let newEl;
+          if (idx < 3) {
+            newEl = Object.assign({ creator: member._id }, el);
+          } else {
+            newEl = Object.assign({}, el);
+          }
+          delete newEl._id;
+          return newEl;
+        });
+
+        return db(tables.MEDIA).insertMany(newMediaArr)
+          .then(() => request(server).get('/api/media/list').expect(200))
+          .then(function (res) {
+            debugger;
+            expect(res.body).to.be.an('array');
+            expect(res.body.length).to.equal(3);
+          });
+      });
+
+      it('returns 500 for generic server error', function () {
+        return request(server)
+          .get('/api/changesets/list?mediaID=phyno')
+          .expect(500);
+      });
+    }); // describe('for authenticated member')
+
+    describe('upon adding new media (video)', function () {
       let mediaID;
       let changesetID;
       let slug;
@@ -249,6 +336,20 @@ describe.only('app.js |', () => {
           .then((res) => {
             const props = parseProps(res);
             expect(props.mediaID).to.equal(mediaID.toString());
+          });
+      });
+
+      // ✓ GOOD
+      it('serves media info for /api/media/:mediaID', function () {
+        return request(server)
+          .get(`/api/media/${mediaID}`)
+          .expect(200)
+          .then((res) => {
+            const m = res.body;
+            expect(m).to.be.an('object');
+            expect(m._id.toString()).to.equal(mediaID.toString());
+            delete body.changesetID;
+            expect(m).to.include.all.keys(Object.keys(body));
           });
       });
 
@@ -332,7 +433,7 @@ describe.only('app.js |', () => {
           });
         });
       }); // describe('and /music/:slug (non-admin)'
-    }); // describe('adding new media (video)')
+    }); // describe('upon adding new media (video)')
 
     describe('upon adding new media (audio)', function () {
       let slug;
@@ -387,7 +488,7 @@ describe.only('app.js |', () => {
         });
       }); // describe('and /music/:slug (for audio)'
 
-      describe.only('during edit session', function () {
+      describe('during edit session', function () {
         let changesetID;
 
         before(function () {
@@ -399,15 +500,18 @@ describe.only('app.js |', () => {
             });
         });
 
+        // ✓ GOOD
         it('should have a valid changest', function () {
-          expect(changesetID).to.be.a('string');
           expect(changesetID).not.to.be.empty;
+          const c = parseInt(changesetID, 16);
+          expect(c).to.be.ok;
           expect(ObjectId.bind(null, changesetID)).not.to.Throw;
         });
 
+        // ✓ GOOD
         it('should update media info', function () {
           const mediaChange = {
-            artist: 0,
+            artist: 'Nnenna',
           };
 
           return request(server)
@@ -424,6 +528,7 @@ describe.only('app.js |', () => {
             });
         });
 
+        // ✓ GOOD
         it('should update slug', function () {
           const mediaChange = {
             title: 'Bad',
@@ -447,6 +552,7 @@ describe.only('app.js |', () => {
         describe('.And new line', function () {
           let newLine;
           let lineID;
+          let res3;
           before(function () {
             newLine = newLines[0];
             newLine.changesetID = changesetID;
@@ -456,19 +562,24 @@ describe.only('app.js |', () => {
               .send(newLine)
               .expect(200)
               .then((res) => {
-                expect(res.body).to.be.an('array');
+                res3 = res;
                 lineID = res.header['inserted-id'];
                 newLine._id = lineID;
               });
           });
 
+          // ✓ GOOD
+          it('should return array of lines', function () {
+            expect(res3.body).to.be.an('array');
+            expect(res3.body.length).to.equal(1);
+          });
+
+          // ✓ GOOD
           it('should be correctly stored in db', function () {
             newLine.changesetID = changesetID;
 
             return db(tables.LINES)
-              .find({ _id: ObjectId(lineID) })
-              .limit(1)
-              .next()
+              .findOne({ _id: ObjectId(lineID) })
               .then((line) => {
                 expect(line.changeset).to.be.an.instanceof(ObjectId);
                 expect(line.changeset.toString()).to.equal(changesetID);
@@ -484,6 +595,7 @@ describe.only('app.js |', () => {
               });
           });
 
+          // ✓ GOOD
           it('should be updated', function () {
             const lineChange = {
               text: 'bye bye, bye',
@@ -519,8 +631,12 @@ describe.only('app.js |', () => {
               });
           });
 
+          // ✓ GOOD
           it('should add multiple lines to db', function () {
             this.timeout(4000);
+
+            let initialCnt = 0;
+            let j = 0;
 
             const count = 11;
             function req(i) {
@@ -533,7 +649,9 @@ describe.only('app.js |', () => {
                 .post(`/api/media/${mediaID}/addline`)
                 .send(nthLine)
                 .expect(200)
-                .then(() => {
+                .then((res) => {
+                  j += 1;
+                  expect(res.body.length).to.equal(initialCnt + j);
                   if (i > 0) {
                     return req(i - 1);
                   }
@@ -542,221 +660,366 @@ describe.only('app.js |', () => {
             }
 
             const media = ObjectId(mediaID);
-            return req(count).then(() => db(tables.LINES).find({ media }).count())
-            .then((cnt) => {
-              expect(cnt).to.be.at.least(count);
-            });
+            return db(tables.LINES).find({ media }).count()
+              .then((cnt) => {
+                initialCnt = cnt;
+                return req(count);
+              });
           });
         }); // describe('.And new line')
       }); // describe('during edit session')
-    }); // describe('adding new media (audio)')
-  }); // describe('server')
 
-  describe('ajax requests- ', function () {
-    before(function () {
-      // automatically authorize request
-      // app.use();
-    });
-
-    it('/api/changesets/list', function () {
-      return request(server)
-        .get('/api/changesets/list?userID')
-        .expect(200)
-        .then(function (res) {
-          expect(res.body).to.be.an('array');
-          debugger;
-          res.body.forEach((cs) => {
-            expect(cs).to.have.property('type');
-            expect(cs.type).to.be.oneOf(['new', 'edit', 'rollback']);
-            if (cs.type === 'edit') {
-              expect(cs).to.have.property('revisions');
-              expect(cs.revisions).to.be.an('array');
-            }
-            // should not send unprocessed data
-            expect(cs).to.have.property('media');
-          });
-        });
-    });
-
-    it('/api/changesets/list', function () {
-      return request(server)
-        .get('/api/changesets/list?userID=596c61f94a25ca3a77e25da9')
-        .expect(200)
-        .then(function (res) {
-          // TO DO: test actual content
-          console.log('body', res.body);
-          expect(res.body).to.be.an('array');
-        });
-    });
-
-    it('/api/changesets/list', function () {
-      return request(server)
-        .get('/api/changesets/list?mediaID=58e638a2d300e060f9cdd6ca')
-        .expect(200)
-        .then(function (res) {
-          // TO DO: test actual content
-          expect(res.body).to.be.an('array');
-        });
-    });
-
-    it('/api/changesets/list', function () {
-      return request(server)
-        .get('/api/changesets/list?mediaID=58e638a2d300e060f9cdd6ca&fromID=58eb3cceb1dd4ced9f759083')
-        .expect(200)
-        .then(function (res) {
-          // TO DO: test actual content
-          expect(res.body).to.be.an('array');
-        });
-    });
-
-    it('/api/changesets/list should support paging');
-
-    it('/api/search', function () {
-      return request(server)
-        .get('/api/search?query=phyno')
-        .expect(200)
-        .then(function (res) {
-          expect(res.body).to.be.an('array');
-        });
-    });
-
-    it('/api/search with blank query should return empty object', function () {
-      return request(server)
-        .get('/api/search?query=')
-        .expect(200)
-        .then(function (res) {
-          expect(res.body).to.be.an('object');
-        });
-    });
-
-    it('/api/media/list shows list for logged in user', function () {
-      return request(server)
-        .get('/api/media/list')
-        .expect(200)
-        .then(function (res) {
-          expect(res.body).to.be.an('array');
-        });
-    });
-
-    it('/api/rankings', function () {
-      return request(server)
-        .get('/api/rankings')
-        .expect(200);
-    });
-
-    it('/api/list/audio', function () {
-      return request(server)
-        .get('/api/list/audio')
-        .expect(200);
-    });
-
-    it('/api/carousel', function () {
-      return request(server)
-        .get('/api/carousel')
-        .expect(200);
-    });
-
-    it('/api/logError', function () {
-      return request(server)
-        .post('/api/logError')
-        .send('test browser error')
-        .expect(200);
-    });
-
-    it('can handle a server error', function () {
-      return request(server)
-        .get('/api/changesets/list?mediaID=phyno')
-        .expect(500);
-    });
-
-    it('/api/spotify/token', function () {
-      return request(server)
-        .get('/api/spotify/token')
-        .expect(200)
-        .then((res) => {
-          expect(res.body).to.have.all.keys(['access_token', 'token_type', 'expires_in']);
-        });
-    });
-  });
-
-  describe('authorization routing', function () {
-    it('should redirect anonymous user to login for restricted page', function () {
-      testUser = member;
-      return request(server)
-        .get('/new_music')
-        .expect(403);
-    });
-
-    it('should permit admin user to add new music', function () {
-      testUser = admin; // to do: restore
-      return request(server)
-        .get('/new_music')
-        .expect(200);
-    });
-
-    it('should log out and redirect', function () {
-      return request(server)
-        .get('/logout')
-        .expect(302);
-    });
-
-    it('should serve login page', function () {
-      return request(server)
-        .get('/login')
-        .expect(200);
-    });
-
-    it('should allow twitter login', function () {
-      return request(server)
-        .get('/login/twitter')
-        .expect(302)
-        .then(function (res) {
-          expect(res.headers.location).to.equal('/login/twitter/return?code=111');
-          return request(server).get(res.headers.location).expect(302).then(function (res2) {
-            expect(res2.headers.location).to.equal('/');
-          });
-        });
-    });
-
-    it('should allow facebook login', function () {
-      return request(server)
-        .get('/login/facebook')
-        .expect(302)
-        .then(function (res) {
-          expect(res.headers.location).to.equal('/login/facebook/return?code=111');
-          return request(server).get(res.headers.location).expect(302).then(function (res2) {
-            expect(res2.headers.location).to.equal('/');
-          });
-        });
-    });
-  });
-
-  describe('halt updates during rollback- ', function () {
-    let mediaObj;
-    let mediaID;
-    before(function () {
-      testUser = admin;
-      mediaObj = newMedia[2];
-      return request(server)
-        .post('/api/media/new')
-        .send(mediaObj)
-        .expect(200)
-        .then((res) => {
-          mediaID = res.header['inserted-id'];
+      describe('in the middle of a rollback', function () {
+        before(function () {
           return db(tables.MEDIA)
             .updateOne({ _id: ObjectId(mediaID) }, { $set: { pendingRollbacks: [1] } });
         });
-    });
 
-    it('should not allow edit for media in the middle of a rollback', function () {
-      return request(server)
-        .post(`/api/start_edit/${mediaID}`)
-        .expect(403)
-        .then(function (res2) {
-          expect(res2.text).to.equal('ROLLBACK_IN_PROGRESS');
+        after(function () {
+          return db(tables.MEDIA)
+            .updateOne({ _id: ObjectId(mediaID) }, { $unset: { pendingRollbacks: '' } });
         });
-    });
-  });
+
+        // ✓ GOOD
+        it('should not allow edit in the middle of a rollback', function () {
+          return request(server)
+            .post(`/api/start_edit/${mediaID}`)
+            .expect(403)
+            .then(function (res) {
+              expect(res.text).to.equal('ROLLBACK_IN_PROGRESS');
+            });
+        });
+      }); // describe('in the middle of a rollback')
+    }); // describe('upon adding new media (audio)')
+
+    describe('for changesets', function () {
+      let mediaID1;
+      const userA = admin;
+      const userB = member;
+      const userAcnt = 3;
+      const userBcnt = 5;
+
+      function addLine(changesetID, mediaID) {
+        return request(server)
+          .post(`/api/media/${mediaID}/addline`)
+          .send({ changesetID })
+          .expect(200);
+      }
+
+      function req(i, mediaID) {
+        return request(server)
+          .post(`/api/start_edit/${mediaID}`)
+          .expect(200)
+          .then((res) => {
+            const changesetID = res.text;
+            return addLine(changesetID, mediaID).then(() => {
+              if (i > 1) {
+                return req(i - 1, mediaID);
+              }
+              return null;
+            });
+          });
+      }
+      before(function () {
+        this.timeout(6000);
+        return db(tables.MEDIA).insertOne({ title: 'media0' })
+        .then((result) => {
+          mediaID1 = result.insertedId.toString();
+          return db(tables.CHANGESETS).deleteMany({});
+        })
+        .then(() => {
+          setLoggedInUser(userA);
+          return req(userAcnt, mediaID1);
+        })
+        .then(() => {
+          setLoggedInUser(userB);
+          return req(userBcnt, mediaID1);
+        });
+      });
+
+      // ✓ GOOD
+      it('should store them in the right format', function (done) {
+        let cnt = 0;
+        db(tables.CHANGESETS).find({}).forEach((cs) => {
+          cnt += 1;
+          expect(cs).to.have.property('type');
+          expect(cs.type).to.be.oneOf(['new', 'edit', 'rollback']);
+          if (cs.type === 'edit') {
+            expect(cs).to.have.property('revisions');
+            expect(cs.revisions).to.be.an('array');
+          }
+          expect(cs).to.have.property('media');
+        }, () => {
+          expect(cnt).to.equal(userAcnt + userBcnt);
+          done();
+        });
+      });
+
+      // ✓ GOOD
+      it('should serve loggedin user\'s changes for /api/changesets/list?userID', function () {
+        setLoggedInUser(userA);
+        return request(server)
+          .get('/api/changesets/list?userID')
+          .expect(200)
+          .then(function (res) {
+            expect(res.body).to.be.an('array');
+            expect(res.body.length).to.equal(userAcnt);
+            res.body.forEach((cs) => {
+              expect(cs.user.toString()).to.equal(userA._id.toString());
+            });
+          });
+      });
+
+      // ✓ GOOD
+      it('should serve /api/changesets/list?userID=x inspite of logged in user', function () {
+        setLoggedInUser(userA);
+        return request(server)
+          .get(`/api/changesets/list?userID=${userB._id}`)
+          .expect(200)
+          .then(function (res) {
+            expect(res.body).to.be.an('array');
+            expect(res.body.length).to.equal(userBcnt);
+            res.body.forEach((cs) => {
+              expect(cs.user.toString()).to.equal(userB._id.toString());
+            });
+          });
+      });
+
+      // ✓ GOOD
+      it('should serve /api/changesets/list?mediaID=x for given media', function () {
+        return request(server)
+          .get(`/api/changesets/list?mediaID=${mediaID1}`)
+          .expect(200)
+          .then(function (res) {
+            expect(res.body).to.be.an('array');
+            expect(res.body.length).to.equal(userBcnt + userAcnt);
+            res.body.forEach((cs) => {
+              expect(cs.media.toString()).to.equal(mediaID1);
+            });
+          });
+      });
+
+      describe('paging', function () {
+        const pageLength = 10;
+        let media2ID;
+        const userAcnt2 = 8;
+        const userBcnt2 = 7;
+        before(function () {
+          this.timeout(6000);
+          return db(tables.MEDIA).insertOne({ title: 'media2' })
+          .then((result) => {
+            media2ID = result.insertedId.toString();
+            setLoggedInUser(userA);
+            return req(userAcnt2, media2ID);
+          })
+          .then(() => {
+            setLoggedInUser(userB);
+            return req(userBcnt2, media2ID);
+          });
+        });
+
+        // ✓ GOOD
+        it('should never list more than 10 changesets', function () {
+          return request(server)
+            .get(`/api/changesets/list?mediaID=${media2ID}`)
+            .expect(200)
+            .then(function (res) {
+              expect(userAcnt2 + userBcnt2).to.be.greaterThan(pageLength);
+              expect(res.body).to.be.an('array');
+              expect(res.body.length).to.equal(pageLength);
+            });
+        });
+
+        // ✓ GOOD
+        it('should serve next page of given query', function () {
+          return db(tables.CHANGESETS)
+            .find({ media: ObjectId(media2ID) })
+            .sort({ _id: -1 })
+            .limit(10)
+            .toArray()
+            .then((changesets) => {
+              const fromID = changesets[9]._id;
+              return request(server)
+                .get(`/api/changesets/list?mediaID=${media2ID}&fromID=${fromID}`)
+                .expect(200)
+                .then(function (res) {
+                  expect(userAcnt2 + userBcnt2).to.be.greaterThan(pageLength);
+                  expect(userAcnt2 + userBcnt2).to.be.lessThan(pageLength * 2);
+                  expect(res.body).to.be.an('array');
+                  expect(res.body.length).to.equal((userAcnt2 + userBcnt2) - pageLength);
+                });
+            });
+        });
+      }); // describe('paging')
+    }); // describe('for changesets')
+
+    describe('authorization routing', function () {
+      // ✓ GOOD
+      it('should redirect anonymous user to login for restricted page', function () {
+        setLoggedInUser(null);
+        return request(server)
+          .get('/new_music')
+          .expect(302);
+      });
+
+      // ✓ GOOD
+      it('should forbid unauthorized for restricted page', function () {
+        setLoggedInUser(member);
+        return request(server)
+          .get('/new_music')
+          .expect(403);
+      });
+
+      // ✓ GOOD
+      it('should permit admin user to add new music', function () {
+        setLoggedInUser(admin);
+        return request(server)
+          .get('/new_music')
+          .expect(200);
+      });
+    }); // describe('authorization routing')
+
+    describe('authentication', function () {
+      ['twitter', 'facebook'].forEach(function (provider) {
+        describe(provider, function () {
+          let agent;
+          let agent2;
+          const redirect = '/music/ada-ada';
+          let res0;
+
+          before(function () {
+            agent = request.agent(server);
+            agent2 = request.agent(server);
+            return agent.get(`/login/${provider}`)
+              .set('Referer', redirect)
+              .then(function (res) {
+                res0 = res;
+                return agent2.get(`/login/${provider}`);
+              });
+          });
+
+          // ✓ GOOD
+          it('should set redirect ', function () {
+            expect(res0.headers.location).to.be.ok;
+            expect(res0.status).to.equal(302);
+          });
+
+          // ✓ GOOD
+          it('should set return to orignal location upon login', function () {
+            return agent.get(res0.headers.location).expect(302).then(function (res) {
+              expect(res.headers.location).to.equal(redirect);
+            });
+          });
+
+          // ✓ GOOD
+          it('should set return to "/" when referer not set', function () {
+            return agent2.get(res0.headers.location).expect(302).then(function (res) {
+              expect(res.headers.location).to.equal('/');
+            });
+          });
+        }); // describe('provider')
+      });
+
+      describe('login page', function () {
+        let agent;
+        const redirect = '/redirect';
+        let res0;
+
+        before(function () {
+          return db(tables.SESSIONS).deleteMany({}).then(() => {
+            agent = request.agent(server);
+            return agent.get('/login')
+              .set('Referer', redirect)
+              .then(function (res) {
+                res0 = res;
+              });
+          });
+        });
+
+        // ✓ GOOD
+        it('should serve html', function () {
+          expect(res0.status).to.equal(200);
+          expect(res0.text).to.include('/login/facebook');
+          expect(res0.text).to.include('/login/twitter');
+          /* $ = cheerio.load(res0.text);
+          console.log($);
+          expect($('a').length).to.equal(2);
+          expect($('a')[0].attr('href')).to.equal('/login/facebook');*/
+        });
+
+        // ✓ GOOD
+        it('should set returnTo location', function () {
+          return db(tables.SESSIONS).findOne({}).then((ses) => {
+            const session = JSON.parse(ses.session);
+            console.log(session);
+            expect(session.returnTo).to.equal(redirect);
+          });
+        });
+      }); // describe('login page')
+
+      // ✓ GOOD
+      it('should log out and redirect to referer', function () {
+        const returnPage = 'hey/there';
+        return request(server)
+          .get('/logout')
+          .set('Referer', returnPage)
+          .expect(302)
+          .then((res) => {
+            expect(res.headers.location).to.equal(returnPage);
+          });
+      });
+
+      // ✓ GOOD
+      it('should log out and redirect to / when referer not provided', function () {
+        return request(server)
+          .get('/logout')
+          .expect(302)
+          .then((res) => {
+            expect(res.headers.location).to.equal('/');
+          });
+      });
+    }); // describe('authentication')
+
+    describe('search', function () {
+      before(function () {
+        return db(tables.MEDIA).deleteMany({})
+          .then(() => db(tables.MEDIA).insertMany(mediaArr));
+      });
+
+      // ✓ GOOD
+      it('should return results that match title and artist', function () {
+        return request(server)
+          .get('/api/search?query=phy')
+          .expect(200)
+          .then(function (res) {
+            expect(res.body).to.be.an('array');
+            expect(res.body.length).to.equal(3);
+          });
+      });
+
+      // ✓ GOOD
+      it('should just show "published" media', function () {
+        return request(server)
+          .get('/api/search?query=fla')
+          .expect(200)
+          .then(function (res) {
+            expect(res.body).to.be.an('array');
+            expect(res.body.length).to.equal(2);
+          });
+      });
+
+      // ✓ GOOD
+      it('return empty object for blank query', function () {
+        return request(server)
+          .get('/api/search?query=')
+          .expect(200)
+          .then(function (res) {
+            expect(res.body).to.be.an('object');
+            expect(res.body).to.deep.equal({});
+          });
+      });
+    }); // describe('search')
+  }); // describe('server')
 
   it('distinguisehs between two media with the same title/slug');
 
@@ -773,4 +1036,6 @@ describe.only('app.js |', () => {
   it('clears failed revisions');
 
   it('youtube source url always has matching protocol');
+
+  it('should pageinate search results');
 });

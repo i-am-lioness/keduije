@@ -22,8 +22,6 @@ const newMedia = [
   },
 ];
 
-const slugs = ['Thriller', 'Lucky', 'Mmege', 'Soldier'];
-
 const newLines = [
   {
     startTime: 5,
@@ -32,4 +30,37 @@ const newLines = [
   },
 ];
 
-export { newMedia, slugs, newLines };
+const mediaArr = [
+  {
+    title: 'So Far So Good',
+    artist: 'Phyno',
+    status: 'published',
+  },
+  {
+    title: 'Ezege',
+    artist: 'Phyno',
+    status: 'published',
+  },
+  {
+    title: 'Ogene ft Phyno',
+    artist: 'Zoro',
+    status: 'published',
+  },
+  {
+    title: 'Ada Ada',
+    artist: 'Flavour',
+    status: 'published',
+  },
+  {
+    title: 'Mmege',
+    artist: 'Flavour',
+    status: 'published',
+  },
+  {
+    title: 'Shake Shake',
+    artist: 'Flavour',
+    status: 'deleted',
+  },
+];
+
+export { newMedia, newLines, mediaArr };
