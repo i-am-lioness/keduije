@@ -1,6 +1,7 @@
 /* eslint camelcase: 0 */
 import request from 'supertest';
 import APP from '../../lib/app';
+import aggregateActvity from '../../lib/compile-changests';
 import TestDB from './db';
 import { tables } from '../../lib/constants';
 import { mediaTypes } from '../../react/keduije-media';
@@ -14,11 +15,23 @@ let db;
 const users = [];
 const media = [];
 const lines = {};
+const dirty = {};
 let activeUser = null;
 
+function printResults() {
+  console.log(`${users.length} users generated`);
+  console.log(`${media.length} media generated`);
+  let toBackupCnt = 0;
+  Object.values(dirty).forEach((isDirty) => {
+    if (isDirty) toBackupCnt += 1;
+  });
+  console.log(`${toBackupCnt} need to be backedup`);
+  Object.keys(lines).forEach((m) => {
+    console.log(`media(${m}) has ${lines[m].length} lines`);
+  });
+}
 
 const ensureLoggedIn = (req, res, next) => {
-  //debugger;
   req.user = activeUser;
   if (req.user) {
     next();
@@ -95,9 +108,9 @@ function action_NEW_MUSIC_save(changesetID) {
     .then((res) => {
       const mediaID = res.header['inserted-id'];
       console.log(`created new media (${mediaID})`);
-      debugger;
       media.push(mediaID);
       lines[mediaID] = [];
+      dirty[mediaID] = false;
     });
 }
 
@@ -121,7 +134,7 @@ class Node {
   runChild(param, children) {
     if (children.length < 1) return null;
 
-    const link = children.pop();
+    const link = children.shift();
     if (typeof link === 'undefined') return null;
 
     return link.run(param).then(() => this.runChild(param, children));
@@ -185,6 +198,7 @@ const addline = new Node('addline', (params) => {
     .then((res) => {
       console.log(`added new line "${lineObj.text}" to media(${mediaID})`);
       lines[mediaID] = res.body;
+      dirty[mediaID] = true;
     });
 });
 
@@ -211,6 +225,7 @@ const updateLine = new Node('updateLine', (params) => {
     .then((res) => {
       console.log(`updated line from "${updateObj.original.text}" to "${updateObj.changes.text}"`);
       lines[mediaID] = res.body;
+      dirty[mediaID] = true;
     });
 });
 
@@ -254,21 +269,31 @@ const view_song = new Node('view_song', () => {
   return Promise.resolve(currMedia);
 }, [start_edit]);
 
-const browse = new Node('browse', () => {
-  return setUser();
-}, () => {
+const review_changes = new Node(
+  'review_changes',
+  () => {
+
+    debugger;
+    return aggregateActvity(db);
+  },
+);
+
+const browse = new Node('browse', () => setUser(), () => {
   const children = [new_music, new_music];
   for (let i = 0; i < 10; i += 1) {
     children.push(chooseElement([new_music, view_song]));
   }
-  // console.log(children);
-  // debugger;
+  children.push(new_music);
+  children.push(new_music);
+  children.push(review_changes);
 
   return children;
 });
 
 function start() {
-  return APP().then((result) => {
+  const env = process.env;
+  env.DB_URL = process.env.LOCAL_DB ? process.env.LOCAL_DB_URL : process.env.TEST_DB_URL;
+  return APP(env).then((result) => {
     server = result.server;
     db = result.db;
     return TestDB.clear(db);
@@ -283,6 +308,7 @@ function runBasicStory() {
       console.error(err);
     })
     .then(() => {
+      printResults();
       db._DB.close();
       process.exit();
     });

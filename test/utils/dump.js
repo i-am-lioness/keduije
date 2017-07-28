@@ -20,6 +20,7 @@ function saveToFile(text, name) {
 let db;
 
 const toDump = ['CHANGESETS', 'MEDIA', 'LINES'];
+const counts = {};
 
 function dumpTable() {
   if (toDump.length < 1) return null;
@@ -27,11 +28,15 @@ function dumpTable() {
   const table = toDump.pop();
 
   return db(tables[table]).find().toArray().then((arr) => {
+    counts[table] = arr.length;
     const str = JSON.stringify(arr);
     return saveToFile(str, tables[table]);
   })
   .then(dumpTable);
 }
+
+/* function printStats() {
+}*/
 
 function dump() {
   return TestDB.open().then((_db) => {

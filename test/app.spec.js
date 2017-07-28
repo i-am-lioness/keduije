@@ -89,7 +89,14 @@ describe('app.js |', () => {
         expect(err.message).to.equal('Missing environment variable "TWITTER_CONSUMER_SECRET"');
       });
     });
-  });
+
+    // GOOD
+    it('throws error, if environment variable object not passed', function () {
+      return APP().catch(err => err).then((err) => {
+        expect(err.message).to.equal('Missing "env" parameter');
+      });
+    });
+  }); // describe('app initialization')
 
   describe('server', function () {
     let server;
