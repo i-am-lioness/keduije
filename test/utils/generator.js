@@ -1,7 +1,7 @@
 /* eslint camelcase: 0 */
 import request from 'supertest';
 import APP from '../../lib/app';
-import aggregateActvity from '../../lib/compile-changests';
+import aggregateActvity from '../../lib/review-changes';
 import TestDB from './db';
 import { tables } from '../../lib/constants';
 import { mediaTypes } from '../../react/keduije-media';

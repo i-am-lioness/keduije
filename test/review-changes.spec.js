@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 import { expect } from 'chai';
 // import { ObjectId } from 'mongodb';
-import aggregateActvity from '../lib/compile-changests';
+import aggregateActvity from '../lib/review-changes';
 import TestDB from './utils/db';
 import populate from './utils/populate-db';
 import { tables } from '../lib/constants';
@@ -85,6 +85,10 @@ describe('compile-changesets.js', function () {
       });
     });
   });
+
+  it('cleans up extraneous changesets');
+
+  it('changesets without children');
 
   it('can handle multiple rounds');
 

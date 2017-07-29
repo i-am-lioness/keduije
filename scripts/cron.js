@@ -1,6 +1,6 @@
 import connectDB from '../lib/db';
 
-const aggregateActvity = require('../lib/compile-changests');
+const aggregateActvity = require('../lib/review-changes');
 require('dotenv').config();
 // const recovery = require('../lib/recovery');
 // const archiveLyrics = require('../lib/backup');
