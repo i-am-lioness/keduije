@@ -1,19 +1,21 @@
-Total Changesets: 19
-"edit" Changesets: 10
-"new" Changesets: 9
+media0 has 7 lines, 4 changesets, and 1 snapshots. (to backup)
+media1 has 20 lines, 5 changesets, and 1 snapshots. 
+media2 has 12 lines, 4 changesets, and 1 snapshots. (to backup)
+media3 has 4 lines, 2 changesets, and 0 snapshots. (to backup)
+media4 has 0 lines, 1 changesets, and 0 snapshots. 
+media5 has 0 lines, 1 changesets, and 0 snapshots. 
+media6 has 0 lines, 1 changesets, and 0 snapshots. 
+media7 has 0 lines, 1 changesets, and 0 snapshots. 
+media8 has 0 lines, 1 changesets, and 0 snapshots. 
+media9 has 0 lines, 1 changesets, and 0 snapshots. 
+Total Changesets: 22
+"new" Changesets: 11
+"edit" Changesets: 11
 Processed Changesets: 15
-childless "new" changesets: 2
 empty changesets: 2
-Total Media: 9
-empty "edit" changesets: 2
+childless "new" changesets: 1
+empty "edit" changesets: 1
+Total Media: 10
 Media to backup: 3
 Total Snapshots: 3
-media0 has 4 lines, 2 changesets, and 1 snapshots.
-media1 has 6 lines, 2 changesets, and 0 snapshots.
-media2 has 6 lines, 2 changesets, and 1 snapshots.
-media3 has 11 lines, 4 changesets, and 1 snapshots.
-media4 has 0 lines, 1 changesets, and 0 snapshots.
-media5 has 0 lines, 2 changesets, and 0 snapshots.
-media6 has 10 lines, 3 changesets, and 0 snapshots.
-media7 has 3 lines, 2 changesets, and 0 snapshots.
-media8 has 0 lines, 1 changesets, and 0 snapshots.
+undefined

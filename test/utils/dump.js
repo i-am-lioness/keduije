@@ -1,4 +1,5 @@
 /* eslint camelcase: 0 */
+/* eslint arrow-body-style: 0 */
 import fs from 'fs';
 import path from 'path';
 import TestDB from './db';
@@ -41,7 +42,10 @@ function log(text) {
   console.log(text);
   statsText += `${text}\n`;
 }
-function saveStatsFile() {
+function saveStatsFile(results) {
+  results.forEach((r) => {
+    log(r);
+  });
   return new Promise((resolve, reject) => {
     const fileName = path.resolve(__dirname, 'data/data_stats.txt');
     fs.writeFile(fileName, statsText, (err) => {
@@ -53,22 +57,22 @@ function saveStatsFile() {
 
 function countChangesets() {
   return db(tables.CHANGESETS).count().then((cnt) => {
-    log(`Total Changesets: ${cnt}`);
+    return `Total Changesets: ${cnt}`;
   });
 }
 function countProcessedChangesets() {
   return db(tables.CHANGESETS).count({ processed: true }).then((cnt) => {
-    log(`Processed Changesets: ${cnt}`);
+    return `Processed Changesets: ${cnt}`;
   });
 }
 function countNewChangesets() {
   return db(tables.CHANGESETS).count({ type: 'new' }).then((cnt) => {
-    log(`"new" Changesets: ${cnt}`);
+    return `"new" Changesets: ${cnt}`;
   });
 }
 function countEditChangesets() {
   return db(tables.CHANGESETS).count({ type: 'edit' }).then((cnt) => {
-    log(`"edit" Changesets: ${cnt}`);
+    return `"edit" Changesets: ${cnt}`;
   });
 }
 function countExraneousChangesets() {
@@ -79,7 +83,7 @@ function countExraneousChangesets() {
     ],
   })
   .then((cnt) => {
-    log(`empty changesets: ${cnt}`);
+    return `empty changesets: ${cnt}`;
   });
 }
 function countRevisionlessEdits() {
@@ -87,30 +91,30 @@ function countRevisionlessEdits() {
       { type: 'edit', revisions: { $size: 0 } },
   )
   .then((cnt) => {
-    log(`empty "edit" changesets: ${cnt}`);
+    return (`empty "edit" changesets: ${cnt}`);
   });
 }
 function countUnfinishedMediaCreations() {
   return db(tables.CHANGESETS).count(
-      { type: 'edit', revisions: { $size: 0 } },
+      { type: 'new', media: { $exists: false } },
   )
   .then((cnt) => {
-    log(`childless "new" changesets: ${cnt}`);
+    return (`childless "new" changesets: ${cnt}`);
   });
 }
 function countMedia() {
   return db(tables.MEDIA).count().then((cnt) => {
-    log(`Total Media: ${cnt}`);
+    return (`Total Media: ${cnt}`);
   });
 }
 function countDirtyMedia() {
   return db(tables.MEDIA).count({ toBackup: true }).then((cnt) => {
-    log(`Media to backup: ${cnt}`);
+    return (`Media to backup: ${cnt}`);
   });
 }
 function countSnapshots() {
   return db(tables.SNAPSHOTS).count().then((cnt) => {
-    log(`Total Snapshots: ${cnt}`);
+    return (`Total Snapshots: ${cnt}`);
   });
 }
 function mediaStats() {
@@ -138,7 +142,8 @@ function mediaStats() {
       if (err) {
         reject(err);
       } else if (m) {
-        log(`${m.title} has ${m.lines.length} lines, ${m.changesets.length} changesets, and ${m.snapshots.length} snapshots.`);
+        const b = m.toBackup ? '(to backup)' : '';
+        log(`${m.title} has ${m.lines.length} lines, ${m.changesets.length} changesets, and ${m.snapshots.length} snapshots. ${b}`);
       } else {
         resolve();
       }

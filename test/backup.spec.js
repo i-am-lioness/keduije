@@ -24,7 +24,7 @@ describe('backup.js', function () {
   });
 
   describe('backupMedia', function () {
-    const backupReadyCnt = 2;
+    const backupReadyCnt = 3;
     let mediaIDlist;
     let snapshots;
     before(function () {

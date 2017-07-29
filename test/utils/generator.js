@@ -19,6 +19,8 @@ const lines = {};
 const dirty = {};
 let activeUser = null;
 
+let toCancelEdit = 0;
+
 function printResults() {
   console.log(`${users.length} users generated`);
   console.log(`${media.length} media generated`);
@@ -132,6 +134,18 @@ class Node {
     this.nextPaths = nextPaths;
   }
 
+  controlled(mediIdx, toEdit) {
+    return new Node(this.url, () => {
+      const chosenMedia = media[mediIdx];
+      debugger;
+      toCancelEdit = 0;
+      if (typeof toEdit !== 'undefined') {
+        toCancelEdit = -1;
+      }
+      return Promise.resolve(chosenMedia);
+    }, this.nextPaths);
+  }
+
   runChild(param, children) {
     if (children.length < 1) return null;
 
@@ -230,8 +244,6 @@ const updateLine = new Node('updateLine', (params) => {
     });
 });
 
-
-let toCancelEdit = 0;
 // start_edit --> addline, updateline
 const start_edit = new Node('start_edit', (mediaID) => {
   if (!mediaID) return Promise.resolve({ break: true });
@@ -272,13 +284,18 @@ const view_song = new Node('view_song', () => {
 
 const review_changes = new Node(
   'review_changes',
-  () => reviewChanges(db),
+  () => {
+    console.log('=== REVIEW CHANGES ===');
+    return reviewChanges(db);
+  },
 );
 
 const backup = new Node(
   'backup',
-  () => backupMedia(db),
-);
+  () => {
+    console.log('=== BACKUP ===');
+    return backupMedia(db);
+  });
 
 const browse = new Node('browse', () => setUser(), () => {
   const children = [new_music, new_music];
@@ -296,10 +313,13 @@ const browse = new Node('browse', () => setUser(), () => {
   children.push(new_music); // to guarangee some non-backed up media
   children.push(new_music);
   children.push(review_changes);
-  children.push(view_song);
-  children.push(view_song);
-  children.push(view_song);
-  children.push(view_song);
+  children.push(new_music);
+  children.push(new_music);
+  children.push(new_music);
+  children.push(view_song.controlled(1));
+  children.push(view_song.controlled(2));
+  children.push(view_song.controlled(1)); // 2 additional media to be backed up
+  children.push(view_song.controlled(0, false));
 
   return children;
 });

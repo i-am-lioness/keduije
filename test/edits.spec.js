@@ -60,7 +60,7 @@ describe('<Edits />', function () {
     it('should make no difference whether user prop is defined or not');
 
     it('shows all edits for user', function () {
-      expect(wrapper.find('.panel')).to.have.lengthOf(8);
+      expect(wrapper.find('.panel')).to.have.lengthOf(10);
     });
 
     it('shows debug statemes', function () {
@@ -78,7 +78,7 @@ describe('<Edits />', function () {
       if (showMoreBtn.length === 0) done();
       showMoreBtn.simulate('click');
       setTimeout(() => {
-        expect(wrapper.find('button')).to.have.lengthOf(0);
+        expect(wrapper.find('button')).to.have.lengthOf(1);
         done();
       }, 10);
     });
