@@ -30,14 +30,14 @@ describe('keduije-media.js', function () {
     handleResume.resetHistory();
   });
 
-  describe('video', function () {
-    it('video constructor', function () {
+  describe('Video class', function () {
+    it('can instatiate', function () {
       const v = new Video(null, playerReadyHandler, null, null);
       expect(v).to.be.ok;
       expect(playerReadyHandler.called).to.be.true;
     });
 
-    it('video on play', function () {
+    it('plays', function () {
       const v = new Video(null, playerReadyHandler, handlePaused, handleResume);
       expect(v).to.be.ok;
       v.onPlayerStateChange({ data: YT.PlayerState.PLAYING });
@@ -45,21 +45,21 @@ describe('keduije-media.js', function () {
       expect(handlePaused.called).to.be.false;
     });
 
-    it('video on pause', function () {
+    it('pauses', function () {
       const v = new Video(null, playerReadyHandler, handlePaused, handleResume);
       v.onPlayerStateChange({ data: YT.PlayerState.PAUSED });
       expect(handlePaused.called).to.be.true;
       expect(handleResume.called).to.be.false;
     });
 
-    it('video on unknown state', function () {
+    it('does nothing when triggered with unknown state', function () {
       const v = new Video(null, playerReadyHandler, handlePaused, handleResume);
       v.onPlayerStateChange({ data: 3 });
       expect(handlePaused.called).to.be.false;
       expect(handleResume.called).to.be.false;
     });
 
-    it('video seekTo', function () {
+    it('seeks to', function () {
       const v = new Video(null, playerReadyHandler, handlePaused, handleResume);
       v.seekTo(60, null);
       expect(v.media.seekTo.called).to.be.true;
