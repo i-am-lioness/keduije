@@ -1,5 +1,4 @@
 /* eslint-env mocha */
-import { ObjectId } from 'mongodb';
 import { expect } from 'chai';
 import backupMedia from '../lib/backup';
 import { tables } from '../lib/constants';
@@ -25,78 +24,83 @@ describe('backup.js', function () {
   });
 
   describe('backupMedia', function () {
-    let backupReadyCnt;
-    let unsavedMediaArr;
+    const backupReadyCnt = 2;
+    let mediaIDlist;
+    let snapshots;
     before(function () {
-      debugger;
       return db(tables.MEDIA)
-        .updateMany(
-          { _id: { $lte: ObjectId('590183ebb556696c1f377894') } },
-          { $set: { toBackup: true } })
-        .then((result) => {
-          backupReadyCnt = result.modifiedCount;
-          console.log(`backupReadyCnt: ${backupReadyCnt} `);
-          return db(tables.MEDIA).find({ toBackup: true }).toArray();
-        })
+        .find({ toBackup: true })
+        .toArray()
         .then((mediaArr) => {
-          unsavedMediaArr = mediaArr;
+          mediaIDlist = mediaArr.map(el => el._id.toString());
           return backupMedia(db);
+        })
+        .then(() => db(tables.SNAPSHOTS).find().toArray())
+        .then((ss) => {
+          snapshots = ss;
         });
     });
 
+    // ✓ GOOD
     it('backs up all media that are ready for backup', function () {
-      return db(tables.SNAPSHOTS).count().then((cnt) => {
-        expect(cnt).to.equal(backupReadyCnt);
+      expect(snapshots.length).to.equal(backupReadyCnt);
+      snapshots.forEach((sn) => {
+        expect(sn.media.toString()).to.be.oneOf(mediaIDlist);
       });
     });
 
+    // ✓ GOOD
     it('turns off backup flag, once backed up', function () {
-      unsavedMediaArr.forEach((m) => {
-        expect(m.toBackup).to.be.true;
-      });
-
+      expect(mediaIDlist.length).to.equal(backupReadyCnt);
       return db(tables.MEDIA).count({ toBackup: true }).then((cnt) => {
         expect(cnt).to.equal(0);
       });
     });
 
-    it('saves snapshot in expected format', function (done) {
-      db(tables.SNAPSHOTS).find().forEach((ss) => {
+    // ✓ GOOD
+    it('saves snapshot in expected format', function () {
+      snapshots.forEach((ss) => {
         expect(ss).to.haveOwnProperty('title');
         expect(ss).to.haveOwnProperty('artist');
         expect(ss).to.haveOwnProperty('media');
         expect(ss).to.haveOwnProperty('lines');
         expect(ss.lines).to.be.an('Array');
-      }, (err) => {
-        done(err);
       });
     });
 
-    describe('multiple rounds- ', function () {
-      let backupReadyCnt2;
-      before(function () {
-        return db(tables.MEDIA)
-          .updateMany(
-            { _id: { $lt: ObjectId('590183ebb556696c1f377894') } },
-            { $set: { toBackup: true } })
-          .then((result) => {
-            backupReadyCnt2 = result.modifiedCount;
-            console.log(`backupReadyCnt2: ${backupReadyCnt2} `);
-            return db(tables.MEDIA).find({ toBackup: true }).toArray();
-          })
-          .then((mediaArr) => {
-            unsavedMediaArr = mediaArr;
-            return backupMedia(db);
-          });
-      });
+    // ✓ GOOD
+    it('saves all the lines for each media', function () {
+      const queries = snapshots.map(ss =>
+        db(tables.LINES)
+          .count({ media: ss.media })
+          .then(cnt => cnt),
+      );
 
-      it('only backs up media that has changed since last backup', function () {
-        return db(tables.SNAPSHOTS).count().then((cnt) => {
-          expect(cnt).to.equal(backupReadyCnt2 + backupReadyCnt);
+      return Promise.all(queries).then((counts) => {
+        counts.forEach((cnt, i) => {
+          expect(cnt).to.equal(snapshots[i].lines.length);
         });
       });
     });
-  });
+  }); // describe('backupMedia')
+
+  describe('backupMedia failure', function () {
+    before(function () {
+      backupMedia.__Rewire__('pipeline', [{ $matc: 0 }]);
+    });
+
+    after(function () {
+      backupMedia.__ResetDependency__('pipeline');
+    });
+
+    // ✓ GOOD
+    it('during aggegation handles error', function () {
+      return backupMedia(db).catch(err => err).then((err) => {
+        expect(err).to.be.ok;
+        expect(err).to.be.an.instanceOf(Error);
+      });
+    });
+  }); // describe('backupMedia')
 
   it('does not create snapshots when there are no back-up ready media');
 
