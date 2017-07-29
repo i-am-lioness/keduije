@@ -1,7 +1,8 @@
 /* eslint camelcase: 0 */
 import request from 'supertest';
 import APP from '../../lib/app';
-import aggregateActvity from '../../lib/review-changes';
+import reviewChanges from '../../lib/review-changes';
+import backupMedia from '../../lib/backup';
 import TestDB from './db';
 import { tables } from '../../lib/constants';
 import { mediaTypes } from '../../react/keduije-media';
@@ -271,11 +272,12 @@ const view_song = new Node('view_song', () => {
 
 const review_changes = new Node(
   'review_changes',
-  () => {
+  () => reviewChanges(db),
+);
 
-    debugger;
-    return aggregateActvity(db);
-  },
+const backup = new Node(
+  'backup',
+  () => backupMedia(db),
 );
 
 const browse = new Node('browse', () => setUser(), () => {
@@ -283,9 +285,21 @@ const browse = new Node('browse', () => setUser(), () => {
   for (let i = 0; i < 10; i += 1) {
     children.push(chooseElement([new_music, view_song]));
   }
-  children.push(new_music);
+  children.push(new_music); // to guarangee some non-backed up media
   children.push(new_music);
   children.push(review_changes);
+  children.push(backup);
+  children.push(view_song);
+  children.push(view_song);
+  children.push(view_song);
+  children.push(view_song);
+  children.push(new_music); // to guarangee some non-backed up media
+  children.push(new_music);
+  children.push(review_changes);
+  children.push(view_song);
+  children.push(view_song);
+  children.push(view_song);
+  children.push(view_song);
 
   return children;
 });

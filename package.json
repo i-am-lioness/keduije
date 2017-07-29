@@ -10,6 +10,7 @@
   "scripts": {
     "gen": "NODE_ENV=test LOCAL_DB=1 babel-node test/utils/generator.js",
     "gen-debug": "DEBUG=express:* NODE_ENV=test babel-node --debug-brk --inspect test/utils/generator.js",
+    "dump": "LOCAL_DB=1 babel-node test/utils/dump.js",
     "mongo": "mongod --fork --logpath /dev/null",
     "test": "cross-env NODE_ENV=test LOCAL_DB=1 nyc mocha test/**/*.spec.js --compilers js:babel-register",
     "mongo-close": "mongo admin --eval 'db.shutdownServer()' > /dev/null",
