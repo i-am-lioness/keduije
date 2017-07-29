@@ -4,6 +4,7 @@ import backupMedia from '../lib/backup';
 import { tables } from '../lib/constants';
 import TestDB from './utils/db';
 import populate from './utils/populate-db';
+import { errorDB } from './utils/mocks';
 
 let db;
 let populator;
@@ -82,20 +83,10 @@ describe('backup.js', function () {
         });
       });
     });
-  }); // describe('backupMedia')
-
-  describe('backupMedia failure', function () {
-    before(function () {
-      backupMedia.__Rewire__('pipeline', [{ $matc: 0 }]);
-    });
-
-    after(function () {
-      backupMedia.__ResetDependency__('pipeline');
-    });
 
     // ✓ GOOD
     it('during aggegation handles error', function () {
-      return backupMedia(db).catch(err => err).then((err) => {
+      return backupMedia(errorDB).catch(err => err).then((err) => {
         expect(err).to.be.ok;
         expect(err).to.be.an.instanceOf(Error);
       });

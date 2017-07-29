@@ -4,6 +4,7 @@ import calcStats from '../lib/calc-stats';
 import { tables } from '../lib/constants';
 import TestDB from './utils/db';
 import populate from './utils/populate-db';
+import { errorDB } from './utils/mocks';
 
 let db;
 let populator;
@@ -50,4 +51,14 @@ describe('calc-stats.js', () => {
       expect(media.stats.weeklyTotal).to.equal(350);
     });
   });
+
+  describe('failure', function () {
+    // ✓ GOOD
+    it('can handle error', function () {
+      return calcStats(errorDB).catch(err => err).then((err) => {
+        expect(err).to.be.ok;
+        expect(err).to.be.an.instanceOf(Error);
+      });
+    });
+  }); // describe('failure')
 });

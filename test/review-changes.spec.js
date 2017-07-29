@@ -4,6 +4,7 @@ import reviewChanges from '../lib/review-changes';
 import TestDB from './utils/db';
 import populate from './utils/populate-db';
 import { tables } from '../lib/constants';
+import { errorDB } from './utils/mocks';
 
 let db;
 let populator;
@@ -137,23 +138,13 @@ describe('review-changes.js', function () {
         expect(cnt).to.equal(EXPECTED_BACKUP_CNT);
       });
     });
-  });
-
-  describe('failure', function () {
-    before(function () {
-      reviewChanges.__Rewire__('pipeline', [{ $matc: 0 }]);
-    });
-
-    after(function () {
-      reviewChanges.__ResetDependency__('pipeline');
-    });
 
     // ✓ GOOD
     it('during aggegation handles error', function () {
-      return reviewChanges(db).catch(err => err).then((err) => {
+      return reviewChanges(errorDB).catch(err => err).then((err) => {
         expect(err).to.be.ok;
         expect(err).to.be.an.instanceOf(Error);
       });
     });
-  }); // describe('failure')
+  });
 });

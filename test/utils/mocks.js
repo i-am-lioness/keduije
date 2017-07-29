@@ -198,6 +198,27 @@ function Revision(db) {
   this.execute = onUpdateRequest;
 }
 
+// db that throws errors
+function each(cb) {
+  cb(new Error(), null);
+}
+
+function aggregate() {
+  return { each };
+}
+
+/*function rejectError() {
+  return Promise.reject(new Error());
+}*/
+
+function errorDB() {
+  debugger;
+  return {
+    aggregate,
+    //updateOne: rejectError,
+    //insertOne: rejectError,
+  };
+}
 
 export {
   KeduIje,
@@ -213,4 +234,5 @@ export {
   setLoggedInUser,
   ensureLoggedIn,
   Revision,
+  errorDB,
 };
