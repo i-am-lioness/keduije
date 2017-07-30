@@ -39,6 +39,7 @@ describe('mail.js', function () {
   });
 
   after(function () {
+    mail.__ResetDependency__('nodemailer');
     nodemailer.createTransport.resetHistory();
     log.restore();
     consoleError.restore();

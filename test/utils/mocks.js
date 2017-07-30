@@ -220,6 +220,27 @@ function errorDB() {
   };
 }
 
+function callBack(cb) {
+  cb();
+}
+
+const collection = {
+  // findAndModify: callBack,
+  // findOne: callBack,
+  insertOne: sinon.stub(),
+};
+
+collection.insertOne.resolves();
+
+function mockDB() {
+  return collection;
+}
+mockDB.reset = () => {
+  Object.values(collection).forEach(((meth) => {
+    meth.resetHistory();
+  }));
+};
+
 export {
   KeduIje,
   Video,
@@ -235,4 +256,5 @@ export {
   ensureLoggedIn,
   Revision,
   errorDB,
+  mockDB,
 };
