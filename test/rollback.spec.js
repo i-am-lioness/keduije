@@ -1,17 +1,29 @@
 /* eslint-env mocha */
 import { expect } from 'chai';
 import { ObjectId } from 'mongodb';
-import Rollback from '../lib/rollback';
+import Rollback, { getMediaInfo } from '../lib/rollback';
 import TestDB from './utils/db';
-import { tables } from '../lib/constants';
+import { tables, states } from '../lib/constants';
+import populate from './utils/populate-db';
 
 let db;
 
+function loadData() {
+  const populator = populate(db);
+  return populator.loadSnapshots()
+    .then(function () {
+      return populator.loadMedia();
+    }).then(function () {
+      return populator.loadLines();
+    });
+}
+
 describe('rollback.js', function () {
   before(function () {
-    return TestDB.open().then(function (database) {
-      db = database;
-    });
+    return TestDB.open()
+      .then(function (database) {
+        db = database;
+      });
   });
 
   after(function () {
@@ -19,7 +31,7 @@ describe('rollback.js', function () {
     return TestDB.close();
   });
 
-  describe('back up simple media object', function () {
+  describe('for simple media object', function () {
     const mediaToRollback = {
       _id: ObjectId(1),
       artist: 'phyno',
@@ -52,6 +64,11 @@ describe('rollback.js', function () {
         });
     });
 
+    after(function () {
+      return TestDB.clear(db);
+    });
+
+    // ✓ GOOD
     it('has number of lines match total number of lines in snapshot', function () {
       expect(preRollbackLines).to.not.equal(snapshot.lines.length);
       return db(tables.LINES).count(lineQuery)
@@ -60,6 +77,7 @@ describe('rollback.js', function () {
         });
     });
 
+    // ✓ GOOD
     it('does not include lines that were added after the snapshot', function () {
       return db(tables.LINES).count({ text: 'd' }).then((cnt) => {
         expect(cnt).to.equal(0);
@@ -69,6 +87,7 @@ describe('rollback.js', function () {
       });
     });
 
+    // ✓ GOOD
     it('restores "deleted" lines', function () {
       return db(tables.LINES).updateOne({ text: 'a' }, { $set: { deleted: true } })
         .then((result) => {
@@ -86,7 +105,15 @@ describe('rollback.js', function () {
     });
   });
 
-  it('removes pending rollbacks upon completion');
+  // ✓ GOOD
+  it('can handle invalid rollback state', function () {
+    const r = new Rollback(db);
+    return r.recover({ state: 0 }).catch(err => err)
+      .then((err) => {
+        expect(err).to.be.an('error');
+        expect(err.message).to.match(/unrecognized state/);
+      });
+  });
 
   it('can handle invalid snapshot');
 
@@ -94,8 +121,111 @@ describe('rollback.js', function () {
 
   it('marks rolledback changesets');
 
-  describe('recovery', function () {
-    it('can recover from pending');
-    it('can recover from initial');
+  it('should never have toBackup set to true after rollback');
+
+  it('should preserve history');
+
+  [states.PENDING, states.INITIATED, states.APPLIED].forEach((state) => {
+    describe(`recovery from ${state}`, function () {
+      let currentSnapshot;
+      let rollbackDoc;
+      let originalLineCnt;
+      // let originalMediaDoc;
+      let finalMediaDoc;
+
+      before(function () {
+        let rollback;
+
+        return loadData()
+          .then(() => db(tables.SNAPSHOTS).findOne())
+          .then(function (ss) {
+            expect(ss).to.be.ok;
+            currentSnapshot = ss;
+
+            return db(tables.LINES).count({ media: currentSnapshot.media });
+          })
+          .then(function (cnt) {
+            originalLineCnt = cnt;
+            console.log('originalLineCnt', originalLineCnt);
+            expect(originalLineCnt).not.to.equal(currentSnapshot.lines.length);
+            return db(tables.MEDIA).findOne({ _id: currentSnapshot.media });
+          })
+          .then(function () {
+            // originalMediaDoc = m;
+            // console.log('currentMedia', originalMediaDoc);
+
+            rollback = {
+              type: 'rollback',
+              state,
+              snapshot: currentSnapshot._id,
+            };
+
+            return db(tables.CHANGESETS).insertOne(rollback);
+          })
+          .then(() => {
+            if ((state === states.INITIATED) || (state === states.APPLIED)) {
+              const queryObj = {
+                _id: currentSnapshot.media,
+                pendingRollbacks: { $ne: rollback._id },
+              };
+              const updateObj = {
+                $push: { pendingRollbacks: rollback._id },
+                $currentDate: { lastModified: true },
+                $set: getMediaInfo(currentSnapshot),
+              };
+
+              rollback.snapshot = currentSnapshot;
+              rollback.media = currentSnapshot.media;
+
+              return db(tables.MEDIA).findOneAndUpdate(queryObj, updateObj);
+            }
+            return null;
+          })
+          .then(() => {
+            if (state === states.APPLIED) {
+              const queryObj = { media: rollback.media };
+              return db(tables.LINES).deleteMany(queryObj)
+                .then(() => db(tables.LINES).insertMany(rollback.snapshot.lines));
+            }
+            return null;
+          })
+          .then(() => {
+            const r = new Rollback(db);
+            return r.recover(rollback);
+          })
+          .then((doc) => {
+            rollbackDoc = doc;
+            return db(tables.MEDIA).findOne({ _id: currentSnapshot.media });
+          })
+          .then((doc) => {
+            finalMediaDoc = doc;
+          });
+      });
+
+      after(function () {
+        return TestDB.clear(db);
+      });
+
+      // ✓ GOOD
+      it('clears pending rollbacks in media doc', function () {
+        expect(finalMediaDoc.pendingRollbacks).to.be.empty;
+      });
+
+      // ✓ GOOD
+      it('goes to state of completion', function () {
+        expect(rollbackDoc).to.be.an('object');
+        expect(rollbackDoc.state).to.equal(states.DONE);
+      });
+
+      // ✓ GOOD
+      it('loads all lines in snapshot', function () {
+        return db(tables.LINES)
+          .count({ media: currentSnapshot.media })
+          .then(function (cnt) {
+            console.log('finalLineCnt', cnt);
+            expect(cnt).to.equal(currentSnapshot.lines.length);
+          });
+      });
+    }); // describe('recovery from pending')
   });
 });

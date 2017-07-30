@@ -1,5 +1,5 @@
 import { newMedia } from './client-data';
-import { changesets, lines, revisions, media } from './data';
+import { changesets, lines, revisions, media, snapshots } from './data';
 import { tables } from '../../lib/constants';
 
 const ObjectId = require('mongodb').ObjectId;
@@ -60,6 +60,10 @@ function loadMedia() {
   return db(tables.MEDIA).insertMany(media).then(() => media.length);
 }
 
+function loadSnapshots() {
+  return db(tables.SNAPSHOTS).insertMany(snapshots).then(() => snapshots.length);
+}
+
 function populate(_db) {
   db = _db;
 
@@ -70,6 +74,7 @@ function populate(_db) {
     loadChangesets,
     loadRevisions,
     loadMedia,
+    loadSnapshots,
   };
 }
 

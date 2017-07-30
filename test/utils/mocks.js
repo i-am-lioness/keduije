@@ -207,7 +207,10 @@ function aggregate() {
   return { each };
 }
 
-/*function rejectError() {
+const rejectError = sinon.stub();
+rejectError.rejects(new Error('mock error'));
+
+/* function rejectError() {
   return Promise.reject(new Error());
 }*/
 
@@ -215,7 +218,7 @@ function errorDB() {
   debugger;
   return {
     aggregate,
-    //updateOne: rejectError,
+    findOne: rejectError,
     //insertOne: rejectError,
   };
 }

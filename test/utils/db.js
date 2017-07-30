@@ -20,7 +20,7 @@ module.exports = (() => {
       const deletions = [];
       collections.forEach((c) => {
         if (!c.collectionName.startsWith('system.')) {
-          console.log(`deleting ${c.collectionName}`);
+          // console.log(`deleting ${c.collectionName}`);
           deletions.push(db.dropCollection(c.collectionName));
         }
       });
