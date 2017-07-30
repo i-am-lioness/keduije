@@ -30,7 +30,7 @@ describe('calc-stats.js', () => {
     return TestDB.close();
   });
 
-  it('should total last 5 daily view counts', function () {
+  it('should total last 7 daily view counts', function () {
     this.timeout(5000);
 
     function incrementViewsAndBackUp(views) {

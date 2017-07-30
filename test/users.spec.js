@@ -78,6 +78,7 @@ describe('users.js', function () {
   });
 
   after(function () {
+    usersModule.__ResetDependency__('passport');
     return TestDB.close();
   });
 
