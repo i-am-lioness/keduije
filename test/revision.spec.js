@@ -6,6 +6,7 @@ import { tables } from '../lib/constants';
 
 const ObjectId = require('mongodb').ObjectId;
 
+/* Test Data */
 const changesetID = '58fa130609ef9a7c03067d7a';
 const mediaID = '58e745d22f1435db632f81fa';
 const userID = '5900a0ff6b5df803808e7be9';
@@ -23,45 +24,29 @@ const changesetA = {
   media: ObjectId(mediaID),
 };
 
-function updateLyric(original, changes) {
-  const postData = {
-    original,
-    changes,
-    mediaID,
-    changesetID,
-  };
+const mediaA = {
+  _id: ObjectId(mediaID),
+  title: 'So Far So Good',
+  artist: 'Phyno',
+  src: 'love.org',
+  version: 1,
+};
 
-  const request = {
-    user: testUser,
-    params: { forID: original._id },
-    body: postData,
-  };
-
-  return request;
+function revisionData(original, changes) {
+  return { original, changes };
 }
 
-function addLyric(newLyric) {
-  newLyric.mediaID = mediaID;
-  newLyric.changesetID = changesetID;
-  newLyric.version = 1;
-
-  const request = {
-    user: testUser,
-    params: { mediaID },
-    body: newLyric,
-  };
-
-  return request;
-}
-
+/* Test suite */
 let db;
 
 describe('revision.js', () => {
   before(function () {
     return TestDB.open().then(function (database) {
       db = database;
-    }).then(() => db(tables.USERS).insertOne(testUser))
-    .then(() => db(tables.CHANGESETS).insertOne(changesetA));
+    })
+    .then(() => db(tables.USERS).insertOne(testUser))
+    .then(() => db(tables.CHANGESETS).insertOne(changesetA)
+    .then(() => db(tables.MEDIA).insertOne(mediaA)));
   });
 
   after(function () {
@@ -69,31 +54,28 @@ describe('revision.js', () => {
     return TestDB.close();
   });
 
-  describe('basic funcitonality- ', function () {
+  describe('Revision', function () {
     const newLyric = {
       text: 'never forget where i come from na from ghetto',
       endTime: 37,
       startTime: 34,
+      creator: testUser._id,
     };
 
-    const changes = { text: 'beautiful baby' };
-
-    let addResult = null;
-    let lineAdd;
+    let addResult;
     let revisionDoc;
 
     before(function () {
-      // const req = addLyric(newLyric);
-      lineAdd = new Revision(db);
-      return lineAdd.execute(changesetID, mediaID, revisionTypes.LINE_ADD, newLyric).then((result) => {
-        addResult = result;
-        newLyric._id = result.insertedId;
-        return lineAdd.getDebugInfo();
-      }).then((r) => {
-        revisionDoc = r;
-      });
+      const lineAdd = new Revision(db);
+      return lineAdd.execute(changesetID, mediaID, revisionTypes.LINE_ADD, newLyric)
+        .then((res) => {
+          addResult = res.result;
+          newLyric._id = res.result.insertedId;
+          revisionDoc = res.revision;
+        });
     });
 
+    // ✓ GOOD
     it('adds a line', function () {
       expect(addResult.insertedCount).to.equal(1);
       const doc = addResult.ops[0];
@@ -103,33 +85,45 @@ describe('revision.js', () => {
       expect(doc.version).to.equal(1);
       expect(doc.deleted).to.be.false;
       expect(doc.heading).to.be.null;
-      /*
-      expect(doc.changeset).to.equal(newLyric.creator);
-      expect(doc.creator).to.equal(newLyric.creator);
-      expect(doc.media).to.equal(newLyric.creator);
-      */
+      expect(doc.changeset.toString()).to.equal(changesetID);
+      expect(doc.creator.toString()).to.equal(userID);
+      expect(doc.media.toString()).to.equal(mediaID);
     });
 
+    // ✓ GOOD
     it('edits a line', function () {
-      const req = updateLyric(newLyric, changes);
+      const changes = { text: 'beautiful baby' };
+      const data = revisionData(newLyric, changes);
       const r = new Revision(db);
-      return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body)
+      return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, data)
         .then((line) => {
           expect(line.text).to.equal(changes.text);
         });
     });
 
-    it('self-adds to the changeset', function () {
-      return db(tables.CHANGESETS).findOne({ _id: changesetA._id })
-      .then((doc) => {
-        debugger;
-        expect(doc).to.haveOwnProperty('revisions');
-        expect(doc.revisions).to.be.an('array');
-        expect(doc.revisions).to.have.length.at.least(1);
-        expect(doc.revisions[0]._id.toString()).to.equal(revisionDoc._id.toString());
-      });
+    // ✓ GOOD
+    it('edits media info', function () {
+      const changes = { src: 'trust.net' };
+      const data = revisionData(mediaA, changes);
+      const r = new Revision(db);
+      return r.execute(changesetID, mediaID, revisionTypes.INFO_EDIT, data)
+        .then((media) => {
+          expect(media.src).to.equal(changes.src);
+        });
     });
 
+    // ✓ GOOD
+    it('self-adds to the changeset', function () {
+      return db(tables.CHANGESETS).findOne({ _id: changesetA._id })
+        .then((doc) => {
+          expect(doc).to.haveOwnProperty('revisions');
+          expect(doc.revisions).to.be.an('array');
+          expect(doc.revisions).to.have.length.at.least(1);
+          expect(doc.revisions[0]._id.toString()).to.equal(revisionDoc._id.toString());
+        });
+    });
+
+    // ✓ GOOD
     it('self deletes', function () {
       return db(tables.REVISIONS).count({ _id: revisionDoc._id })
         .then((cnt) => {
@@ -138,8 +132,9 @@ describe('revision.js', () => {
     });
   });
 
-  describe('error handling', function () {
-    it('throws error, if trying to edit a line that doesnt exist', function () {
+  describe('on failure', function () {
+    // ✓ GOOD
+    it('throws ObjectNotFoundError if trying to edit a line that doesnt exist', function () {
       const oldLyric = {
         _id: '58e7e85808091bfe6d06a498',
         text: 'never forget where i come from na from ghetto',
@@ -151,124 +146,75 @@ describe('revision.js', () => {
         text: "you know it's true",
       };
 
-      const req = updateLyric(oldLyric, lyricChanges);
+      const data = revisionData(oldLyric, lyricChanges);
       const r = new Revision(db);
-      return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body).then((line) => {
-        expect(line.text).to.equal(lyricChanges.text);
-      }).then(() => {
-        throw new Error('Should have thrown an ObjectNotFoundError');
-      })
-      .catch((err) => {
-        expect(err.name).to.equal('ObjectNotFoundError');
-      });
+      return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, data)
+        .catch(err => err)
+        .then((err) => {
+          expect(err).to.be.an.instanceOf(Error);
+          expect(err.name).to.equal('ObjectNotFoundError');
+        });
     });
 
-    it('fails when editing stale line', function () {
+    describe('when editing stale line', function () {
+      let changeError;
+
       const newLine = {
         text: 'you are everything. and everything is you',
         endTime: 69,
         startTime: 76,
       };
-      newLine.creator = testUser._id;
-      newLine.media = mediaID;
-      newLine.changeset = changesetID;
-      newLine.version = 1;
-      newLine.deleted = false;
-      newLine.heading = null;
-
       const changes = { text: 'i am never sad and blue' };
       const changes2 = { text: 'i will never forget you' };
 
-      return db(tables.LINES).insertOne(newLine)
-        .then(() => {
-          const req = updateLyric(newLine, changes);
-          const r = new Revision(db);
-          return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body).then(line => line);
-        }).then((line) => {
-          expect(line.text).to.equal(changes.text);
-        })
-        .then(() => {
-          const req = updateLyric(newLine, changes2);
-          const r = new Revision(db);
-          return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body)
-            .then(() => {
-              throw new Error('should have thrown error');
-            }).catch(err => err);
-        })
-        .then((err) => {
-          expect(err.name).to.equal('StaleVersionError');
-        });
-    });
-  });
+      before(function () {
+        newLine.creator = testUser._id;
+        newLine.media = mediaID;
+        newLine.changeset = changesetID;
+        newLine.version = 1;
+        newLine.deleted = false;
+        newLine.heading = null;
 
-  describe('recovery - ', function () {
-    const newLyric = {
-      text: 'you will always be by my side',
-      endTime: 69,
-      startTime: 76,
-    };
-    const changes = { text: 'i used to be so happy but without you here i feel so low' };
-    const changes2 = { text: 'cuz once upon a time you were my everything' };
+        return db(tables.LINES).insertOne(newLine)
+          .then(() => {
+            const data = revisionData(newLine, changes);
+            const r = new Revision(db);
+            return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, data);
+          })
+          .then((line) => {
+            expect(line.text).to.equal(changes.text);
 
-    let addResult = null;
-    let lineAdd;
-    let changeResult1;
-    let changeError;
-
-    before(function () {
-      let req = addLyric(newLyric);
-      lineAdd = new Revision(db);
-      return lineAdd.execute(changesetID, mediaID, revisionTypes.LINE_ADD, newLyric).then((result) => {
-        addResult = result;
-        newLyric._id = result.insertedId;
-        newLyric.version = 1;
-        req = updateLyric(newLyric, changes);
-        const r = new Revision(db);
-        return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body);
-      }).then((line) => {
-        changeResult1 = line;
-        req = updateLyric(newLyric, changes2);
-        const r = new Revision(db);
-        return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, req.body)
-        .then(() => {
-          debugger;
-          throw new Error('should have thrown error');
-        }).catch((err) => {
-          debugger;
-          changeError = err;
-        });
+            const data = revisionData(newLine, changes2);
+            const r = new Revision(db);
+            return r.execute(changesetID, mediaID, revisionTypes.LINE_EDIT, data);
+          })
+          .catch((err) => {
+            changeError = err;
+          });
       });
-    });
 
-    it('added a line', function () {
-      expect(addResult.insertedCount).to.equal(1);
-      const doc = addResult.ops[0];
-      expect(doc.text).to.equal(newLyric.text);
-      expect(doc.endTime).to.equal(newLyric.endTime);
-      expect(doc.startTime).to.equal(newLyric.startTime);
-      expect(doc.version).to.equal(1);
-      expect(doc.deleted).to.be.false;
-      expect(doc.heading).to.be.null;
-    });
+      // ✓ GOOD
+      it('throws a StaleVersionError', function () {
+        expect(changeError).to.be.an.instanceOf(Error);
+        expect(changeError.name).to.equal('StaleVersionError');
+      });
 
-    it('successfully edits next version of line', function () {
-      expect(changeResult1.text).to.equal(changes.text);
-    });
-
-    it('should throw StaleVersionError', function () {
-      expect(changeError.name).to.equal('StaleVersionError');
-    });
-
-    it('can recover from failed revision', function () {
-      const revisionData = changeError.revision;
-      revisionData.original.version = 3;
-      revisionData.state = states.PENDING;
-      const r = new Revision(db);
-      return r.recover(revisionData)
-        .then(() => {
-          expect(revisionData.state).not.to.equal(states.PENDING);
-        });
-    });
+      // ✓ GOOD
+      it('can still recover from failed attempt', function () {
+        const rev = changeError.revision;
+        rev.original.version = 3;
+        rev.state = states.PENDING;
+        const r = new Revision(db);
+        return r.recover(rev)
+          .then(() => {
+            expect(rev.state).not.to.equal(states.PENDING);
+            return db(tables.LINES).findOne({ _id: newLine._id });
+          })
+          .then((line) => {
+            expect(line.text).to.equal(changes2.text);
+          });
+      });
+    }); // describe('when editing stale line'
   });
 
   describe('recovery', function () {
@@ -289,6 +235,30 @@ describe('revision.js', () => {
       });
     });
 
+    // ✓ GOOD
+    it('can recover pending revision', function () {
+      const data = {
+        text: 'a fulum gi nanya',
+        startTime: 56,
+        endTime: 60,
+      };
+      const pendingRevision = Object.assign({
+        state: states.PENDING,
+        data,
+      }, revision);
+
+      const r = new Revision(db);
+      return r.recover(pendingRevision)
+        .then((revData) => {
+          expect(revData.state).to.equal(states.LOGGED);
+          const q = { _id: ObjectId(changesetID), 'revisions._id': revData._id };
+          return db(tables.CHANGESETS).findOne(q);
+        }).then((doc) => {
+          expect(doc.revisions.length).to.equal(loggedRevisionCnt + 1);
+        });
+    });
+
+    // ✓ GOOD
     it('can recover applied revision', function () {
       const r = new Revision(db);
       const appliedRevision = Object.assign({ state: states.APPLIED }, revision);
@@ -302,6 +272,7 @@ describe('revision.js', () => {
         });
     });
 
+    // ✓ GOOD
     it('can recover done revision', function () {
       const doneRevision = Object.assign({ state: states.DONE }, revision);
       const r = new Revision(db);
@@ -315,6 +286,7 @@ describe('revision.js', () => {
         });
     });
 
+    // ✓ GOOD
     it('can recover logged revision', function () {
       const loggedRevision = Object.assign({ state: states.LOGGED }, revision);
       return db(tables.REVISIONS).insertOne(loggedRevision)
@@ -328,6 +300,16 @@ describe('revision.js', () => {
         .then((cnt) => {
           expect(cnt).to.equal(0);
         });
+    });
+
+    // ✓ GOOD
+    it('can handle invalid revision state', function () {
+      const invalidRevision = Object.assign({ state: 'howdy' }, revision);
+      const r = new Revision(db);
+      return r.recover(invalidRevision).catch(err => err).then((error) => {
+        expect(error).to.be.an.instanceOf(Error);
+        expect(error.message).to.include('unrecognized state');
+      });
     });
   });
 
