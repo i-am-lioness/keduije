@@ -20,12 +20,14 @@ describe('mail.js', function () {
   const text = 'text';
   const subject = 'subject';
 
-  const log = sinon.spy(console, 'log');
-  const consoleError = sinon.spy(console, 'error');
+  let log;
+  let consoleError;
 
   before(function () {
     mail.__Rewire__('nodemailer', nodemailer);
     mail.init(user, pass);
+    log = sinon.spy(console, 'log');
+    consoleError = sinon.spy(console, 'error');
   });
 
   beforeEach(function () {

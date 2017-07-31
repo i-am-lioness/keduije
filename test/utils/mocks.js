@@ -214,13 +214,32 @@ rejectError.rejects(new Error('mock error'));
   return Promise.reject(new Error());
 }*/
 
-function errorDB() {
+/* const forEach = sinon.stub();
+forEach.callsArgOnWith(1, 'cat');
+*/
+
+function forEach(it, cb) {
+  cb(new Error());
+}
+
+const faultyCursor = { forEach };
+
+function find(query) {
+  //console.log(`query ${query} will fail`);
+  console.log(query);
   debugger;
-  return {
+  return faultyCursor;
+}
+
+function errorDB(name) {
+  console.log(`collection ${name} will fail`);
+  debugger;
+  const collection = {
     aggregate,
     findOne: rejectError,
-    //insertOne: rejectError,
+    find,
   };
+  return collection;
 }
 
 function callBack(cb) {
