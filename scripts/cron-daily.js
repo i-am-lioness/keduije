@@ -7,16 +7,21 @@ require('dotenv').config();
 
 let db;
 
+function logError(err) {
+  console.error(err);
+}
+
 connectDB(process.env.DB_URL)
   .then((_db) => {
     db = _db;
     return reviewChanges(db);
   })
+  .catch(logError)
   .then(() => backupMedia(db))
+  .catch(logError)
   .then(() => aggegateViewCounts(db))
+  .catch(logError)
   .then(() => db._DB.close())
   .then(() => {
     process.exit();
   });
-
-// TO DO: catch rejections
