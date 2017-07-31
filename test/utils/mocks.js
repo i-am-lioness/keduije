@@ -263,6 +263,19 @@ mockDB.reset = () => {
   }));
 };
 
+function dbObjGenerator(DB, TABLE_NAME, METHOD, behavior) {
+  return (tableName) => {
+    if (tableName === TABLE_NAME) {
+      const originalCollection = DB(tableName);
+      // originalCollection.constructor.prototype[METHOD] = behavior;
+      originalCollection[METHOD] = behavior;
+      return originalCollection;
+    }
+
+    return DB(tableName);
+  };
+}
+
 export {
   KeduIje,
   Video,
@@ -279,4 +292,5 @@ export {
   Revision,
   errorDB,
   mockDB,
+  dbObjGenerator,
 };
