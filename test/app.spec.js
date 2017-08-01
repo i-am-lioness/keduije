@@ -170,17 +170,38 @@ describe('app.js |', () => {
         });
     });
 
-    // ✓ GOOD
-    it('/api/logError', function () {
-      const msg = 'test browser error';
-      mail.send.resetHistory();
-      return request(server)
-        .post('/api/logError')
-        .send({ msg })
-        .expect(200)
-        .then(() => {
-          expect(mail.send.callCount).to.equal(1);
-        });
+    describe('logging', function () {
+      beforeEach(function () {
+        mail.send.resetHistory();
+      });
+
+      afterEach(function () {
+        users.log.resolves(null);
+      });
+
+      // ✓ GOOD
+      it('only mails if request logged', function () {
+        users.log.resolves('hi');
+        return request(server)
+          .get('/')
+          .expect(200)
+          .then(() => {
+            expect(mail.send.callCount).to.equal(1);
+            expect(mail.send.lastCall.args[0]).to.equal('hi');
+          });
+      });
+
+      // ✓ GOOD
+      it('/api/logError', function () {
+        const msg = 'test browser error';
+        return request(server)
+          .post('/api/logError')
+          .send({ msg })
+          .expect(200)
+          .then(() => {
+            expect(mail.send.callCount).to.equal(1);
+          });
+      });
     });
 
     describe('on error', function () {
