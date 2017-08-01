@@ -9,11 +9,11 @@ import { errorDB } from './utils/mocks';
 let db;
 let populator;
 
-const TOTAL_CHANGESET_CNT = 22;
-const ORIGINAL_PROCESSED_CNT = 15;
-const ORIGINAL_TOBACKUP_CNT = 3;
+const TOTAL_CHANGESET_CNT = 23;
+const ORIGINAL_PROCESSED_CNT = 10;
+const ORIGINAL_TOBACKUP_CNT = 1;
 const EXPECTED_BACKUP_CNT = 4;
-const ORIGINAL_EMPTY_CHANGESET_CNT = 2;
+const ORIGINAL_EMPTY_CHANGESET_CNT = 8;
 
 let changesetToRecover;
 
@@ -21,6 +21,7 @@ function removeMediaFieldFromChangeset() {
   return db(tables.CHANGESETS).findOneAndUpdate(
     { type: 'new', processed: { $ne: true }, media: { $exists: true } },
     { $unset: { media: '' } },
+    { returnOriginal: false },
   ).then(result => result.value);
 }
 
@@ -55,6 +56,7 @@ describe('review-changes.js', function () {
         })
         .then((cnt) => {
           originalNewChangesetWithMediaCnt = cnt;
+          expect(changesetToRecover).to.not.haveOwnProperty('media');
           return db(tables.MEDIA).count({ toBackup: true });
         })
         .then((cnt) => {

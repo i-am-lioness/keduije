@@ -109,7 +109,7 @@ function renderActivity(songUrl, edit) {
       endTimeChange = changedTimeMark('End :', edit, 'endTime', `${songUrl}#${edit.time}`);
     }
 
-    output = (<span data-id={edit._id}>
+    output = (<span className="updated-line" data-id={edit._id}>
       {textChange}
       {startTimeChange}
       {endTimeChange}

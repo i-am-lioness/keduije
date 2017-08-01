@@ -100,8 +100,8 @@ describe('<Edits />', function () {
       });
     });
 
-    it('displays it each edit', function () {
-      wrapper.find('.panel-body .list-group-item').forEach((edit) => {
+    it('displays each line update', function () {
+      wrapper.find('.panel-body .list-group-item .updated-line').forEach((edit) => {
         const a = edit.find('a').at(0);
         const text = edit.find('strong').at(0).text();
         expect(a.props().href).to.match(/^\/music\/[a-zA-Z-]+#/);

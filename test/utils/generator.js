@@ -16,19 +16,15 @@ let db;
 const users = [];
 const media = [];
 const lines = {};
-const dirty = {};
+const mediaInfo = {};
 let activeUser = null;
 
-let toCancelEdit = 0;
+const CANCEL_EDIT = 'cancel_edit';
+const DONT_SAVE = 'dont_save';
 
 function printResults() {
   console.log(`${users.length} users generated`);
   console.log(`${media.length} media generated`);
-  let toBackupCnt = 0;
-  Object.values(dirty).forEach((isDirty) => {
-    if (isDirty) toBackupCnt += 1;
-  });
-  console.log(`${toBackupCnt} need to be backedup`);
   Object.keys(lines).forEach((m) => {
     console.log(`media(${m}) has ${lines[m].length} lines`);
   });
@@ -70,13 +66,13 @@ function setUser(index) {
   return Promise.resolve();
 }
 
-function navigate_NEW_MUSIC() {
+function navigate_NEW_MUSIC(toSave) {
   return request(server)
     .get('/new_music')
     .then((res) => {
       const changesetID = res.header['inserted-id'];
       console.log(`started "new" changeset(${changesetID})`);
-      return changesetID;
+      return { changesetID, toSave };
     })
     .catch((err) => {
       console.error(err);
@@ -84,7 +80,14 @@ function navigate_NEW_MUSIC() {
     });
 }
 
-function action_NEW_MUSIC_save(changesetID) {
+function action_NEW_MUSIC_save(params) {
+  if (params.toSave === DONT_SAVE) {
+    console.log('will navigate away from new_music page without saving');
+    return Promise.resolve(null);
+  }
+
+  const changesetID = params.changesetID;
+
   const mediaCnt = media.length;
 
   let type = mediaTypes.AUDIO;
@@ -94,16 +97,19 @@ function action_NEW_MUSIC_save(changesetID) {
     videoID = `video${mediaCnt}`;
   }
   const title = `media${mediaCnt}`;
+  const artist = `artist${mediaCnt}`;
   const src = `http://src${mediaCnt}`;
   const img = `http://img${mediaCnt}.jpg`;
 
   const mediaObj = {
     type,
     title,
+    artist,
     src,
     img,
     videoID,
     changesetID,
+    version: 1,
   };
   return request(server)
     .post('/api/media/new')
@@ -113,17 +119,15 @@ function action_NEW_MUSIC_save(changesetID) {
       console.log(`created new media (${mediaID})`);
       media.push(mediaID);
       lines[mediaID] = [];
-      dirty[mediaID] = false;
+      mediaInfo[mediaID] = mediaObj;
     });
 }
 
-function chooseElement(options, miss) {
-  let addition = 0;
-  if (typeof miss !== 'undefined') {
-    addition = miss;
-  }
+function chooseElement(options) {
   if ((options === null) || (typeof options === 'undefined')) return undefined;
-  const choice = options[Math.floor(Math.random() * (options.length + addition))];
+
+  const choice = options[Math.floor(Math.random() * options.length)];
+
   return choice;
 }
 
@@ -134,16 +138,12 @@ class Node {
     this.nextPaths = nextPaths;
   }
 
-  controlled(mediIdx, toEdit) {
-    return new Node(this.url, () => {
-      const chosenMedia = media[mediIdx];
-      debugger;
-      toCancelEdit = 0;
-      if (typeof toEdit !== 'undefined') {
-        toCancelEdit = -1;
-      }
-      return Promise.resolve(chosenMedia);
-    }, this.nextPaths);
+  with(...params) {
+    return new Node(
+      this.url,
+      () => this.behavior(...params),
+      this.nextPaths,
+    );
   }
 
   runChild(param, children) {
@@ -158,16 +158,17 @@ class Node {
   run(param) {
     // console.log(`running '${this.url}'`);
 
-    let children;
-    if (typeof this.nextPaths === 'function') {
-      children = this.nextPaths();
-    } else {
-      const link = chooseElement(this.nextPaths, 0);
-      children = [link];
-    }
-
     return this.behavior(param).then((ret) => {
-      if (ret && ret.break) return null;
+      let children;
+
+      // if function, it follows all of returned children
+      if (typeof this.nextPaths === 'function') {
+        children = this.nextPaths(ret);
+      } else { // if object, it follows just one of them
+        const link = chooseElement(this.nextPaths, 0);
+        children = [link];
+      }
+
       return this.runChild(ret, children);
     });
   }
@@ -177,18 +178,7 @@ class Node {
 const save_music = new Node('save', action_NEW_MUSIC_save);
 
 // new_music --> save_music
-let toCancelNewMusic = 0;
-const new_music = new Node('new_music', navigate_NEW_MUSIC, () => {
-  toCancelNewMusic += 1;
-
-  let result = save_music;
-  if (toCancelNewMusic % 4 === 0) {
-    console.log('will navigate away from new_music page without saving');
-    result = undefined;
-  }
-  // [save_music]
-  return [result];
-});
+const new_music = new Node('new_music', navigate_NEW_MUSIC, [save_music]);
 
 // addline --> null
 const addline = new Node('addline', (params) => {
@@ -213,7 +203,6 @@ const addline = new Node('addline', (params) => {
     .then((res) => {
       console.log(`added new line "${lineObj.text}" to media(${mediaID})`);
       lines[mediaID] = res.body;
-      dirty[mediaID] = true;
     });
 });
 
@@ -240,13 +229,35 @@ const updateLine = new Node('updateLine', (params) => {
     .then((res) => {
       console.log(`updated line from "${updateObj.original.text}" to "${updateObj.changes.text}"`);
       lines[mediaID] = res.body;
-      dirty[mediaID] = true;
+    });
+});
+
+// updateLine --> null
+const updateInfo = new Node('updateInfo', (params) => {
+  const changesetID = params.changesetID;
+  const mediaID = params.mediaID;
+
+  const original = mediaInfo[mediaID];
+  const artist = `${original.artist}_updated`;
+
+  const updateObj = {
+    original,
+    changes: { artist },
+    changesetID,
+    mediaID,
+  };
+  return request(server)
+    .post(`/api/media/${mediaID}/updateInfo`)
+    .send(updateObj)
+    .then((res) => {
+      console.log(`updated media info from "${updateObj.original.artist}" to "${updateObj.changes.artist}"`);
+      mediaInfo[mediaID] = res.body;
     });
 });
 
 // start_edit --> addline, updateline
-const start_edit = new Node('start_edit', (mediaID) => {
-  if (!mediaID) return Promise.resolve({ break: true });
+const start_edit = new Node('start_edit', (params) => {
+  const mediaID = media[params.mediaIdx];
 
   return request(server)
     .post(`/api/start_edit/${mediaID}`)
@@ -256,31 +267,32 @@ const start_edit = new Node('start_edit', (mediaID) => {
       return {
         changesetID,
         mediaID,
+        toCancel: params.toCancel,
       };
     })
     .catch((err) => {
       console.error(err);
     });
-}, () => {
-  toCancelEdit += 1;
-
+}, (params) => {
+  debugger;
   const children = [];
 
-  if (toCancelEdit % 3 === 0) {
+  if (params.toCancel === CANCEL_EDIT) {
     console.log('will cancel edit without making any revisions');
   } else {
     for (let i = 0; i < 10; i += 1) {
-      children.push(chooseElement([addline, updateLine]));
+      children.push(chooseElement([addline, updateLine, updateInfo]));
     }
   }
 
   return children;
 });
 
-const view_song = new Node('view_song', () => {
-  const currMedia = chooseElement(media);
-  return Promise.resolve(currMedia);
-}, [start_edit]);
+const view_song = new Node(
+  'view_song',
+  (mediaIdx, toCancel) => Promise.resolve({ mediaIdx, toCancel }),
+  [start_edit],
+);
 
 const review_changes = new Node(
   'review_changes',
@@ -297,32 +309,34 @@ const backup = new Node(
     return backupMedia(db);
   });
 
-const browse = new Node('browse', () => setUser(), () => {
-  const children = [new_music, new_music];
-  for (let i = 0; i < 10; i += 1) {
-    children.push(chooseElement([new_music, view_song]));
-  }
-  children.push(new_music); // to guarangee some non-backed up media
-  children.push(new_music);
-  children.push(review_changes);
-  children.push(backup);
-  children.push(view_song);
-  children.push(view_song);
-  children.push(view_song);
-  children.push(view_song);
-  children.push(new_music); // to guarangee some non-backed up media
-  children.push(new_music);
-  children.push(review_changes);
-  children.push(new_music);
-  children.push(new_music);
-  children.push(new_music);
-  children.push(view_song.controlled(1));
-  children.push(view_song.controlled(2));
-  children.push(view_song.controlled(1)); // 2 additional media to be backed up
-  children.push(view_song.controlled(0, false));
-
-  return children;
-});
+const browse = new Node('browse', () => setUser(), () => [
+  new_music,
+  new_music,
+  new_music,
+  new_music,
+  new_music,
+  view_song.with(1),
+  view_song.with(2),
+  view_song.with(3), // 3 songs "dirty", 2 songs clean
+  review_changes, // 3 marked for back-up
+  backup, // 3 snapshots
+  view_song.with(1),
+  view_song.with(1),
+  review_changes, // 1 marked for backup
+  view_song.with(0),
+  view_song.with(2),
+  view_song.with(3), // total of 3 "dirty" (2 of which yet to be marked )
+  new_music.with(DONT_SAVE),
+  new_music.with(DONT_SAVE),
+  new_music.with(DONT_SAVE), // 3 extraneous "new" changesets
+  view_song.with(0, CANCEL_EDIT),
+  view_song.with(2, CANCEL_EDIT),
+  view_song.with(2, CANCEL_EDIT),
+  view_song.with(3, CANCEL_EDIT),
+  view_song.with(3, CANCEL_EDIT), // 5 extraneous "update" changesets
+  new_music,
+  new_music, //to have 2 unprocessed new media that will remain after review_change
+]);
 
 function start() {
   const env = process.env;
