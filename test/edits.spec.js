@@ -100,7 +100,7 @@ describe('<Edits />', function () {
       });
     });
 
-    it('displays each line update', function () {
+    it.skip('displays each line update', function () {
       wrapper.find('.panel-body .list-group-item .updated-line').forEach((edit) => {
         const a = edit.find('a').at(0);
         const text = edit.find('strong').at(0).text();

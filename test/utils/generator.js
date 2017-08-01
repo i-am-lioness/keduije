@@ -20,6 +20,7 @@ const mediaInfo = {};
 let activeUser = null;
 
 const CANCEL_EDIT = 'cancel_edit';
+const DELETE_SONG = 'delete_song';
 const DONT_SAVE = 'dont_save';
 
 function printResults() {
@@ -215,11 +216,17 @@ const updateLine = new Node('updateLine', (params) => {
 
   if (typeof currLine === 'undefined') return Promise.resolve();
 
-  const text = `${currLine.text}_updated`;
+  const changes = chooseElement([
+    { text: `${currLine.text}_updated` },
+    { deleted: true },
+    { text: 'hello' },
+    { startTime: currLine.startTime + 1 },
+    { endTime: currLine.startTime - 1 },
+  ]);
 
   const updateObj = {
     original: currLine,
-    changes: { text },
+    changes,
     changesetID,
     mediaID,
   };
@@ -232,17 +239,28 @@ const updateLine = new Node('updateLine', (params) => {
     });
 });
 
-// updateLine --> null
+// updateInfo --> null
 const updateInfo = new Node('updateInfo', (params) => {
   const changesetID = params.changesetID;
   const mediaID = params.mediaID;
 
   const original = mediaInfo[mediaID];
-  const artist = `${original.artist}_updated`;
+
+  let changes;
+  if (params.path === DELETE_SONG) {
+    changes = { status: 'deleted' };
+  } else {
+    changes = chooseElement([
+      { artist: `${original.artist}_updated` },
+      { title: `${original.artist}_` },
+      { src: `${original.artist}_updated` },
+      { img: `${original.artist}_updated` },
+    ]);
+  }
 
   const updateObj = {
     original,
-    changes: { artist },
+    changes,
     changesetID,
     mediaID,
   };
@@ -267,7 +285,7 @@ const start_edit = new Node('start_edit', (params) => {
       return {
         changesetID,
         mediaID,
-        toCancel: params.toCancel,
+        path: params.path,
       };
     })
     .catch((err) => {
@@ -277,11 +295,13 @@ const start_edit = new Node('start_edit', (params) => {
   debugger;
   const children = [];
 
-  if (params.toCancel === CANCEL_EDIT) {
+  if (params.path === CANCEL_EDIT) {
     console.log('will cancel edit without making any revisions');
+  } else if (params.path === DELETE_SONG) {
+    children.push(updateInfo.with(params));
   } else {
     for (let i = 0; i < 10; i += 1) {
-      children.push(chooseElement([addline, updateLine, updateInfo]));
+      children.push(chooseElement([addline, updateLine, updateLine, updateLine, updateInfo]));
     }
   }
 
@@ -290,7 +310,7 @@ const start_edit = new Node('start_edit', (params) => {
 
 const view_song = new Node(
   'view_song',
-  (mediaIdx, toCancel) => Promise.resolve({ mediaIdx, toCancel }),
+  (mediaIdx, path) => Promise.resolve({ mediaIdx, path }),
   [start_edit],
 );
 
@@ -310,22 +330,38 @@ const backup = new Node(
   });
 
 const browse = new Node('browse', () => setUser(), () => [
-  new_music,
-  new_music,
-  new_music,
-  new_music,
-  new_music,
-  view_song.with(1),
-  view_song.with(2),
-  view_song.with(3), // 3 songs "dirty", 2 songs clean
-  review_changes, // 3 marked for back-up
-  backup, // 3 snapshots
-  view_song.with(1),
-  view_song.with(1),
-  review_changes, // 1 marked for backup
+  new_music, // 0
+  new_music, // 1
+  new_music, // 2
+  new_music, // 3
+  new_music, // 4
+  new_music, // 5
+  new_music, // 6
   view_song.with(0),
+  view_song.with(0),
+  view_song.with(1),
   view_song.with(2),
-  view_song.with(3), // total of 3 "dirty" (2 of which yet to be marked )
+  view_song.with(2),
+  view_song.with(2),
+  view_song.with(2),
+  view_song.with(2),
+  view_song.with(2),
+  view_song.with(3),
+  view_song.with(3), // 4 songs "dirty", 2 songs clean
+  review_changes, // 4 marked for back-up
+  backup, // 4 snapshots
+  view_song.with(0),
+  view_song.with(0),
+  view_song.with(1),
+  view_song.with(1),
+  view_song.with(1),
+  view_song.with(1),
+  review_changes, // 2 marked for backup
+  view_song.with(2),
+  view_song.with(3),
+  view_song.with(3),
+  view_song.with(4, DELETE_SONG),
+  view_song.with(5), // total of 6 dirty" (4 of which yet to be marked )
   new_music.with(DONT_SAVE),
   new_music.with(DONT_SAVE),
   new_music.with(DONT_SAVE), // 3 extraneous "new" changesets

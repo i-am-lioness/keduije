@@ -6,6 +6,9 @@ import TestDB from './utils/db';
 import populate from './utils/populate-db';
 import { errorDB } from './utils/mocks';
 
+
+const MARKED_FOR_BACKUP_CNT = 2;
+
 let db;
 let populator;
 
@@ -25,7 +28,6 @@ describe('backup.js', function () {
   });
 
   describe('backupMedia', function () {
-    const backupReadyCnt = 1;
     let mediaIDlist;
     let snapshots;
     before(function () {
@@ -44,7 +46,7 @@ describe('backup.js', function () {
 
     // ✓ GOOD
     it('backs up all media that are ready for backup', function () {
-      expect(snapshots.length).to.equal(backupReadyCnt);
+      expect(snapshots.length).to.equal(MARKED_FOR_BACKUP_CNT);
       snapshots.forEach((sn) => {
         expect(sn.media.toString()).to.be.oneOf(mediaIDlist);
       });
@@ -52,7 +54,7 @@ describe('backup.js', function () {
 
     // ✓ GOOD
     it('turns off backup flag, once backed up', function () {
-      expect(mediaIDlist.length).to.equal(backupReadyCnt);
+      expect(mediaIDlist.length).to.equal(MARKED_FOR_BACKUP_CNT);
       return db(tables.MEDIA).count({ toBackup: true }).then((cnt) => {
         expect(cnt).to.equal(0);
       });

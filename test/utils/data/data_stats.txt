@@ -1,18 +1,20 @@
-media0 has 5 lines, 3 changesets, and 0 snapshots. 
-media1 has 7 lines, 4 changesets, and 1 snapshots. (to backup)
-media2 has 7 lines, 5 changesets, and 1 snapshots. 
-media3 has 6 lines, 5 changesets, and 1 snapshots. 
-media4 has 0 lines, 1 changesets, and 0 snapshots. 
-media5 has 0 lines, 1 changesets, and 0 snapshots. 
+artist0_updated_updated_ has 6 lines, 6 changesets, and 1 snapshots. (to backup)
+media1 has 15 lines, 6 changesets, and 1 snapshots. (to backup)
+media2 has 12 lines, 10 changesets, and 1 snapshots. 
+artist3_updated_updated_ has 11 lines, 7 changesets, and 1 snapshots. 
+media4 has 0 lines, 2 changesets, and 0 snapshots. 
+artist5_ has 2 lines, 2 changesets, and 0 snapshots. 
 media6 has 0 lines, 1 changesets, and 0 snapshots. 
-Total Changesets: 23
-"new" Changesets: 10
-"edit" Changesets: 13
-Processed Changesets: 10
+media7 has 0 lines, 1 changesets, and 0 snapshots. 
+media8 has 0 lines, 1 changesets, and 0 snapshots. 
+Total Changesets: 39
+"new" Changesets: 12
+"edit" Changesets: 27
+Processed Changesets: 24
 empty changesets: 8
 childless "new" changesets: 3
 empty "edit" changesets: 5
-Total Media: 7
-Media to backup: 1
-Total Snapshots: 3
+Total Media: 9
+Media to backup: 2
+Total Snapshots: 4
 undefined

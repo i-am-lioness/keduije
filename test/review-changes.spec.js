@@ -9,10 +9,10 @@ import { errorDB } from './utils/mocks';
 let db;
 let populator;
 
-const TOTAL_CHANGESET_CNT = 23;
-const ORIGINAL_PROCESSED_CNT = 10;
-const ORIGINAL_TOBACKUP_CNT = 1;
-const EXPECTED_BACKUP_CNT = 4;
+const TOTAL_CHANGESET_CNT = 39;
+const ORIGINAL_PROCESSED_CNT = 24;
+const ORIGINAL_TOBACKUP_CNT = 2;
+const EXPECTED_BACKUP_CNT = 6;
 const ORIGINAL_EMPTY_CHANGESET_CNT = 8;
 
 let changesetToRecover;
