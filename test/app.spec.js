@@ -59,7 +59,7 @@ describe('app.js |', () => {
     // GOOD
     it('can handle app start failure', function () {
       const serverFailEnv = Object.assign({}, env);
-      serverFailEnv.PORT = '';
+      serverFailEnv.PORT = -1;
       return APP(serverFailEnv).catch(err => err).then((err) => {
         expect(err).to.be.ok;
         expect(err).to.be.an.instanceOf(Error);
@@ -179,10 +179,7 @@ describe('app.js |', () => {
         .send({ msg })
         .expect(200)
         .then(() => {
-          expect(mail.send.callCount).to.equal(2);
-          /* console.log(mail.send.lastCall);
-          const content = JSON.parse(mail.send.lastCall.args[0]);
-          expect(content.msg).to.equal(msg);*/
+          expect(mail.send.callCount).to.equal(1);
         });
     });
 

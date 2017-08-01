@@ -22,10 +22,11 @@ describe('mail.js', function () {
 
   let log;
   let consoleError;
+  let mailer;
 
   before(function () {
     mail.__Rewire__('nodemailer', nodemailer);
-    mail.init(user, pass);
+    mailer = mail(user, pass);
     log = sinon.spy(console, 'log');
     consoleError = sinon.spy(console, 'error');
   });
@@ -62,7 +63,7 @@ describe('mail.js', function () {
 
   // ✓ GOOD
   it('sends mail with subject', function () {
-    mail.send(text, subject);
+    mailer.send(text, subject);
     expect(transporter.sendMail.called).to.be.true;
 
     const mailOpts = transporter.sendMail.lastCall.args[0];
@@ -77,7 +78,7 @@ describe('mail.js', function () {
 
   // ✓ GOOD
   it('sends mail without subject', function () {
-    mail.send(text);
+    mailer.send(text);
     expect(transporter.sendMail.called).to.be.true;
 
     const mailOpts = transporter.sendMail.lastCall.args[0];
@@ -93,7 +94,7 @@ describe('mail.js', function () {
   it('handles mail sending error', function () {
     transporter.sendMail.yields(new Error(), { response: '' });
 
-    mail.send(text, subject);
+    mailer.send(text, subject);
     expect(transporter.sendMail.called).to.be.true;
     expect(consoleError.lastCall.args[0]).to.be.an.instanceOf(Error);
   });

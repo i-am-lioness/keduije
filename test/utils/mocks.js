@@ -151,10 +151,10 @@ const users = {
 };
 users.log.resolves();
 
-const mail = {
-  send: sinon.stub(),
-};
 
+const send = sinon.stub();
+const mail = () => ({ send });
+mail.send = send;
 
 const ensureLoggedIn = (req, res, next) => {
   if (req.user) {
