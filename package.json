@@ -85,7 +85,7 @@
     "nodemon": "^1.11.0",
     "nyc": "^10.2.0",
     "react-addons-test-utils": "^15.5.1",
-    "react-test-renderer": "^15.5.4",
+    "react-test-renderer": "^15.6.1",
     "sinon": "^2.1.0",
     "superagent": "^3.5.2",
     "supertest": "^3.0.0"

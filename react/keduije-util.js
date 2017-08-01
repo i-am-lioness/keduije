@@ -67,10 +67,14 @@ function scrollIfOutOfView(element) {
 
 function convertToTime(sec) {
   let seconds = parseInt(sec, 10);
+
+  if (isNaN(seconds)) seconds = 0;
   const minutes = seconds / 60;
   seconds %= 60;
-  if (seconds < 10) seconds = '0' + seconds;
-  return Math.floor(minutes) + ':' + seconds;
+  if (seconds < 10) seconds = `0${seconds}`;
+
+  const formatted = `${Math.floor(minutes)}:${seconds}`;
+  return formatted;
 }
 
 const ki = {

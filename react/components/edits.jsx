@@ -16,6 +16,7 @@ const activityTypes = {
   LYRIC_INSERT: 'add',
   MEDIA_REMOVAL: 'removal', // for media
   META: 'info',
+  UNRECOGNIZED: 'unrecognized',
 };
 
 function getDate(doc) {
@@ -26,7 +27,6 @@ function getDate(doc) {
 
 function processActivity(el) {
   el.time = parseInt(el.original ? (el.original.startTime || -1) : el.newLine.startTime, 10);
-  if (isNaN(el.time)) throw new Error('unable to parse time');
   switch (el.type) {
     case revisionTypes.INFO_EDIT:
       if (el.newValues.status === 'deleted') {
@@ -46,6 +46,8 @@ function processActivity(el) {
       }
       break;
     default:
+      console.error(new Error(`Unrecognized revision type '${el.type}' in ${el}`));
+      el.type = activityTypes.UNRECOGNIZED;
   }
   // todo: for now treat lyric recoveries like brand new adds
 }
@@ -70,10 +72,17 @@ function changedInfo(name, edit) {
   </p>);
 }
 
-function changedTimeMark(label, edit, field, timeUrl) {
-  if (edit.newValues[field]) {
-    const formatedTimeOld = convertToTime(edit.original[field]);
-    const formatedTimeNew = convertToTime(edit.newValues[field]);
+function changedTimeMark(label, edit, field, songUrl) {
+  // to test: when time == 0
+  const hasNewTime = Object.prototype.hasOwnProperty.call(edit.newValues, field);
+  const originalTime = edit.original[field];
+  const newTime = edit.newValues[field];
+
+  const timeUrl = `${songUrl}#${edit.time}`;
+
+  if (hasNewTime && (originalTime !== newTime)) {
+    const formatedTimeOld = convertToTime(originalTime);
+    const formatedTimeNew = convertToTime(newTime);
     return (<p className="changed-time">
       {label}
       <a href={timeUrl}>({formatedTimeOld})</a>
@@ -90,8 +99,6 @@ function renderActivity(songUrl, edit) {
 
   if (edit.type === activityTypes.UDPATE) {
     let textChange = null;
-    let startTimeChange = null;
-    let endTimeChange = null;
     if (edit.newValues.text) { // if a line edit
       const diff = JsDiff.diffChars(edit.original.text, edit.newValues.text);
       const changes = diff.map(eachDiff);
@@ -102,12 +109,8 @@ function renderActivity(songUrl, edit) {
       </p>);
     }
 
-    if ((edit.newValues.startTime) && (edit.newValues.startTime !== edit.original.startTime)) { // to do: render this unnecessary
-      startTimeChange = changedTimeMark('Start :', edit, 'startTime', `${songUrl}#${edit.time}`);
-    }
-    if ((edit.newValues.endTime) && (edit.newValues.endTime !== edit.original.endTime)) {
-      endTimeChange = changedTimeMark('End :', edit, 'endTime', `${songUrl}#${edit.time}`);
-    }
+    const startTimeChange = changedTimeMark('Start :', edit, 'startTime', songUrl);
+    const endTimeChange = changedTimeMark('End :', edit, 'endTime', songUrl);
 
     output = (<span className="updated-line" data-id={edit._id}>
       {textChange}
@@ -143,7 +146,7 @@ function renderActivity(songUrl, edit) {
       <span className="glyphicon glyphicon-plus" aria-hidden="true" />
       <strong>{edit.newLine.text}</strong>
     </p>);
-  } else { // if (edit.type === activityTypes.MEDIA_REMOVAL) {
+  } if (edit.type === activityTypes.MEDIA_REMOVAL) {
     // todo: should have own panel
     output = (<p>
       Removed this song
@@ -218,7 +221,8 @@ class Edits extends React.Component {
     const changesetID = el._id;
     this.lastChangesetID = changesetID;
 
-    if (!this.state.media.hasOwnProperty(el.media)) {
+    const hasMediaInfo = Object.prototype.hasOwnProperty.call(this.state.media, el.media);
+    if (!hasMediaInfo) {
       KeduIje.getMediaInfo(el.media).then(this.storeMediaInfo);
     }
 

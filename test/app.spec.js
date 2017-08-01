@@ -34,6 +34,10 @@ function parseProps(res) {
   return JSON.parse(matches[1]);
 }
 
+const token = { a: 'a', b: 'b', c: 'c' };
+const getSpotifyToken = sinon.stub();
+getSpotifyToken.resolves(token);
+
 describe('app.js |', () => {
   let env;
 
@@ -42,6 +46,7 @@ describe('app.js |', () => {
     APP.__Rewire__('users', users);
     APP.__Rewire__('mail', mail);
     APP.__Rewire__('Revision', Revision);
+    APP.__Rewire__('getSpotifyToken', getSpotifyToken);
 
     require('dotenv').config();
     env = process.env;
@@ -53,6 +58,7 @@ describe('app.js |', () => {
     APP.__ResetDependency__('users');
     APP.__ResetDependency__('mail');
     APP.__ResetDependency__('Revision');
+    APP.__ResetDependency__('getSpotifyToken');
   });
 
   describe('app initialization', function () {
@@ -162,11 +168,16 @@ describe('app.js |', () => {
 
     // ✓ GOOD
     it('queries spotify for token', function () {
+      getSpotifyToken.resetHistory();
       return request(server)
         .get('/api/spotify/token')
         .expect(200)
         .then((res) => {
-          expect(res.body).to.have.all.keys(['access_token', 'token_type', 'expires_in']);
+          expect(getSpotifyToken.called).to.be.true;
+          expect(getSpotifyToken.lastCall.args[0]).to.equal(process.env.SPOTIFY_CLIENT_ID);
+          expect(getSpotifyToken.lastCall.args[1]).to.equal(process.env.SPOTIFY_CLIENT_SECRET);
+          expect(res.body).to.deep.equal(token);
+          // expect(res.body).to.have.all.keys(['access_token', 'token_type', 'expires_in']);
         });
     });
 
