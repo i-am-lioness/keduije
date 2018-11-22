@@ -1,6 +1,8 @@
 /* eslint-env browser */
 import sinon from 'sinon';
 import { lyrics, songInfo, searchResults } from './data';
+import { response as ytApiReponse } from '../utils/data/youtube-data';
+import { raw as spotifyResponse } from '../utils/data/spotifyData';
 import { token as spotifyToken } from './data/spotifyData';
 import { revisionTypes } from '../../lib/revision';
 import { tables } from '../../lib/constants';
@@ -8,6 +10,43 @@ import { tables } from '../../lib/constants';
 const ObjectId = require('mongodb').ObjectId;
 
 const videoDuration = 300;
+
+let ajaxSuccess = true;
+
+const googleApiResponse = Object.assign({}, ytApiReponse);
+const googleApiResponseItems = Object.assign([], ytApiReponse.items);
+
+function configureAjaxBehavior(success, content) {
+  ajaxSuccess = success;
+  if (success) {
+    if (content) {
+      googleApiResponse.items = content;
+    } else {
+      googleApiResponse.items = googleApiResponseItems;
+    }
+  } else {
+    googleApiResponse.errorMessage = content;
+  }
+}
+
+sinon.stub(global.jQuery, 'get').callsFake(() => {
+  const xhr = global.jQuery.Deferred();
+
+  if (ajaxSuccess) {
+    setTimeout(xhr.resolve.bind(null, googleApiResponse), 1);
+  } else {
+    setTimeout(xhr.reject.bind(null, null, null, googleApiResponse.errorMessage), 1);
+  }
+
+  return xhr;
+});
+
+sinon.stub(global.jQuery, 'getScript').callsFake(() => {
+  setTimeout(window.onYouTubeIframeAPIReady, 0);
+});
+
+// for now, only used for spotify
+sinon.stub(global.jQuery, 'ajax').resolves(spotifyResponse);
 
 const KeduIje = {
   init: sinon.spy(),
@@ -293,4 +332,5 @@ export {
   errorDB,
   mockDB,
   dbObjGenerator,
+  configureAjaxBehavior,
 };

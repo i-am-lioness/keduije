@@ -39,13 +39,16 @@ function getYTdata(url) {
     }
 
     $.get('https://www.googleapis.com/youtube/v3/videos', query)
-      .then((response) => {
-        if (response.items && (response.items.length > 0)) {
-          resolve(response.items[0]);
-        } else {
-          reject(new Error('Video data not found.'));
-        }
-      });
+    .done((response) => {
+      if (response.items && (response.items.length > 0)) {
+        resolve(response.items[0]);
+      } else {
+        reject(new Error('Video data not found.'));
+      }
+    })
+    .fail((jqXHR, textStatus, errorThrown) => {
+      reject(new Error(errorThrown));
+    });
   });
 }
 
@@ -68,7 +71,7 @@ function scrollIfOutOfView(element) {
 function convertToTime(sec) {
   let seconds = parseInt(sec, 10);
 
-  if (isNaN(seconds)) seconds = 0;
+  if (isNaN(seconds)) return '--:--';
   const minutes = seconds / 60;
   seconds %= 60;
   if (seconds < 10) seconds = `0${seconds}`;
