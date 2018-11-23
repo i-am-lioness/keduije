@@ -1,56 +1,23 @@
 /* eslint-env mocha, browser */
-import { expect } from 'chai';
-import sinon from 'sinon';
+import { expect, assert } from 'chai';
 import Keduije from '../react/keduije';
-import { reqs } from './utils/mocks';
+import { configureAjaxBehavior } from './utils/mocks';
 
-
-let shouldThrow = false;
-
-function get(path, query) {
-  let req = path;
-  if (query) {
-    const q = global.$.param(query);
-    req += `?${q}`;
-  }
-  const resp = reqs[req];
-  return Promise.resolve(resp);
-}
-
-function post(path) {
-  if (shouldThrow) return Promise.reject();
-  const resp = reqs[path];
-  return Promise.resolve(resp);
-}
 
 describe('keduije.js', function () {
-  let originalGet;
-  let originalPut;
   before(function () {
-    originalGet = global.$.get;
-    originalPut = global.$.post;
-
-    global.$.get = sinon.stub();
-    global.$.post = sinon.stub();
-
-    global.$.get.callsFake(get);
-    global.$.post.callsFake(post);
-
+    configureAjaxBehavior(true);
     Keduije.init('58e745d22f1435db632f81fa');
   });
 
   afterEach(function () {
     global.$.post.resetHistory();
-    shouldThrow = false;
+    global.$.get.resetHistory();
+    configureAjaxBehavior(true);
     alert.resetHistory();
   });
 
   after(function () {
-    debugger;
-    global.$.get = originalGet;
-    global.$.put = originalPut;
-    // global.$.get.restore();
-    // global.$.post.restore();
   });
 
   it('search', function () {
@@ -81,12 +48,37 @@ describe('keduije.js', function () {
   });
 
   it('handles edit session failure', function () {
-    shouldThrow = true;
+    configureAjaxBehavior(false);
     return Keduije.startEditSession(true).then(() => {
       expect(global.$.post.called).to.be.true;
       expect(alert.called).to.be.true;
     });
   });
+
+  describe('.getMediaInfo', function () {
+    before(function () {
+      return Keduije.getMediaInfo(5);
+    });
+
+    // GOOD
+    it('passes the right url to $.get', function () {
+      expect(global.$.get.calledOnce).to.be.true;
+      assert(global.$.get.lastCall.calledWithExactly('/api/media/5'));
+    });
+  });
+
+  describe('.getSpotifyToken', function () {
+    before(function () {
+      return Keduije.getSpotifyToken();
+    });
+
+    // GOOD
+    it('passes the right url to $.get', function () {
+      expect(global.$.get.calledOnce).to.be.true;
+      assert(global.$.get.lastCall.calledWithExactly('/api/spotify/token'));
+    });
+  });
+
 
   describe('editing', function () {
     before(function () {
