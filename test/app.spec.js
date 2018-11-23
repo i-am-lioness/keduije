@@ -3,6 +3,9 @@ import { expect } from 'chai';
 import request from 'supertest';
 import cheerio from 'cheerio';
 import sinon from 'sinon';
+import https from 'https';
+import fs from 'fs';
+
 import APP from '../lib/app';
 import { tables } from '../lib/constants';
 import TestDB from './utils/db';
@@ -1055,6 +1058,88 @@ describe('app.js |', () => {
     }); // describe('search')
   }); // describe('server')
 
+  describe('https', function () {
+    let props;
+    let matches;
+    let server;
+    let db;
+    const slug = 'loving';
+    const re = /(.*):\/\/www.youtube.com\/embed\/(.*)\?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=(.*):\/\/(.*)&playsinline=1&rel=0&controls=0/;
+
+    const video0 = {
+      slug,
+      videoID: 'aaaa',
+      type: mediaTypes.VIDEO,
+    };
+
+    before(function (done) {
+      APP(env, false).then((app2) => {
+        db = app2.database;
+        const privateKey = fs.readFileSync('test/https/privatekey.pem').toString();
+        const certificate = fs.readFileSync('test/https/certificate.pem').toString();
+        const options = { key: privateKey, cert: certificate };
+
+        server = https.createServer(options, app2);
+        server.listen(3001, () => {
+          console.log('https server listening on 3001');
+          db(tables.MEDIA).insertOne(video0).then(() => {
+            console.log('inserted data');
+            done();
+          }).catch((err) => {
+            console.log(err);
+          });
+        }).on('error', (err) => {
+          console.log(err);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    });
+
+    after(function () {
+      return TestDB.close(db).then(() => server.close());
+    });
+
+    describe('on loading video page', function () {
+      before(function () {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+        return request(server)
+          .get(`/music/${slug}`)
+          .expect(200)
+          .then(function (res2) {
+            props = parseProps(res2);
+            matches = props.src.match(re);
+            debugger;
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      });
+
+      // ✓ GOOD
+      it('puts matching protocol in youtube url', function () {
+        if (!matches) {
+          throw new Error('could not parse youtube src');
+        }
+        expect(matches.length).to.be.ok;
+        expect(matches[1]).to.equal('https');
+        expect(matches[1]).to.not.equal('http');
+      });
+
+      // ✓ GOOD
+      it('puts matching protocol in origin parameter', function () {
+        if (!matches) {
+          throw new Error('could not parse youtube src');
+        }
+        expect(matches.length).to.be.ok;
+        expect(matches[3]).to.equal('https');
+        expect(matches[3]).to.not.equal('http');
+      });
+    });
+  }); // describe('https'
+
   it('distinguisehs between two media with the same title/slug');
 
   it('never loads deleted songs');
@@ -1068,8 +1153,6 @@ describe('app.js |', () => {
   it('does not allow title/slug changes after a certain number of views');
 
   it('clears failed revisions');
-
-  it('youtube source url always has matching protocol');
 
   it('should pageinate search results');
 });
