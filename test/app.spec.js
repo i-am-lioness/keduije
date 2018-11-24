@@ -976,8 +976,7 @@ describe('app.js |', () => {
         // ✓ GOOD
         it('should serve html', function () {
           expect(res0.status).to.equal(200);
-          expect(res0.text).to.include('/login/facebook');
-          expect(res0.text).to.include('/login/twitter');
+          expect(res0.text).to.include('form');
           /* $ = cheerio.load(res0.text);
           console.log($);
           expect($('a').length).to.equal(2);
