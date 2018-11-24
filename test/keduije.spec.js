@@ -80,7 +80,7 @@ describe('keduije.js', function () {
   });
 
 
-  describe('editing', function () {
+  describe('-editing-', function () {
     before(function () {
       return Keduije.startEditSession(true);
     });
@@ -118,10 +118,14 @@ describe('keduije.js', function () {
 
       return Keduije.updateLyric(oldLyric, changes).then((res) => {
         expect(res).to.be.an('array');
+        const path = global.$.post.lastCall.args[0];
         const postData = global.$.post.lastCall.args[1];
         expect(postData.changesetID).to.be.ok;
         expect(postData.mediaID).to.be.ok;
         expect(postData.changes).to.equal(changes);
+        expect(postData.original).to.be.ok;
+        expect(path).to.match(/\/api\/media\/.*\/updateLine/);
+        expect(path).to.equal(`/api/media/${postData.mediaID}/updateLine`);
       });
     });
 
@@ -168,9 +172,12 @@ describe('keduije.js', function () {
       return Keduije.saveSongInfo(originalSong, changes).then((res) => {
         expect(res).to.be.an('object');
         const postData = global.$.post.lastCall.args[1];
+        const path = global.$.post.lastCall.args[0];
         expect(postData.changesetID).to.be.ok;
         expect(postData.mediaID).to.be.ok;
         expect(postData.changes).to.equal(changes);
+        expect(path).to.match(/\/api\/media\/.*\/updateInfo/);
+        expect(path).to.equal(`/api/media/${postData.mediaID}/updateInfo`);
       });
     });
 

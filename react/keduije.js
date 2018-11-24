@@ -66,7 +66,7 @@ function updateLyric(oldLyricObj, newLyricObj) {
     changesetID,
   };
 
-  return $.post(`/api/lines/edit/${oldLyricObj._id}`, postData);
+  return $.post(`/api/media/${songID}/updateLine`, postData);
 }
 
 function deleteLyric(oldLyricObj) {
@@ -82,7 +82,7 @@ function saveSongInfo(original, changes) {
     mediaID: songID, // for easy querying
   };
 
-  return $.post(`/api/media/edit/${songID}`, postData);
+  return $.post(`/api/media/${songID}/updateInfo`, postData);
 }
 
 function createSong(songInfo) {

@@ -31,13 +31,19 @@ function passportAuthenticate(strategyName) {
     return new Promise((resolve, reject) => {
       const onSuccess = strategies[strategyName]._verify;
       const profile = profiles[strategyName];
-      onSuccess(null, null, profile, (err, result) => {
+
+      const cb = (err, result) => {
         if (err) {
           reject(err);
         } else {
           resolve(result);
         }
-      });
+      };
+      if (strategyName === 'local') {
+        onSuccess(null, null, cb);
+      } else {
+        onSuccess(null, null, profile, cb);
+      }
     });
   }
   return authenticator;
@@ -238,6 +244,36 @@ describe('users.js', function () {
         });
       }); // describe(`for ${provider}`)
     }); // ['twitter', 'facebook'].forEach
+
+    describe('auto login for dev mode', function () {
+      let user;
+      let err;
+      let a;
+      before(function () {
+        process.env.AUTO_LOGIN = '1';
+        a = users.authenticate('local');
+        return a().then((_user) => {
+          user = _user;
+        }).catch((_err) => {
+          err = _err;
+        });
+      });
+
+      afterEach(function () {
+        process.env.AUTO_LOGIN = null;
+      });
+
+      it('should not throw error', function () {
+        expect(err).to.be.undefined;
+      });
+
+      it('should fail when AUTO_LOGIN not set', function () {
+        return a().catch((_err) => {
+          err = _err;
+          expect(err.message).to.equal('auto login disabled');
+        });
+      });
+    });
 
     describe('for sessions', function () {
       const userA = {

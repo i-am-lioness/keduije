@@ -52,8 +52,8 @@ reqs['https://www.googleapis.com/youtube/v3/videos'] = googleapis;
 
 // posts
 reqs['/api/media/58e745d22f1435db632f81fa/addline'] = lyrics;
-reqs['/api/lines/edit/58e7e85808091bfe6d06a498'] = lyrics;
-reqs['/api/media/edit/58e745d22f1435db632f81fa'] = songInfo;
+reqs['/api/media/58e745d22f1435db632f81fa/updateLine'] = lyrics;
+reqs['/api/media/58e745d22f1435db632f81fa/updateInfo'] = songInfo;
 reqs['/api/media/new'] = 'Ada';
 
 
