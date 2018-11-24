@@ -64,6 +64,42 @@ describe('<MediaPlayer />', () => {
     });
   });
 
+  describe('member functions', function () {
+    let wrapper;
+    const artistValue = 'Ada';
+    const titleValue = 'Ekwe';
+    let instance;
+    let initialState;
+
+    beforeEach(function () {
+      wrapper = shallow(<MediaPlayer
+        canEdit={false}
+        src={'https://www.youtube.com/embed/x-q9uCRheWQ?enablejsapi=1&showinfo=0&color=white&modestbranding=1&origin=http://localhost:3000&playsinline=1&rel=0&controls=0'}
+        mediaType={1}
+        mediaID={'58e638a2d300e060f9cdd6ca'}
+        img={'https://i.scdn.co/image/a526d11a5add256cbb4940b39c630df4c6af5cc1'}
+        artist={artistValue}
+        title={titleValue}
+        slug={'Ada'}
+      />);
+
+      instance = wrapper.instance();
+
+      initialState = Object.assign({}, instance.state);
+    });
+
+
+    // GOOD
+    it('.displaySongInfo() handles missing fields', function () {
+      instance.displaySongInfo({});
+      expect(instance.state.title).to.equal('');
+      expect(instance.state.artist).to.equal('');
+      expect(instance.state.img).to.equal('');
+
+      expect(instance.state.editDialogIsOpen).to.be.false;
+    });
+  });
+
   describe('loading video- ', function () {
     const player = (<MediaPlayer
       canEdit={false}
