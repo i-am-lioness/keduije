@@ -199,10 +199,14 @@ const passportSession = (req, res, next) => {
 };
 
 const login = (vendor, req, res, next) => {
-  if (req.query.code) {
+  if (vendor === 'local') {
     next();
   } else {
-    res.redirect(`/login/${vendor}/return?code=111`);
+    if (req.query.code) { // eslint-disable-line no-lonely-if
+      next();
+    } else {
+      res.redirect(`/login/${vendor}/return?code=111`);
+    }
   }
 };
 

@@ -105,6 +105,39 @@ describe('app.js |', () => {
         expect(err.message).to.equal('Missing "env" parameter');
       });
     });
+
+    describe('-auto login-', function () {
+      let loginServer;
+      let loginDb;
+
+      afterEach(function () {
+        return TestDB.close(loginDb).then(() => loginServer.close());
+      });
+
+      // ✓ GOOD
+      it('should return 403 when AUTO_LOGIN not set', function () {
+        const failEnv = Object.assign({}, env);
+        failEnv.AUTO_LOGIN = null;
+        return APP(failEnv).then((result) => {
+          loginServer = result.server;
+          loginDb = result.db;
+          return request(loginServer)
+            .get('/login/auto')
+            .expect(403);
+        });
+      });
+
+      // ✓ GOOD
+      it('should succeed when AUTO_LOGIN=1', function () {
+        return APP(env).then((result) => {
+          loginServer = result.server;
+          loginDb = result.db;
+          return request(loginServer)
+            .get('/login/auto')
+            .expect(302);
+        });
+      });
+    }); // describe.only('-auto login-')
   }); // describe('app initialization')
 
   describe('server', function () {
@@ -976,7 +1009,7 @@ describe('app.js |', () => {
         // ✓ GOOD
         it('should serve html', function () {
           expect(res0.status).to.equal(200);
-          expect(res0.text).to.include('form');
+          expect(res0.text).to.include('"/login');
           /* $ = cheerio.load(res0.text);
           console.log($);
           expect($('a').length).to.equal(2);
