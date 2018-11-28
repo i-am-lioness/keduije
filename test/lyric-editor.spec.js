@@ -113,13 +113,21 @@ describe('<LyricEditor />', () => {
 
     let wrap = null;
 
-    it('mounts and displays, and draggable works properly', function () {
+    // GOOD
+    it('activates input once displayed', function () {
       wrap = mount(editorClass);
+
+
+      wrap.setProps({ editMode: true });
+      const lyricTextInput = wrap.find('#lyric').getDOMNode();
+      lyricTextInput.onfocus = sinon.spy();
+      debugger;
+
       wrap.setProps({ displayed: true });
-      expect(() => {
-        wrap.setProps({ editMode: true });
-      }).not.to.Throw(TypeError);
+      expect(lyricTextInput.onfocus.called).to.be.true;
     });
+
+    it('becomes draggable once mounted');
 
     it('shows different dialog for editing vs creating lines ', function () {
       const submitBtn = wrap.find('#save-lyric-btn');

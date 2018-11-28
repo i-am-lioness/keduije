@@ -11,6 +11,7 @@ class LyricEditor extends React.Component {
     super(props);
     this.dialogWidth = 500;
     this.lyricEditor = null;
+    this.lyricTextInput = null;
     this.handleSubmit = this.handleSubmit.bind(this);
     this.calculateTail = this.calculateTail.bind(this);
   }
@@ -18,6 +19,9 @@ class LyricEditor extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if ((!prevProps.editMode) && (this.props.editMode)) {
       $(this.lyricEditor).draggable();
+    }
+    if ((!prevProps.displayed) && (this.props.displayed)) {
+      $(this.lyricTextInput).focus();
     }
   }
 
@@ -70,6 +74,7 @@ class LyricEditor extends React.Component {
             placeholder="Transcibe Lyrics..."
             value={this.props.value}
             onChange={this.props.handleChange}
+            ref={(el) => { this.lyricTextInput = el; }}
           />
         </div>
         <div className="col-xs-2 visible-xs-block">
