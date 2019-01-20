@@ -12,7 +12,7 @@
     "gen-debug": "DEBUG=express:* NODE_ENV=test babel-node --debug-brk --inspect test/utils/generator.js",
     "dump": "LOCAL_DB=1 babel-node test/utils/dump.js",
     "mongo": "mongod --fork --logpath /dev/null",
-    "test": "cross-env NODE_ENV=test LOCAL_DB=1 nyc mocha test/**/*.spec.js --compilers js:babel-register",
+    "test_": "cross-env NODE_ENV=test LOCAL_DB=1 nyc mocha test/**/*.spec.js --compilers js:babel-register",
     "mongo-close": "mongo admin --eval 'db.shutdownServer()' > /dev/null",
     "test-debug": "DEBUG=express:* NODE_ENV=test mocha --debug-brk --inspect test/**/*.spec.js --compilers js:babel-register",
     "test-browser": "webpack --env=test && npm run start-dev",
@@ -23,7 +23,8 @@
     "heroku-postbuild": "npm run build",
     "cron-dev": "node scripts/cron.js --exec babel-node ",
     "start-dev": "nodemon lib/main.js --exec babel-node ",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "test": "npm run mongo && npm run test_ ; npm run mongo-close"
   },
   "author": "Udegbunam, Nnenna",
   "license": "ISC",

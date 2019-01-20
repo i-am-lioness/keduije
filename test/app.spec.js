@@ -73,7 +73,7 @@ describe('app.js |', () => {
         expect(err).to.be.ok;
         expect(err).to.be.an.instanceOf(Error);
         expect(err).to.haveOwnProperty('stack');
-        expect(err.message).to.equal('"port" argument must be >= 0 and < 65536');
+        expect(err.message).to.match(/port.+>= 0 and < 65536/i);
       });
     });
 
@@ -86,7 +86,7 @@ describe('app.js |', () => {
       return APP(dbFailEnv).catch(err => err).then((err) => {
         revertStartServer();
         expect(startServer.called).to.be.false;
-        expect(err.message).to.equal('invalid schema, expected mongodb');
+        expect(err.message).to.match(/invalid schema, expected mongodb/);
       });
     });
 
